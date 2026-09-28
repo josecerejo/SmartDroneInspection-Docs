@@ -11,7 +11,7 @@ round.
 | Project Name | SmartDroneInspection |
 | Project Code | SEP490 — *confirm with project owner* |
 | Test round | Week 3 verification: Round 1 baseline, Round 2 WF3-002 CI recheck, and Round 2 WF3-004 narrative config/provenance recheck |
-| Last updated | 2026-09-26 |
+| Last updated | 2026-09-28 |
 
 ## Module summary
 
@@ -30,8 +30,17 @@ envelope checks and the WF3 inspection/report page tests. Backend API-envelope
 and Problem Details checks passed as part of `mvnw verify`; mobile envelope
 checks passed as part of `flutter test`, and `flutter analyze` reported no
 issues. Browser-auth checks use a mocked HTTP transport; this delivery did not
-execute a live browser-to-auth-API end-to-end test. See
-`03-features/fe-01-identity-access-governance.md` for the detailed procedure and scope.
+execute a live browser-to-auth-API end-to-end test. On 2026-09-28, the backend
+client self-registration persistence gate passed: `POST /api/v1/auth/register`
+returns 201 and persists organization, user, `CLIENT` role, and the
+`CLIENT_REGISTRATION` audit row in one transaction
+(`ClientRegistrationApiIntegrationTest`, part of the 165/165 `mvnw verify`
+run). On 2026-09-28, the backend admin user creation persistence gate passed:
+`POST /api/v1/platform/users` returns 201 and persists the user, role
+assignment, and the `USER_CREATED` audit row in one transaction
+(`AdminUserApiIntegrationTest`, part of the 167/167 `mvnw verify` run).
+See `03-features/fe-01-identity-access-governance.md` for the detailed
+procedure and scope.
 
 These are workbook-sheet totals, not FE totals. The eight detailed sources are
 organized by FE; FE-08 has no assigned functional case in this baseline and is

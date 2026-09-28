@@ -31,6 +31,26 @@ Automated execution on 2026-09-22: Passed. WorkflowBaselineTest verified Flyway 
 - Evidence: src/shared/api/client.test.ts, src/features/auth/api/authApi.test.ts, src/features/auth/schemas/authSchemas.test.ts, src/features/auth/utils/authRedirect.test.ts, and src/features/auth/api/sessionBootstrap.test.ts — 26 auth-flow tests passed; the full frontend suite at that auth-flow run passed 45/45, including the 19 portal-policy tests. The later complete run passed 52/52 after adding shared-envelope tests and WF3 inspection/report page tests.
 - Scope note: The transport is mocked in these frontend tests. A live browser-to-Spring-auth-API end-to-end run was not part of this verification. These results are not an end-to-end test claim.
 
+### Client self-registration persistence gate
+
+- Preconditions: The versioned browser auth endpoints are available; the backend integration environment provisions PostgreSQL through Testcontainers with Flyway migrations V1–V10 applied.
+- Procedure: Run `.\mvnw.cmd test -Dtest=ClientRegistrationApiIntegrationTest` in SmartDroneInspection-backend; POST `/api/v1/auth/register` through MockMvc with a CSRF token; assert 201 Created, the normalized organization code, the `CLIENT` role on the created user, and a `CLIENT_REGISTRATION`/`SUCCESS` row in `security_audit_events` whose `subject_user_id` references the created user.
+- Expected result: Registration persists the organization, user, role assignment, and security audit event in one transaction without violating the `security_audit_events.subject_user_id` foreign key.
+- Round 1: Passed on 2026-09-28; tester: Codex (automated).
+- Evidence: Backend `src/test/java/com/smartdroneinspection/users/ClientRegistrationApiIntegrationTest.java` plus the updated `ClientRegistrationServiceTest`; full `.\mvnw.cmd verify` passed 165/165 tests with the JaCoCo and Spring Modulith gates.
+- Defect note: Before this round, `POST /api/v1/auth/register` returned 500 because `ClientRegistrationService` passed the generated user id to `SecurityAuditService.record` (raw `JdbcTemplate` SQL) before Hibernate flushed the `users` insert, so the audit insert failed the foreign key introduced in `V3__authentication.sql` (present since commit 46baa59). The fix flushes the saved user before the audit write.
+- Scope note: This is an API-level integration test against a real database, not a live browser end-to-end run.
+
+### Admin user creation persistence gate
+
+- Preconditions: An ADMIN account exists; the backend integration environment provisions PostgreSQL through Testcontainers with Flyway migrations V1-V10 applied.
+- Procedure: Run `.\mvnw.cmd test -Dtest=AdminUserApiIntegrationTest` in SmartDroneInspection-backend; POST `/api/v1/platform/users` through MockMvc as an ADMIN JWT with a CSRF token; assert 201 Created, the `MAINTENANCE_ENGINEER` role on the created user, a non-empty temporary password, and a `USER_CREATED`/`SUCCESS` row in `security_audit_events` whose `actor_user_id` is the admin and whose `subject_user_id` references the created user.
+- Expected result: Creation persists the user, role assignment, and security audit event in one transaction without violating the `security_audit_events.subject_user_id` foreign key.
+- Round 1: Passed on 2026-09-28; tester: Claude Code (automated).
+- Evidence: Backend `src/test/java/com/smartdroneinspection/users/AdminUserApiIntegrationTest.java` plus `AdminUserServiceTest`; full `.\mvnw.cmd verify` passed 167/167 tests with the JaCoCo and Spring Modulith gates.
+- Defect note: Before this round, `POST /api/v1/platform/users` returned 500 for the same cause as the client-registration defect above: `AdminUserService.create` passed the generated user id to `SecurityAuditService.record` (raw `JdbcTemplate` SQL) before Hibernate flushed the `users` insert. The fix uses `saveAndFlush` before the audit write. Verified RED first: the new integration test failed with 500 instead of 201 on the unfixed code, then passed after the one-line fix.
+- Scope note: This is an API-level integration test against a real database, not a live browser end-to-end run.
+
 ### Cross-cutting successful API response-envelope verification
 
 This is a shared API contract check recorded here for traceability. It is not an FE-01-only acceptance case or an additional workbook row.
@@ -43,4 +63,4 @@ This is a shared API contract check recorded here for traceability. It is not an
 
 ## Coverage boundary
 
-The recorded gates verify authentication/migration setup, role-to-screen policy, browser-auth contracts, and the shared API envelope. They do not by themselves establish complete profile-management or audit-log acceptance coverage. Those requirements remain in the FE-01 scope baseline.
+The recorded gates verify authentication/migration setup, role-to-screen policy, browser-auth contracts, client-registration persistence and its audit record, and the shared API envelope. They do not by themselves establish complete profile-management or audit-log acceptance coverage, nor a live browser end-to-end registration/login run. Those requirements remain in the FE-01 scope baseline.

@@ -57,8 +57,8 @@ Executed 2026-09-28 on Windows 11, Docker Desktop 29.7.2 (Compose v5.4.0).
 - [x] API reverse proxy is same-origin: `GET /api/v1/auth/csrf` → 200 with `ApiResponse` envelope.
 - [x] Flyway applied against the container database: "Successfully validated 10 migrations", schema at version 10.
 - [x] MinIO console reachable at `http://localhost:9001/` → 200.
-- [x] Host backend test suite green: `.\mvnw.cmd verify` → 164/164, BUILD SUCCESS.
-- [ ] **End-to-end browser login: NOT VERIFIED.** Registration through the API fails; see below.
+- [x] Host backend test suite green: `.\mvnw.cmd verify` → 165/165, BUILD SUCCESS (after the registration fix below).
+- [ ] **End-to-end browser login: NOT VERIFIED (browser click-through only).** The blocking registration defect (issue 5) is fixed; on 2026-09-28 the rebuilt backend container passed a live API check through the compose proxy — `POST /api/v1/auth/register` → 201 with the `CLIENT` role, `POST /api/v1/auth/login` → 200 `AUTHENTICATED`, and a `CLIENT_REGISTRATION`/`SUCCESS` audit row referencing the new user. A human/browser run of the SPA registration and login form has not been executed.
 
 ## Issues found during verification
 
@@ -88,7 +88,7 @@ A native `postgresql-x64-17` Windows service owns 5432. The stack's published po
 via `POSTGRES_PORT`; the container still listens on 5432 internally, so no application
 configuration changed.
 
-### 5. Client self-registration returns HTTP 500 (OPEN — application defect, not Docker)
+### 5. Client self-registration returns HTTP 500 (FIXED 2026-09-28 — follow-up defect, not Docker)
 
 **Not caused by this change.** Reproduced against the containerized stack, then traced to the
 application layer.
@@ -127,6 +127,10 @@ Corroborating evidence that registration has never worked end-to-end:
 The failed registration rolls back cleanly: user count stayed at 5, organization count at 1, and
 no partial rows were written.
 
-**This is out of scope for the Docker change** and is deliberately not fixed here — it is an
-application-logic defect that requires its own test-first fix and a Report 5 case. Reported to the
-product owner as a follow-up.
+**Resolved 2026-09-28** with a test-first fix: `ClientRegistrationService` now calls
+`users.saveAndFlush(client)` so the `users`/`user_roles` rows exist before the raw-JdbcTemplate
+audit insert. Red first (new `ClientRegistrationApiIntegrationTest` failed with the same FK
+violation, 500 instead of 201), then green, then `.\mvnw.cmd verify` → 165/165 BUILD SUCCESS.
+Live re-check on the rebuilt container: register → 201, login → 200, and the
+`CLIENT_REGISTRATION` audit row exists with the new user's id. Report 5 FE-01 records the
+self-registration persistence gate (report version 1.5).

@@ -8,9 +8,9 @@ when transferring values into the workbook.
 | Project Name | SmartDroneInspection |
 | Project Code | SEP490 — *confirm with project owner* |
 | Creator | *Enter team/member name* |
-| Issue Date | 2026-09-26 |
+| Issue Date | 2026-09-28 |
 | Document Code | *Enter document code* |
-| Version | 1.4 |
+| Version | 1.6 |
 
 ## Record of change
 
@@ -32,3 +32,5 @@ revision; do not remove old entries.
 | 2026-09-25 | 1.1 | WF3 S3 integration-test runner update | M | Recorded the unavailable MinIO CI image and successful S3Mock S3 API integration rerun; clarified that the CI mock does not replace MinIO runtime verification. | Backend PR #44 CI runs 36090635549 and 36092639825; `EvidenceApiIntegrationTest`; `MinioEvidenceObjectStoreIntegrationTest` |
 | 2026-09-25 | 1.2 | FE-specific Report 5 source structure | M | Split editable feature details into exactly eight FE-specific files, retained all 15 WFx case IDs and statuses, documented FE-08 as uncovered, and made the generated preview's per-round status formulas count the corresponding round. The original template remains unchanged. | `README.md`, `template-layout.md`, `test-case-list.md`, `test-statistics.md`, and `03-features/` |
 | 2026-09-26 | 1.3 | WF3 AI draft narrative and inspection completion verification | M | Recorded executed AI-draft/narrative and COMPLETED-transition evidence on WF3-004 (Round 2 note) and noted the ai-draft HTTP live-provider happy path as not run; updated Report 3 SRS 3.7.1 and business flows WF3-11/WF3-20; workbook case IDs, sheet totals, and statistics unchanged. | `InspectionReportServiceTest`, `ReportSnapshotSerializationTest`, `ReportDraftClientTest`, extended `InspectionReportApiIntegrationTest`, `InspectionServiceTest` lock test; Report 3 SRS 3.7.1 |
+| 2026-09-28 | 1.5 | FE-01 client registration persistence defect fix | M | Fixed `POST /api/v1/auth/register` returning 500 (the audit insert referenced the new user before the Hibernate flush) and recorded the passing FE-01 self-registration persistence gate; workbook case IDs, sheet totals, and statistics unchanged. | Backend `ClientRegistrationApiIntegrationTest`, `ClientRegistrationServiceTest`; `.\mvnw.cmd verify` 165/165; Report 3 SRS 3.2 |
+| 2026-09-28 | 1.6 | FE-01 admin user creation persistence defect fix | M | Fixed `POST /api/v1/platform/users` returning 500 (same audit-before-flush cause) and recorded the passing FE-01 admin-creation persistence gate; workbook case IDs, sheet totals, and statistics unchanged. | Backend `AdminUserApiIntegrationTest`, `AdminUserServiceTest`; `.\mvnw.cmd verify` 167/167 |
