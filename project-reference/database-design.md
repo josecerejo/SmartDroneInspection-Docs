@@ -22,13 +22,13 @@ It is not an executable Flyway migration and does not claim that every table bel
 
 ## 2. Right-sized schema
 
-The target contains **35 application tables** plus the Spring Modulith `event_publication` infrastructure table.
+The target contains **37 application tables** plus the Spring Modulith `event_publication` infrastructure table.
 
 | Capability | Tables | Count |
 | --- | --- | ---: |
 | Identity and access | `organizations`, `users`, `user_roles`, `auth_sessions`, `refresh_tokens` | 5 |
 | Audit | `security_audit_events` | 1 |
-| Asset catalog and planning | `asset_categories`, `checklist_templates`, `checklist_items`, `assets`, `asset_documents`, `inspection_schedules` | 6 |
+| Asset catalog and planning | `asset_categories`, `category_frequency_suggestions`, `checklist_templates`, `checklist_items`, `assets`, `asset_documents`, `inspection_schedules`, `schedule_proposals` | 8 |
 | WF2 request and service preparation | `inspection_requests`, `inspection_request_attachments`, `inspection_quotations`, `inspection_service_orders`, `inspection_assignments` | 5 |
 | WF3 inspection and report delivery | `inspections`, `checklist_responses`, `evidence`, `ai_finding_candidates`, `verified_findings`, `inspection_reports`, `report_versions`, `peer_reviews` | 8 |
 | WF4 maintenance and billing | `maintenance_tickets`, `maintenance_ticket_findings`, `maintenance_assessments`, `maintenance_quotations`, `maintenance_orders`, `maintenance_assignments`, `maintenance_work_logs`, `maintenance_change_requests`, `invoices` | 9 |
@@ -293,10 +293,16 @@ Constraints: unique `(template_id, item_code)` and `(template_id, display_order)
 | `latitude` | `NUMERIC(9,6)` | Yes | Optional WGS84 latitude. |
 | `longitude` | `NUMERIC(9,6)` | Yes | Optional WGS84 longitude. |
 | `ownership_information` | `VARCHAR(1000)` | Yes | Customer-provided ownership detail. |
-| `status` | `VARCHAR(24)` | No | `ACTIVE`, `INACTIVE`, or `RETIRED`. |
+| `status` | `VARCHAR(24)` | No | `PENDING_REVIEW`, `ACTIVE`, `INACTIVE`, `REJECTED`, or `RETIRED`. |
 | `created_by_user_id` | `UUID` | No | Client actor in the same organization. |
 
-Constraints: unique `(organization_id, code)`; latitude/longitude ranges are checked.
+Constraints: unique `(organization_id, code)`; latitude/longitude ranges are checked; `status` is constrained to the five values above.
+
+#### `category_frequency_suggestions`
+
+Admin-configured inspection cadences offered for an asset category. Columns: `id`, `asset_category_id` (FK to `asset_categories`), `frequency_unit` (`DAY`, `WEEK`, `MONTH`, `YEAR`), `frequency_interval` (positive), `sort_order`, `row_version`.
+
+Constraints: unique `(asset_category_id, frequency_unit, frequency_interval)`. Index: `(asset_category_id, sort_order)`.
 
 #### `asset_documents`
 
@@ -319,6 +325,16 @@ Indexes: `(asset_id, created_at DESC)` and `(asset_id, checksum_sha256)`.
 | `created_by_user_id` | `UUID` | No | Client actor in the asset organization. |
 
 Indexes: `(status, next_due_at)` for the scheduler and `asset_id` for scoped retrieval.
+
+A row is created only when a Client selects a `MANAGER_APPROVED` schedule proposal; the Client cannot create a schedule directly.
+
+#### `schedule_proposals`
+
+Platform-generated inspection-cadence options for an asset, reviewed by the Service Manager and selected by the Client. Columns: `id`, `asset_id` (FK to `assets`), `checklist_template_id` (FK to `checklist_templates`), `frequency_unit`, `frequency_interval`, `status`, `manager_note`, `reviewed_by_user_id`, `selected_by_user_id`, `created_at`, `updated_at`, `row_version`.
+
+`status` is one of `GENERATED`, `MANAGER_APPROVED`, `MANAGER_REJECTED`, `CLIENT_SELECTED`, or `SUPERSEDED`.
+
+Constraints: unique `(asset_id, frequency_unit, frequency_interval)`. Index: `(asset_id, status)`.
 
 ### 6.3 WF2 request, quotation, order, and assignment
 
@@ -718,7 +734,7 @@ The database model supports, but does not replace, application authorization. Re
 
 ## 12. Implementation status
 
-As of 2026-09-24, Flyway migrations `V1` through `V10` implement the complete **physical schema**: all 35
+As of 2026-09-28, Flyway migrations `V1` through `V11` implement the complete **physical schema**: all 37
 application tables in this document plus the Spring Modulith `event_publication` registry. The physical-schema phases
 are:
 
@@ -731,14 +747,17 @@ are:
 | `V8` | WF4 maintenance tickets, findings, assessments, quotations, orders, assignments, work logs, change requests, and invoices. |
 | `V9` | Supporting notification delivery records. |
 | `V10` | Client actor and revision-reason audit columns on WF3 `report_versions`. |
+| `V11` | WF1 schedule proposals and Admin category frequency policy; widens the `assets.status` check for `PENDING_REVIEW` and `REJECTED`. |
 
-Physical tables do not by themselves mean that a workflow is runtime-complete. Every application table in `V1`-`V10`
+Physical tables do not by themselves mean that a workflow is runtime-complete. Every application table in `V1`-`V11`
 now has a feature-owned JPA entity and repository: identity tables belong to `users`; WF1 tables to `assets`; WF2
 tables to `inspectionrequests`; WF3 tables to `inspections`; WF4 tables to `maintenance`; and notifications to
 `notifications`. The Spring Modulith `event_publication` registry remains framework-owned and has no business entity.
 The `inspections`, `maintenance`, and `notifications` modules therefore have their persistence model in place. WF3
 inspection/evidence, candidate-verification, and report-review/release/acceptance use cases and HTTP APIs are now
-implemented; delivery verification is tracked in Report 5. WF4 and notification delivery remain incremental work.
+implemented; delivery verification is tracked in Report 5. WF1 asset catalog, organization-scoped asset CRUD, asset
+documents, asset review, and schedule proposals are implemented; schedule lifecycle and due-cycle publication remain
+incremental work. WF4 and notification delivery remain incremental work.
 `dashboard` remains a package-only boundary.
 
 ## 13. Recommended implementation order

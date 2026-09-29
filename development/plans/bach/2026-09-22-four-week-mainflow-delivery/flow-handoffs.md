@@ -7,7 +7,7 @@ client implementation. The implemented OpenAPI and tests become authoritative.
 
 | Producer → consumer | Public contract | Required identity/idempotency | Consumer outcome |
 | --- | --- | --- | --- |
-| WF1 → WF2 | `InspectionScheduleDue` in `assets::events` | `organizationId`, `assetId`, `scheduleId`, `checklistTemplateVersionId`, `dueCycle`; unique `(assetId,scheduleId,dueCycle)` | One `PERIODIC` inspection request; unavailable checklist enters manual review. |
+| WF1 → WF2 | `InspectionScheduleDue` in `assets::events` | `organizationId`, `assetId`, `scheduleId`, `checklistTemplateVersionId`, `dueCycle`; unique `(assetId,scheduleId,dueCycle)` | One `PERIODIC` inspection request; unavailable checklist enters manual review. Upstream flow amended 2026-09-25 — schedules originate from Manager-reviewed proposals; the event contract is unchanged. |
 | WF2 → WF3 | `InspectionAssignmentAccepted` in `inspectionrequests::events` | `assignmentId`, `orderId`, `requestId`, `assetId`, `inspectorUserId`; one inspection per accepted assignment | Inspection becomes `READY_FOR_INSPECTION`. |
 | WF3 → WF4 | Public `inspections` read operation for accepted report and verified findings | `reportVersionId`, `organizationId`, `assetId`, finding IDs | Client can create a ticket only from findings in their accepted report. |
 | WF4 → WF2 | `ReinspectionRequested` in `maintenance::events` | `ticketId`, `organizationId`, `assetId`, `reportVersionId`; one linked request per decision | One linked `AD_HOC` request enters WF2. |

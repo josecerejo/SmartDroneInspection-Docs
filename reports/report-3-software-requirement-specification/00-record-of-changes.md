@@ -16,5 +16,6 @@ source: "report3-software-requirement-specification.docx"
 | 25 Sep 2026 | M | Project Team | Specified on-demand AI narrative drafting with human review and inspection lifecycle completion to COMPLETED on Client acceptance. |
 | 26 Sep 2026 | M | Project Team | Documented last-write-wins between AI draft regeneration and narrative edits, and recorded the matching Report 5 note. |
 | 26 Sep 2026 | M | Project Team | Recorded AI draft model provenance on the version snapshot and moved the narrative length limit to the `REPORT_NARRATIVE_MAX_CHARS` configuration key in SRS 3.7.1. |
+| 28 Sep 2026 | M | Hiếu | Revised FE-02: Client asset registration now enters `PENDING_REVIEW`, the Service Manager approves the asset and reviews platform-generated schedule proposals, and the Client selects one proposal to create the active schedule. Added per-category suggested inspection frequencies, asset document upload rules, and the revised periodic-request generation wording. |
 
 *A - Added M - Modified D - Deleted

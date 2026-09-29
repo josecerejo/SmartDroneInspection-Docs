@@ -26,11 +26,11 @@ The browser application provides administration, Client, and Service Manager wor
 | 4 | Common | Profile and Password | View account information, change the password, and terminate the current or all sessions. |
 | 5 | Administration | Organizations | Create, activate, suspend, and inspect customer organizations. |
 | 6 | Administration | Users | Provision accounts, assign valid roles, reset credentials, change status, and revoke sessions. |
-| 7 | Administration | Asset Categories | Maintain classifications used by assets and checklist templates. |
+| 7 | Administration | Asset Categories | Maintain classifications, checklist templates, and the suggested inspection frequencies used for asset schedules. |
 | 8 | Administration | Checklist Templates | Create and version checklist templates and checklist items. |
 | 9 | Assets | Asset List | Search, filter, and open assets within the user's authorized scope. |
 | 10 | Assets | Asset Details | View and update asset data, documents, schedules, requests, reports, findings, and maintenance history. |
-| 11 | Planning | Inspection Schedules | Create, activate, pause, and review recurring inspection schedules. |
+| 11 | Planning | Inspection Schedules and Proposals | Review proposed inspection cadences and manage the selected recurring inspection schedule. |
 | 12 | Requests | Inspection Request | Create, complete, review, or reject a periodic or ad hoc inspection request and its attachments. |
 | 13 | Commercial | Inspection Quotation and Order | Create versions, review scope and terms, approve, or request revision. |
 | 14 | Assignments | Inspector Assignment | Assign an Inspector and record accept or reject responses. |
@@ -61,7 +61,7 @@ The matrix preserves the five-column structure of the supplied template. The com
 | Organizations and Users | Manage |  |  |  |
 | Categories and Checklists | Manage | V | I: V; M: V | V |
 | Asset List and Details | V |  |  | Manage own organization |
-| Inspection Schedules | V |  |  | Manage own organization |
+| Asset Review and Schedule Proposals | V | Review and propose |  | Select own organization |
 | Inspection Requests | V | Manage and review | I: View assigned | Manage own organization |
 | Inspection Quotation and Order | V | Manage and release | I: View assigned | Approve own organization |
 | Inspector Assignment | V | Manage | I: Respond to assigned | View own organization |
@@ -85,7 +85,7 @@ The matrix preserves the five-column structure of the supplied template. The com
 | 1a | Authentication | Client organization registration | Validate the registration request, create an active organization and first Client account atomically, enforce uniqueness and password policy, rate-limit attempts, and append a registration audit event. |
 | 1 | Authentication | Access-token validation | Validate token signature, issuer, audience, expiry, session, user status, authentication version, role, and applicable resource scope. |
 | 2 | Authentication | Refresh-token rotation | Rotate the opaque refresh token and reject an expired, revoked, or reused token. |
-| 3 | Planning | Periodic request generation | Create at most one periodic request for each Asset, Schedule, and Due Cycle combination. |
+| 3 | Planning | Periodic request generation | Create at most one periodic request for each Asset, Schedule, and Due Cycle combination, driven by the schedule the Client selected from the platform-proposed options. |
 | 4 | Files | Evidence intake | Validate file type and size, calculate checksum, prevent duplicates, and store authorized objects in MinIO. |
 | 5 | AI Assistance | Image inference | Submit eligible images to the YOLO service and store model version, label, confidence, and bounding box as non-official candidates. |
 | 6 | Reports | Draft compilation | Compile a versioned report draft from checklist responses, evidence, and Inspector-verified findings. |
@@ -150,21 +150,22 @@ FE-01 provides Client organization self-registration, authentication, account an
 
 ### 3.3 FE-02 Asset Registry and Inspection Schedule
 
-FE-02 lets a Client manage the assets and recurring inspection schedules belonging to the Client's organization. Admin maintains the categories and checklist templates used by the feature.
+FE-02 lets a Client register the assets belonging to the Client's organization and, after review, select one of the schedule options the platform proposes for that asset. Admin maintains the categories, checklist templates, and per-category suggested inspection frequencies, and the Service Manager reviews both the asset and the proposed schedules.
 
 #### 3.3.1 Manage Assets and Periodic Inspection Scheduling
 
-**Function trigger:** The Client opens Asset Management to register an asset or opens Inspection Schedules for an existing active asset.
+**Function trigger:** The Client opens Asset Management to register an asset; the Service Manager opens the asset review queue; or the Client opens the proposed schedules for an approved asset.
 
 **Function description:**
 
-- The Client enters the asset code, name, category, location, technical description, operational status, and available documents.
-- The system verifies that the Client belongs to the asset's organization and that the asset code is unique within that organization.
-- The Client selects a checklist template, recurrence rule, next due date, preferred inspection window, and responsible contact.
-- The system validates the recurrence rule and activates the schedule only when the asset and checklist template are active.
-- On each due cycle, the system creates one periodic inspection request and records the Asset, Schedule, and Due Cycle key.
+- The Client enters the asset code, name, category, location, technical description, and available documents. The new asset is created in the `PENDING_REVIEW` state.
+- The system verifies that the Client belongs to the asset's organization, that the category is active, and that the asset code is unique within that organization.
+- The Service Manager reviews the pending asset and approves or rejects it with an optional note. Approval activates the asset; the system then generates one schedule proposal for each suggested frequency configured on the asset's category, using the active checklist template of that category.
+- The Service Manager reviews each proposal, may adjust its frequency unit or interval, and approves or rejects it. Only approved proposals become visible to the Client.
+- The Client compares the approved proposals for the asset and selects exactly one. The system creates the active inspection schedule from the selected proposal and marks the remaining proposals as superseded. The Client cannot create a schedule directly.
+- On each due cycle, the system publishes one due event for the asset, schedule, and cycle, and the consumer creates one periodic inspection request from it.
 
-**Validation and exception requirements:** Missing required asset data prevents activation. An inactive asset pauses its schedule. An unavailable checklist routes the due request to manual review. Retrying the scheduler cannot create a duplicate request for the same due cycle.
+**Validation and exception requirements:** A category without suggested frequencies blocks asset approval. A category without an active checklist template blocks proposal generation. Only a `PENDING_REVIEW` asset can be approved or rejected. Only an active asset without an existing active schedule can have a proposal selected, and a proposal can be selected only once. Asset documents can be uploaded only while the asset is active or inactive, and only for supported file types within the size limit. Retrying the due-cycle publisher cannot create a duplicate request for the same due cycle.
 
 **Result:** A valid periodic inspection request enters the request-review process.
 

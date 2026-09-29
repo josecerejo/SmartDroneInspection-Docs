@@ -12,10 +12,14 @@ must pass the G2 handoff and its negative authorization cases.
 
 ## Owner tasks
 
-- `T005`–`T006` — Admin catalog and organization-scoped asset APIs.
+- `T005`–`T006` — Admin catalog (categories, checklist templates, per-category suggested
+  frequencies) and organization-scoped asset APIs; asset creation starts in `PENDING_REVIEW`
+  and the Service Manager reviews it through a platform-scoped queue.
 - `T007`–`T008` — Client asset screens and authorized document upload.
-- `T009`–`T010` — schedule lifecycle and durable due-cycle event.
-- `T011` — schedule and catalog web screens.
+- `T009`–`T010` — schedule lifecycle and durable due-cycle event. The schedule is created only
+  when the Client selects a `MANAGER_APPROVED` proposal; the remaining proposals are superseded.
+- `T011` — proposal comparison/selection, schedule, asset review queue, and Admin catalog web
+  screens.
 - `T012`–`T013` — WF1→WF2 handoff, security regression, and flow documentation.
 
 The full task descriptions, estimates, acceptance criteria, and Jira mapping remain in
@@ -37,8 +41,17 @@ The full task descriptions, estimates, acceptance criteria, and Jira mapping rem
 - Reject inactive assets, unavailable checklists, duplicate codes, and cross-organization access.
 - G2 is green before the integrated five-role demo.
 
+## Deviations
+
+- **T012 executed producer-side.** `PeriodicRequestHandoffTest` asserts event identity, payload,
+  and per-cycle idempotency with an in-process listener standing in for the WF2 consumer. The real
+  consumer integration (one `PERIODIC` request per replayed event) belongs to T021.
+
 ## References
 
+- [WF1 schedule-proposal spec](2026-09-25-wf1-schedule-proposal-flow/spec.md)
+- [WF1 schedule-proposal implementation plan](2026-09-25-wf1-schedule-proposal-flow/plan.md)
+- [WF1 implementation README](2026-09-25-wf1-schedule-proposal-flow/README.md)
 - [Shared four-week plan](../bach/2026-09-22-four-week-mainflow-delivery/plan.md)
 - [Shared handoff contract](../bach/2026-09-22-four-week-mainflow-delivery/flow-handoffs.md)
 - [Jira import guide](../bach/2026-09-22-four-week-mainflow-delivery/jira-import-guide.md)

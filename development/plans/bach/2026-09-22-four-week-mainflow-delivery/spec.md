@@ -5,6 +5,13 @@
 **Status**: Planning baseline
 **Input**: Deliver all four SmartDroneInspection main flows in four weeks with four members, one flow owner each, and a Jira-importable task breakdown.
 
+> **Amended 2026-09-25: schedule proposals.** WF1 no longer lets a Client create an
+> inspection schedule directly. A Client registers an asset in `PENDING_REVIEW`, the Service
+> Manager approves it, the platform generates one schedule proposal per Admin-configured
+> suggested frequency, the Manager reviews the proposals, and the Client selects exactly one to
+> create the active schedule. See [the WF1 schedule-proposal spec](../hieu/2026-09-25-wf1-schedule-proposal-flow/spec.md).
+
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Register assets and schedule inspections (Priority: P1)

@@ -2,7 +2,7 @@
 title: SmartDroneInspection Capstone Business Flow
 document_type: business-flow-reference
 purpose: AI-readable WF1-WF4 business-flow companion
-updated: 2026-09-21
+updated: 2026-09-28
 ---
 
 # SmartDroneInspection Capstone Business Flow
@@ -37,40 +37,40 @@ An active customer organization with its first Client account, ready for WF1.
 
 Purpose: Quản lý tài sản và tự động tạo yêu cầu kiểm tra định kỳ.
 
-Primary actors: Client , System.
+Primary actors: Client, Service Manager, Admin, System.
 
 ### Preconditions
 
 Organization và Client đã được kích hoạt.
 
-Asset categories và checklist templates đã được Admin cấu hình.
+Admin đã cấu hình asset categories, checklist templates và chu kỳ gợi ý cho từng category.
 
 Client chỉ được quản lý tài sản thuộc organization của mình.
 
+### Main flow
+
 | Step | Role / Lane | Detailed Main Activity | Output |
 | --- | --- | --- | --- |
-| WF1-01 | Client | Create an asset record with the asset name, code, category, location, ownership information and operational status. | Draft asset record |
-| WF1-02 | System | Validate the organization scope, required fields and asset-code uniqueness before saving the asset. | Validated asset record |
-| WF1-03 | Client | Upload available asset documents, such as technical drawings, manuals, previous inspection reports and maintenance history. | Asset documentation |
-| WF1-04 | Client | Create a recurring inspection schedule by selecting the asset, inspection frequency, next due date and applicable checklist template. | Draft inspection schedule |
-| WF1-05 | System | Validate the schedule, calculate future due cycles and activate the recurring schedule. | Active inspection schedule |
-| WF1-06 | System | Monitor active schedules and identify schedules whose due date has been reached. | Due inspection cycle |
-| WF1-07 | System | Generate one PERIODIC inspection request using the unique Asset + Schedule + Due Cycle idempotency key. | Periodic inspection request |
-| WF1-08 | System | Link the request to the asset, schedule and checklist template, then notify the Client and Service Manager. | Request ready for WF2 |
+| WF1-01 | Client | Tạo hồ sơ tài sản và tải lên tài liệu liên quan. | Tài sản chờ duyệt |
+| WF1-02 | Service Manager | Duyệt hoặc từ chối hồ sơ tài sản. | Tài sản được kích hoạt hoặc bị từ chối |
+| WF1-03 | System | Sinh các đề nghị chu kỳ kiểm tra từ cấu hình của category. | Danh sách đề nghị chu kỳ |
+| WF1-04 | Service Manager | Xem xét, điều chỉnh và duyệt các đề nghị chu kỳ. | Đề nghị đã được duyệt |
+| WF1-05 | Client | So sánh và chọn một đề nghị chu kỳ. | Lịch kiểm tra định kỳ đang hoạt động |
+| WF1-06 | System | Theo dõi lịch và phát yêu cầu khi tới hạn. | Yêu cầu kiểm tra định kỳ sẵn sàng cho WF2 |
 
 ### Exception cases
 
-If required asset information is missing, the system does not activate the schedule.
+Nếu category chưa có chu kỳ gợi ý hoặc checklist template đang hoạt động, không sinh được đề nghị.
 
-If the asset is inactive, the system pauses the schedule.
+Nếu hồ sơ tài sản không ở trạng thái chờ duyệt, không thể duyệt lại.
 
-If the same due cycle has already generated a request, the system does not generate another one.
+Nếu tài sản chưa được kích hoạt hoặc đã có lịch đang hoạt động, Client không thể chọn đề nghị.
 
-If the checklist template is unavailable, the request is marked for manual review.
+Nếu cùng một chu kỳ đã phát yêu cầu, hệ thống không phát lại.
 
 ### WF1 output
 
-A valid PERIODIC inspection request ready to enter WF2.
+Một yêu cầu kiểm tra định kỳ hợp lệ sẵn sàng đi vào WF2.
 
 ## WF2 — Inspection Request Review, Service Order and Inspector Assignment
 
