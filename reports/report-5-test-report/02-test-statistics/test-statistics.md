@@ -10,8 +10,8 @@ round.
 | --- | --- |
 | Project Name | SmartDroneInspection |
 | Project Code | SEP490 — *confirm with project owner* |
-| Test round | Week 3 verification: Round 1 baseline, Round 2 WF3-002 CI recheck, Round 2 WF3-004 narrative config/provenance recheck, and the 2026-09-28 WF1 schedule-proposal revision |
-| Last updated | 2026-09-28 |
+| Test round | Week 3 verification: Round 1 baseline, Round 2 WF3-002 CI recheck, Round 2 WF3-004 narrative config/provenance recheck, 2026-09-28 WF1 schedule-proposal revision, and 2026-09-29 WF2 periodic-only flow alignment |
+| Last updated | 2026-09-29 |
 
 ## Module summary
 

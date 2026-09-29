@@ -17,5 +17,6 @@ source: "report3-software-requirement-specification.docx"
 | 26 Sep 2026 | M | Project Team | Documented last-write-wins between AI draft regeneration and narrative edits, and recorded the matching Report 5 note. |
 | 26 Sep 2026 | M | Project Team | Recorded AI draft model provenance on the version snapshot and moved the narrative length limit to the `REPORT_NARRATIVE_MAX_CHARS` configuration key in SRS 3.7.1. |
 | 28 Sep 2026 | M | Hiếu | Revised FE-02: Client asset registration now enters `PENDING_REVIEW`, the Service Manager approves the asset and reviews platform-generated schedule proposals, and the Client selects one proposal to create the active schedule. Added per-category suggested inspection frequencies, asset document upload rules, and the revised periodic-request generation wording. |
+| 29 Sep 2026 | M | Quốc | Revised WF2 and FE-03 to periodic-only flow: Client declares inspection defaults (scope, priority, site-access constraints, contact) during asset registration; system automatically generates periodic requests on due cycle with inherited defaults and notifies Client; Client auto-accepts by default or may submit a cancellation request; removed manual Client request completion step. |
 
 *A - Added M - Modified D - Deleted

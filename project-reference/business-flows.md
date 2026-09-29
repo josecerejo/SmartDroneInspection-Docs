@@ -51,12 +51,12 @@ Client chỉ được quản lý tài sản thuộc organization của mình.
 
 | Step | Role / Lane | Detailed Main Activity | Output |
 | --- | --- | --- | --- |
-| WF1-01 | Client | Tạo hồ sơ tài sản và tải lên tài liệu liên quan. | Tài sản chờ duyệt |
+| WF1-01 | Client | Tạo hồ sơ tài sản (khai báo thông tin tài sản, thông số mặc định cho kiểm tra: phạm vi, mức ưu tiên, ràng buộc tiếp cận, liên hệ) và tải lên tài liệu liên quan. | Tài sản chờ duyệt |
 | WF1-02 | Service Manager | Duyệt hoặc từ chối hồ sơ tài sản. | Tài sản được kích hoạt hoặc bị từ chối |
 | WF1-03 | System | Sinh các đề nghị chu kỳ kiểm tra từ cấu hình của category. | Danh sách đề nghị chu kỳ |
 | WF1-04 | Service Manager | Xem xét, điều chỉnh và duyệt các đề nghị chu kỳ. | Đề nghị đã được duyệt |
 | WF1-05 | Client | So sánh và chọn một đề nghị chu kỳ. | Lịch kiểm tra định kỳ đang hoạt động |
-| WF1-06 | System | Theo dõi lịch và phát yêu cầu khi tới hạn. | Yêu cầu kiểm tra định kỳ sẵn sàng cho WF2 |
+| WF1-06 | System | Theo dõi lịch và phát yêu cầu kiểm tra định kỳ khi tới hạn (kế thừa thông tin từ Asset và gửi thông báo cho Client). | Yêu cầu kiểm tra định kỳ sẵn sàng cho WF2 |
 
 ### Exception cases
 
@@ -72,34 +72,51 @@ Nếu cùng một chu kỳ đã phát yêu cầu, hệ thống không phát lạ
 
 Một yêu cầu kiểm tra định kỳ hợp lệ sẵn sàng đi vào WF2.
 
-## WF2 — Inspection Request Review, Service Order and Inspector Assignment
+## WF2 — Periodic Inspection Request Review, Service Order and Inspector Assignment
 
 **Source owner:** Quốc
 
-Purpose: Chuyển một yêu cầu inspection thành một service order đã được xác nhận và một Inspector assignment đã được chấp nhận.
+Purpose: Tiếp nhận yêu cầu kiểm tra định kỳ tự động, chuyển thành một service order đã được xác nhận và một Inspector assignment đã được chấp nhận.
 
-Primary actors: Client , Service Manager, Inspector, System.
+Primary actors: Client, Service Manager, Inspector, System.
 
 ### Preconditions
 
-Asset đang active và thuộc đúng organization.
+Asset đang active và thuộc đúng organization của Client.
 
-Request được tạo từ WF1 hoặc được tạo thủ công dưới dạng AD_HOC.
+Lịch kiểm tra định kỳ (PERIODIC schedule) đang hoạt động và tới hạn chu kỳ (từ WF1-06).
 
-Client có quyền yêu cầu kiểm tra cho asset đó.
+(Ghi chú: Trường hợp kiểm tra lại sau bảo trì WF4-19 được thực hiện qua liên kết re-inspection chuyên biệt).
+
+### Main flow
 
 | Step | Role / Lane | Detailed Main Activity | Output |
 | --- | --- | --- | --- |
-| WF2-01 | System / Client | Receive a system-generated PERIODIC request or create a new AD_HOC inspection request. | Inspection request |
-| WF2-02 | Client | Complete the request with the inspection scope, priority, preferred deadline, site-access constraints, contact information and supporting documents. | Completed inspection request |
-| WF2-03 | System | Validate the required request information and verify that the selected asset belongs to the requester’s organization. | Valid request |
-| WF2-04 | Service Manager | Review the request, determine whether the requested scope is feasible and check available service capacity. | Feasibility decision |
-| WF2-05 | Service Manager | Prepare a versioned quotation and draft service order containing the agreed scope, deliverables, estimated price or applicable rates, expected duration and post-service payment terms. | Quotation and draft service order |
-| WF2-06 | Client | Review the quotation and service order. Approve them and accept the post-service payment terms, or request a revised quotation. | Approved order or revision request |
-| WF2-07 | Service Manager | When the order is approved, mark the service order as confirmed and select an Inspector based on qualifications, availability, workload and potential conflicts of interest. | Inspector assignment |
-| WF2-08 | System | Create an assignment package containing the asset information, confirmed scope, checklist, deadline, access instructions and supporting documents, then notify the Inspector. | Assigned inspection package |
-| WF2-09 | Inspector | Review the assignment package and accept or reject the assignment. A rejection must include a reason. | Accepted or rejected assignment |
-| WF2-10 | Service Manager | If the Inspector rejects the assignment, select another qualified Inspector. If accepted, mark the inspection job as READY_FOR_INSPECTION. | Accepted Inspector assignment |
+| WF2-01 | System | Khởi tạo yêu cầu kiểm tra định kỳ (PERIODIC) khi tới hạn với thông tin kế thừa từ hồ sơ tài sản (phạm vi, mức ưu tiên, ràng buộc tiếp cận, thông tin liên hệ, tài liệu); tính toán thời hạn mong muốn (preferred deadline) từ chu kỳ; đồng thời gửi thông báo tạo yêu cầu kiểm tra định kỳ tới Client kèm thời hạn phản hồi hủy. | Yêu cầu kiểm tra định kỳ & thông báo tới Client |
+| WF2-02 | Client / System | Cơ chế xác nhận tự động hoặc hủy yêu cầu: Nếu Client không thao tác gì, hệ thống tự động chấp nhận (auto-accepted) đợt kiểm tra theo lịch khi hết thời hạn phản hồi; nếu Client gửi yêu cầu hủy kèm lý do, hệ thống chuyển trạng thái yêu cầu sang CANCELLED và kết thúc đợt kiểm tra chu kỳ này. | Yêu cầu được tự động chấp nhận hoặc bị hủy (CANCELLED) |
+| WF2-03 | Service Manager | Với yêu cầu được chấp nhận, xem xét tính khả thi của phạm vi kiểm tra, checklist áp dụng và năng lực cung cấp dịch vụ. | Quyết định tính khả thi |
+| WF2-04 | Service Manager | Lập báo giá theo phiên bản và dự thảo hợp đồng dịch vụ (draft service order) gồm phạm vi đã thống nhất, sản phẩm bàn giao, đơn giá/chi phí ước tính, thời lượng dự kiến và điều khoản thanh toán sau dịch vụ. | Báo giá và dự thảo service order |
+| WF2-05 | Client | Xem xét báo giá và dự thảo service order. Phê duyệt hợp đồng và chấp nhận điều khoản thanh toán sau dịch vụ, hoặc yêu cầu điều chỉnh báo giá. | Service order được duyệt hoặc yêu cầu sửa báo giá |
+| WF2-06 | Service Manager | Khi service order được duyệt, xác nhận service order và chọn Inspector phù hợp dựa trên năng lực, lịch trống, khối lượng công việc và kiểm tra xung đột lợi ích. | Quyết định phân công Inspector |
+| WF2-07 | System | Tạo gói phân công (assignment package) gồm thông tin tài sản, phạm vi đã xác nhận, checklist, thời hạn, hướng dẫn tiếp cận hiện trường và tài liệu hỗ trợ, sau đó gửi thông báo tới Inspector. | Gói phân công được khởi tạo |
+| WF2-08 | Inspector | Xem xét gói phân công và chấp nhận hoặc từ chối phân công. Nếu từ chối phải cung cấp lý do. | Phân công được chấp nhận hoặc từ chối |
+| WF2-09 | Service Manager | Nếu Inspector từ chối, chọn Inspector đủ điều kiện khác. Nếu Inspector chấp nhận, chuyển trạng thái đợt kiểm tra sang READY_FOR_INSPECTION. | Phân công Inspector được chấp nhận |
+
+### Cancellation flow
+
+Client receives periodic request notification
+
+> ↓
+
+Client sends cancellation request with reason
+
+> ↓
+
+System transitions request to CANCELLED
+
+> ↓
+
+Cycle terminated, schedule awaits next due cycle
 
 ### Quotation revision flow
 
@@ -134,6 +151,12 @@ Another qualified Inspector is selected
 New assignment notification
 
 ### Important rules
+
+Client không cần thao tác điền hay bổ sung thông tin yêu cầu kiểm tra tại WF2. Toàn bộ thông số kiểm tra (phạm vi, mức ưu tiên, ràng buộc tiếp cận hiện trường, thông tin liên hệ) đã được thiết lập sẵn từ hồ sơ tài sản (WF1-01) và tự động kế thừa khi hệ thống sinh yêu cầu kiểm tra định kỳ.
+
+Cơ chế tự động chấp nhận và quyền hủy của Client: Khi hệ thống tạo yêu cầu kiểm tra định kỳ, thông báo được gửi ngay cho Client kèm thời hạn phản hồi. Nếu Client không làm gì, hệ thống coi như Client tự động chấp nhận (auto-accepted) và chuyển tiếp quy trình sang Service Manager. Client có thể chủ động gửi yêu cầu hủy (cancellation request) kèm lý do trong thời hạn này để hủy đợt kiểm tra của chu kỳ hiện tại mà không làm ảnh hưởng đến lịch định kỳ dài hạn.
+
+Client chỉ nhận thông báo khi hệ thống tự động khởi tạo yêu cầu kiểm tra định kỳ sắp tới hạn, và chỉ tham gia phê duyệt báo giá/service order (WF2-05) nếu không yêu cầu hủy ở bước WF2-02.
 
 No upfront payment is required.
 

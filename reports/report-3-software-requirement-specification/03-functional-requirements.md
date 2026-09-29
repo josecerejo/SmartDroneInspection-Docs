@@ -158,7 +158,7 @@ FE-02 lets a Client register the assets belonging to the Client's organization a
 
 **Function description:**
 
-- The Client enters the asset code, name, category, location, technical description, and available documents. The new asset is created in the `PENDING_REVIEW` state.
+- The Client enters the asset code, name, category, location, technical description, inspection defaults (default inspection scope, priority, site-access constraints, responsible contact), and available documents. The new asset is created in the `PENDING_REVIEW` state.
 - The system verifies that the Client belongs to the asset's organization, that the category is active, and that the asset code is unique within that organization.
 - The Service Manager reviews the pending asset and approves or rejects it with an optional note. Approval activates the asset; the system then generates one schedule proposal for each suggested frequency configured on the asset's category, using the active checklist template of that category.
 - The Service Manager reviews each proposal, may adjust its frequency unit or interval, and approves or rejects it. Only approved proposals become visible to the Client.
@@ -171,23 +171,24 @@ FE-02 lets a Client register the assets belonging to the Client's organization a
 
 ### 3.4 FE-03 Inspection Request and Work Assignment
 
-FE-03 manages periodic and ad hoc inspection requests, commercial review, quotation and order versions, Client approval, and Inspector assignment.
+FE-03 manages periodic inspection requests, commercial review, quotation and order versions, Client approval, and Inspector assignment.
 
 #### 3.4.1 Review Request and Assign Inspector
 
-**Function trigger:** A periodic request is generated or the Client submits an ad hoc inspection request.
+**Function trigger:** An active inspection schedule reaches its due cycle and the system generates a periodic inspection request (or a linked re-inspection is initiated from maintenance).
 
 **Function description:**
 
-- The Client completes scope, priority, preferred deadline, site-access constraints, contact information, and supporting documents.
-- The system verifies organization ownership, required fields, attachment references, and valid status transitions.
-- The Service Manager assesses completeness, feasibility, required checklist, duration, service capacity, and delivery expectations.
+- The system automatically generates the periodic inspection request in the `SUBMITTED` state, inheriting the inspection scope, priority, site-access constraints, and responsible contact from the asset profile, derives the preferred deadline from the due cycle, and links available asset documents. The system sends an upcoming inspection notification to the Client with a cancellation window. The Client does not manually complete or submit request details.
+- Client opt-out mechanism: If the Client takes no action, the system automatically accepts the scheduled inspection upon expiration of the cancellation window; alternatively, the Client may submit a cancellation request with a documented reason, transitioning the request to `CANCELLED` and terminating the current cycle.
+- The system verifies organization ownership, active asset status, and valid status transitions.
+- For an accepted request, the Service Manager assesses request feasibility, required checklist, duration, service capacity, and delivery expectations.
 - The Service Manager creates a versioned quotation and draft service order. A revision creates a new version and preserves earlier versions.
-- The Client approves the current version and accepts post-service payment terms or requests revision.
+- The Client reviews the quotation and service order, and approves the current version accepting post-service payment terms, or requests revision.
 - After approval, the Service Manager selects a qualified and available Inspector and sends the assignment package.
 - The Inspector accepts or rejects. Rejection requires a reason and returns the request to the Service Manager for reassignment.
 
-**Validation and exception requirements:** An unconfirmed service order cannot be assigned. The system prevents assignment to an inactive user and records known conflict checks. Only an accepted assignment can enter inspection execution.
+**Validation and exception requirements:** An unconfirmed service order cannot be assigned. The system prevents assignment to an inactive user and records known conflict checks. Only an accepted assignment can enter inspection execution. Re-inspection from maintenance creates a linked request inheriting finding context.
 
 **Result:** The service order is confirmed and the inspection is `READY_FOR_INSPECTION` with an accepted Inspector assignment.
 

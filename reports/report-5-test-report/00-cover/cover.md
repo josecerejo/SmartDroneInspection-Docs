@@ -8,9 +8,9 @@ when transferring values into the workbook.
 | Project Name | SmartDroneInspection |
 | Project Code | SEP490 — *confirm with project owner* |
 | Creator | *Enter team/member name* |
-| Issue Date | 2026-09-28 |
+| Issue Date | 2026-09-29 |
 | Document Code | *Enter document code* |
-| Version | 1.7 |
+| Version | 1.8 |
 
 ## Record of change
 
@@ -35,3 +35,4 @@ revision; do not remove old entries.
 | 2026-09-28 | 1.5 | FE-01 client registration persistence defect fix | M | Fixed `POST /api/v1/auth/register` returning 500 (the audit insert referenced the new user before the Hibernate flush) and recorded the passing FE-01 self-registration persistence gate; workbook case IDs, sheet totals, and statistics unchanged. | Backend `ClientRegistrationApiIntegrationTest`, `ClientRegistrationServiceTest`; `.\mvnw.cmd verify` 165/165; Report 3 SRS 3.2 |
 | 2026-09-28 | 1.6 | FE-01 admin user creation persistence defect fix | M | Fixed `POST /api/v1/platform/users` returning 500 (same audit-before-flush cause) and recorded the passing FE-01 admin-creation persistence gate; workbook case IDs, sheet totals, and statistics unchanged. | Backend `AdminUserApiIntegrationTest`, `AdminUserServiceTest`; `.\mvnw.cmd verify` 167/167 |
 | 2026-09-29 | 1.7 | WF1 proposal flow cases added | A | Added `WF1-011`-`WF1-019` for asset review, schedule-proposal generation/review/selection, document-upload rules, the due-cycle event, and the negative scope sweep; recounted Feature 1 to 17 cases and the total to 24. | Report 3 SRS 3.3; `project-reference/business-flows.md`; backend `mvnw verify`; `fe-02-asset-registry-inspection-schedule.md`, `fe-03-inspection-request-work-assignment.md`, `test-statistics.md` |
+| 2026-09-29 | 1.8 | WF2 periodic-only flow alignment | M | Updated WF2-001 from ad-hoc manual creation to automated periodic request generation with asset defaults, Client notification, auto-acceptance by default, and cancellation option; aligned FE-03 scope baseline and coverage boundary. | Report 3 SRS 3.4; `project-reference/business-flows.md`; `test-case-list.md`; `fe-03-inspection-request-work-assignment.md` |

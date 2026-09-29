@@ -293,6 +293,12 @@ Constraints: unique `(template_id, item_code)` and `(template_id, display_order)
 | `latitude` | `NUMERIC(9,6)` | Yes | Optional WGS84 latitude. |
 | `longitude` | `NUMERIC(9,6)` | Yes | Optional WGS84 longitude. |
 | `ownership_information` | `VARCHAR(1000)` | Yes | Customer-provided ownership detail. |
+| `default_scope` | `VARCHAR(4000)` | Yes | Default inspection scope inherited by periodic requests. |
+| `default_priority` | `VARCHAR(16)` | No | `LOW`, `NORMAL`, `HIGH`, `URGENT` default priority (default `NORMAL`). |
+| `site_access_constraints` | `VARCHAR(2000)` | Yes | Site-access constraints inherited by periodic requests. |
+| `contact_name` | `VARCHAR(200)` | Yes | On-site contact name for inspections. |
+| `contact_phone` | `VARCHAR(32)` | Yes | On-site contact phone number. |
+| `contact_email` | `VARCHAR(320)` | Yes | On-site contact email address. |
 | `status` | `VARCHAR(24)` | No | `PENDING_REVIEW`, `ACTIVE`, `INACTIVE`, `REJECTED`, or `RETIRED`. |
 | `created_by_user_id` | `UUID` | No | Client actor in the same organization. |
 
