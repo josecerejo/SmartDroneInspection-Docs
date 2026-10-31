@@ -624,22 +624,16 @@ stateDiagram-v2
 %% title: Inspection, FieldSession and InspectionReport State Machine Diagram
 stateDiagram-v2
   direction TB
-  [*] --> DRAFT : create draft [FR-06]
-  [*] --> ASSIGNED : createInspection(inspectorId, droneId) [FR-06, FR-07]
-  DRAFT --> ASSIGNED : dispatch(inspectorId, droneId) [FR-06]
-  ASSIGNED --> READY_FOR_FLIGHT : recordFlightPermit() [FR-08]
-  READY_FOR_FLIGHT --> IN_PROGRESS : startFieldSession(preFlightNote) [FR-09]
-  IN_PROGRESS --> READY_FOR_FLIGHT : postponeSession(reason) [FR-09]
+  [*] --> SCHEDULED : createInspection(inspectorId, droneId) [FR-06, FR-07]
+  SCHEDULED --> IN_PROGRESS : startFieldSession(preFlightNote) [FR-09] (requires hasFlightPermit())
+  IN_PROGRESS --> SCHEDULED : postponeSession(reason) [FR-09]
   IN_PROGRESS --> FIELD_COMPLETED : completeSession(outcomeNotes) [FR-09]
   FIELD_COMPLETED --> IN_PROGRESS : startAdditionalSession() [FR-09]
-  FIELD_COMPLETED --> REPORT_DRAFT : confirmFindings(snapshotHash) [FR-12]
-  REPORT_DRAFT --> FIELD_COMPLETED : reopenFindings() / finding edited [FR-12]
-  REPORT_DRAFT --> REPORT_PUBLISHED : publishReport() (PDF + SHA-256) [FR-14]
-  REPORT_PUBLISHED --> REPAIR_PENDING : completeCorrectiveHandoff(findingIds != empty) [FR-14]
-  REPORT_PUBLISHED --> COMPLETED : completeCorrectiveHandoff(empty) [FR-14]
-  REPAIR_PENDING --> COMPLETED : all linked WorkOrders CLOSED [FR-16]
-  ASSIGNED --> CANCELLED : cancel() [FR-06]
-  READY_FOR_FLIGHT --> CANCELLED : cancel() [FR-06]
+  FIELD_COMPLETED --> UNDER_REVIEW : submitReport() [FR-13]
+  UNDER_REVIEW --> FIELD_COMPLETED : returnToDraft() / withdraw() [FR-13, FR-14]
+  UNDER_REVIEW --> COMPLETED : publishReport() (PDF + SHA-256) [FR-14]
+  FIELD_COMPLETED --> COMPLETED : publishReport() [FR-14]
+  SCHEDULED --> CANCELLED : cancel() [FR-06]
   COMPLETED --> [*]
   CANCELLED --> [*]
 ```
@@ -663,8 +657,8 @@ stateDiagram-v2
 
 | Domain Entity | Lifecycle States & Key Transitions | Business Rule Guards |
 | --- | --- | --- |
-| **Inspection Mission**<br>(`InspectionStatus`) | - **States**: `DRAFT`, `ASSIGNED`, `READY_FOR_FLIGHT`, `IN_PROGRESS`, `FIELD_COMPLETED`, `REPORT_DRAFT`, `REPORT_PUBLISHED`, `REPAIR_PENDING`, `COMPLETED`, `CANCELLED`<br>- **Key Steps**: Dispatch (`-> ASSIGNED`), Permit Gate (`-> READY_FOR_FLIGHT`), Field Session (`-> FIELD_COMPLETED`), Confirm Findings (`-> REPORT_DRAFT`), Publish (`-> REPORT_PUBLISHED`), Corrective Handoff (`-> REPAIR_PENDING` or `COMPLETED`) | - Permit gate verifies unexpired Inspector pilot license.<br>- Editing findings in `REPORT_DRAFT` reverts mission to `FIELD_COMPLETED` and marks earlier drafts stale. |
-| **Field Session**<br>(`FieldSessionStatus`) | - **States**: `PLANNED`, `IN_PROGRESS`, `POSTPONED`, `ABORTED`, `FIELD_COMPLETED`<br>- **Transitions**: Start (`/field-sessions`), Postpone (`/postponement`), Abort (`/abort`), Complete (`/completion`) | - Requires non-blank `preFlightChecklistNote` on start and `outcomeNotes` on completion.<br>- At most one `IN_PROGRESS` session per mission. |
+| **Inspection Mission**<br>(`InspectionStatus`) | - **States**: `SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED`<br>- **Key Steps**: Create (`-> SCHEDULED`), Field Session (`-> IN_PROGRESS -> FIELD_COMPLETED`), Submit Report (`-> UNDER_REVIEW`), Publish / Close (`-> COMPLETED`) | - Flight readiness verified via permit on file (`hasFlightPermit()`) and active pilot licensing.<br>- Findings confirmation and report drafting occur within `FIELD_COMPLETED`; publication moves directly to `COMPLETED`. |
+| **Field Session**<br>(`FieldSessionStatus`) | - **States**: `PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `ABORTED` (historical `POSTPONED` retained for read-only history)<br>- **Transitions**: Start (`/field-sessions`), Abort (`/abort`), Complete (`/completion`) | - Requires non-blank `preFlightChecklistNote` on start and `outcomeNotes` on completion.<br>- Aborting a session returns the inspection to `SCHEDULED` and emits an alert to managers for rescheduling, reassignment, or cancellation.<br>- At most one `IN_PROGRESS` session per mission. |
 | **Defect Finding**<br>(`FindingStatus`) | - **States**: `PENDING`, `CONFIRMED`, plus soft-delete (`is_deleted`)<br>- **Transitions**: AI/Manual create (`-> PENDING`), Confirm (`/confirmation -> CONFIRMED`), Retire (`DELETE`), Restore (`/restore`) | - Every `PENDING` AI candidate must be confirmed or soft-deleted before `POST /findings/confirm`. |
 | **Inspection Report**<br>(`ReportStatus`) | - **States**: `DRAFT`, `AUTHOR_VERIFIED`, `SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`<br>- **Transitions**: Author (`/draft`, `/verify`, `/submit`), Review (`/review`), Publish (`/publish`) | - Independent `ORG_MANAGER` reviewer must not equal the author `Inspector`.<br>- Evidence and findings are locked during `SUBMITTED` and `PUBLISHED`. |
 
