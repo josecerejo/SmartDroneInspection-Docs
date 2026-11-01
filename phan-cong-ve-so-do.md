@@ -17,10 +17,10 @@ Mỗi thành viên phụ trách **2 Feature lớn** và các sơ đồ kiến tr
 
 | Thành viên | Mã sinh viên | 2 Feature đảm nhận chính | Trọng tâm sơ đồ đảm nhận |
 | :--- | :---: | :--- | :--- |
-| **Trần Tùng Bách** | **SE180220** | **FE-01, FE-06** | System Context, System Architecture, Database ERD, sơ đồ Auth (Google OAuth2 & Airspace Onboarding), AI YOLO11, Auto-Compiled Report, AI Executive Summary & PayOS Settlement |
+| **Trần Tùng Bách** | **SE180220** | **FE-01, FE-06** | System Context, System Architecture, Database ERD, sơ đồ Auth, Cổng giấy phép bay & Phiên bay thực địa, AI YOLO11, Báo cáo tự động & PayOS |
 | **Trương Thái Như** | **SE180082** | **FE-07, FE-08** | **Use Case Diagram (toàn hệ thống)**, Screens Flow, Backend Package Diagram, toàn bộ sơ đồ Module Bảo trì, RAG Scope/Norms Advisor, RAG Compliance Audit & Vòng lặp Bay lại đối chiếu 3 chiều (3-Way Re-inspection) |
-| **Trần Hoàng Trung Hiếu** | **SE184212** | **FE-02, FE-03** | Toàn bộ 4 State Machine / Lifecycle Diagrams, sơ đồ Tiếp nhận Đối tác Inspector, Đăng ký Drone sở hữu riêng (3 tài liệu), Quản lý Nhân sự Kỹ sư, Lịch định kỳ theo Hợp đồng & Thông báo Outbox |
-| **Phùng Trung Quốc** | **SE170027** | **FE-04, FE-05** | Toàn bộ 4 Activity Diagrams (Quy trình nghiệp vụ WF-01..04), sơ đồ Yêu cầu Dịch vụ, Báo giá VND/USD, Order Chat, Hợp đồng giấy, Điều phối chống trùng lịch liên tổ chức, Bản đồ cấm bay, Giấy phép bay & Field Session (Start/Complete/Abort) |
+| **Trần Hoàng Trung Hiếu** | **SE184212** | **FE-02, FE-03** | Toàn bộ 4 State Machine / Lifecycle Diagrams, sơ đồ Tiếp nhận Đối tác Inspector, Đăng ký Drone sở hữu riêng, Bản đồ vùng cấm bay, Lịch định kỳ theo Hợp đồng & Thông báo Outbox |
+| **Phùng Trung Quốc** | **SE170027** | **FE-04, FE-05** | Toàn bộ 4 Activity Diagrams (Quy trình nghiệp vụ WF-01..04), Sơ đồ Class/Sequence/State Yêu cầu Dịch vụ, Báo giá đa phiên bản VND/USD, Order Chat, Hợp đồng giấy offline & Phân công đợt bay (toàn bộ MF2) |
 
 ---
 
@@ -84,9 +84,9 @@ Mỗi thành viên phụ trách **2 Feature lớn** và các sơ đồ kiến tr
 ---
 
 ### 👤 4. Phùng Trung Quốc (SE170027)
-* **Tính năng đảm nhận:**
-  - **FE-04: Service Requests, Quotations, Contracts, Dispatch & Airspace Map** (Yêu cầu dịch vụ một lần/định kỳ, báo giá phiên bản VND/USD, Order Chat, chấp thuận báo giá, upload hợp đồng giấy đã ký, phân công cặp Inspector–Drone chống trùng lịch liên tổ chức, điều phối lại khi Abort, bản đồ vùng cấm bay OpenStreetMap/Nominatim)
-  - **FE-05: Flight Permit Gate, Field Execution, Dashboard & Calendar** (Cổng tải giấy phép bay, kiểm tra bằng lái, ghi nhận phiên bay thực địa Web/Mobile Start/Complete/Abort, Dashboard phân tích theo 5 vai trò, lịch làm việc Calendar, Customer 5-Stage Progress Tracker)
+* **Tính năng đảm nhận (Toàn bộ Main Flow 2 - MF2):**
+  - **FE-04: Service Requests, Quotations & Commercial Order Chat** (Khách hàng gửi yêu cầu dịch vụ một lần hoặc định kỳ, Platform Manager phát hành báo giá đa phiên bản VND/USD, kênh đàm phán thương lượng Order Chat trực tiếp hai chiều, và khách hàng chấp thuận phiên bản báo giá mới nhất)
+  - **FE-05: Signed Contract Evidence & Partner Occurrence Dispatch** (Quản lý ký kết hợp đồng giấy offline, upload/download bản scan bằng chứng hợp đồng, sinh các đợt bay kiểm tra theo thỏa thuận, và phân công cặp Inspector–Drone cho từng đợt bay có kiểm tra chống trùng lịch liên tổ chức, bàn giao nhiệm vụ `ASSIGNED` sang MF3)
 
 | STT | Tên sơ đồ | Loại | Mã tệp Mermaid (`diagrams/mermaid/`) / Vị trí tài liệu |
 | :---: | :--- | :---: | :--- |
@@ -96,8 +96,8 @@ Mỗi thành viên phụ trách **2 Feature lớn** và các sơ đồ kiến tr
 | 4 | **WF-04 Activity Diagram: Maintenance Work Order, RAG Advisor, 3-Way Re-inspection & Closure** | Activity | `57_report-4-..._wf-04-activity-diagram-maintenance-work-order-li_12bbeb320003.mmd` *(SDD 3.8.3)* |
 | 5 | **Service Request, Quotation, Signed Contract & Partner Dispatch Class Diagram** | Class | `45_report-4-..._inspection-mission-recurring-schedule-and-permit_e1af3b4245e9.mmd` *(SDD 3.4.1)* |
 | 6 | **Service Request Negotiation, Signed Contract & Cross-Org Dispatch Sequence Diagram** | Sequence | `46_report-4-..._mission-dispatch-and-self-service-permit-upload-_4ec4bbad15f8.mmd` *(SDD 3.4.2)* |
-| 7 | **Flight Permit Gate, Field Session & Abort Dispatch Class Diagram** | Class | `47_report-4-..._field-session-and-evidence-management-class-diag_44ec52e3b942.mmd` *(SDD 3.5.1)* |
-| 8 | **Field Flight Session, Abort Alert & Evidence Upload Sequence Diagram** | Sequence | `48_report-4-..._field-flight-session-and-evidence-upload-sequenc_c480adaed363.mmd` *(SDD 3.5.2)* |
+| 7 | **Service Request & Quotation Version Lifecycle State Machine Diagram** | State Machine | `36_report-4-..._service-request-quotation-signed-contract-and-pa_dfa67ceebe38.mmd` *(SDD 3.4.4)* |
+| 8 | **Contract Occurrence Scheduling & Assignment Sequence Diagram** | Sequence | `37_report-4-..._service-request-negotiation-signed-contract-and-_82246ee7b9d5.mmd` *(SDD 3.4.5)* |
 
 ---
 
