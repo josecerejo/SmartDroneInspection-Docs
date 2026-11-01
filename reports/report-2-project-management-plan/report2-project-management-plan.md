@@ -35,12 +35,12 @@ SmartDroneInspection is a platform-managed Infrastructure Inspection and Correct
 | 3 | FE-03 Recurring Schedules, Contract Occurrences & Outbox Notifications (Owner: Trần Hoàng Trung Hiếu) |  | 16 |
 | 3.1 | Timezone-Anchored Recurring Schedules & Multi-Occurrence Contract Inheritance (D2) | Complex | 8 |
 | 3.2 | Spring Modulith Transactional Outbox & Deduplicated In-App Notification Inbox | Medium | 8 |
-| 4 | FE-04 Service Requests, Quotations, Contracts, Dispatch & Airspace Map (Owner: Phùng Trung Quốc) |  | 17 |
-| 4.1 | Service Requests, VND/USD Quotations, Order Chat & Signed Paper Contract Upload | Complex | 9 |
-| 4.2 | Cross-Org Partner Inspector/Drone Dispatch, Abort Re-Dispatch & Vietnam Airspace Map | Complex | 8 |
-| 5 | FE-05 Flight Permit Gate, Field Execution, Dashboard & Calendar (Owner: Phùng Trung Quốc) |  | 16 |
-| 5.1 | Aviation Flight Permit Upload Gate & Web/Mobile Field Flight Sessions (Start/Complete/Abort) | Complex | 8 |
-| 5.2 | 5-Role Operational Analytics Dashboard, Schedule Calendar & Customer 5-Stage Progress Tracker | Medium | 8 |
+| 4 | FE-04 Service Requests, Versioned Quotations & Order Negotiation Chat (Owner: Phùng Trung Quốc) |  | 17 |
+| 4.1 | Service Requests Intake (One-Time / Recurring) & Date Window Configuration | Complex | 9 |
+| 4.2 | Versioned VND/USD Quotations & Realtime Commercial Order Negotiation Chat | Complex | 8 |
+| 5 | FE-05 Signed Contract Evidence & Partner Occurrence Dispatch (Owner: Phùng Trung Quốc) |  | 16 |
+| 5.1 | Customer Quote Acceptance & Offline Signed Contract Scan Storage | Complex | 8 |
+| 5.2 | Cross-Organization Partner Inspector/Drone Occurrence Dispatch & Handoff | Medium | 8 |
 | 6 | FE-06 Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS (Owner: Trần Tùng Bách) |  | 19 |
 | 6.1 | Photo & Streaming MP4 Video Intake, YOLO11 + Vision Fallback & Findings Confirmation | Complex | 9 |
 | 6.2 | Auto-Compiled Report (`SUBMITTED`), AI Executive Summary, Manager PDF Publish & PayOS VietQR | Complex | 10 |
@@ -139,10 +139,10 @@ D~Do; R~Review; S~Support; I~Informed; <blank>- Omitted
 | 2.2 FE-02 Infrastructure Asset Registry, Airspace Guard & Drone 3-Doc Review | D | R | S | S | R |
 | 3.1 FE-03 Timezone-Anchored Recurring Schedules & Contract Occurrences | D | R | S | S | R |
 | 3.2 FE-03 Transactional Outbox & Deduplicated Notification Inbox | D | S | S | R | I |
-| 4.1 FE-04 Service Requests, VND/USD Quotes, Order Chat & Signed Contracts | R | D | S | S | R |
-| 4.2 FE-04 Cross-Org Partner Dispatch, Abort Re-Dispatch & Airspace Map | R | D | S | S | R |
-| 5.1 FE-05 Flight Permit Upload Gate & Field Sessions (Start/Complete/Abort) | R | D | S | S | R |
-| 5.2 FE-05 5-Role Dashboard, Schedule Calendar & 5-Stage Progress Tracker | R | D | S | S | I |
+| 4.1 FE-04 Service Requests Intake & Date Window Configuration | R | D | S | S | R |
+| 4.2 FE-04 Versioned VND/USD Quotes & Commercial Order Negotiation Chat | R | D | S | S | R |
+| 5.1 FE-05 Quote Acceptance & Offline Signed Contract Scan Storage | R | D | S | S | R |
+| 5.2 FE-05 Cross-Org Partner Dispatch & Mission ASSIGNED Handoff | R | D | S | S | I |
 | 6.1 FE-06 Photo/MP4 Evidence Intake, YOLO11 + Vision Fallback & Findings | S | R | S | D | R |
 | 6.2 FE-06 Auto-Compiled Report, AI Summary, Manager Publish & PayOS VietQR | R | S | S | D | R |
 | 7.1 FE-07 Work Order Creation, RAG Scope Advisor & 1-Click Initial Tasks | R | S | D | S | R |

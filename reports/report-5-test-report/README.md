@@ -64,8 +64,8 @@ The `FE-01`–`FE-08` codes and their Report 3 sections are:
 | `FE-01` | `3.2` | Authentication, Google OAuth2 & 5-Role Access Control | Trần Tùng Bách (`SE180220`) |
 | `FE-02` | `3.3` | Partner Onboarding, Workforce, Asset & Inspector Drone Registry | Trần Hoàng Trung Hiếu (`SE184212`) |
 | `FE-03` | `3.4` | Recurring Schedules, Contract Occurrences & Outbox Notifications | Trần Hoàng Trung Hiếu (`SE184212`) |
-| `FE-04` | `3.5` | Service Requests, Quotations, Contracts, Dispatch & Airspace Map | Phùng Trung Quốc (`SE170027`) |
-| `FE-05` | `3.6` | Flight Permit Gate, Field Execution, Dashboard & Calendar | Phùng Trung Quốc (`SE170027`) |
+| `FE-04` | `3.5` | Service Requests, Quotations & Commercial Order Chat | Phùng Trung Quốc (`SE170027`) |
+| `FE-05` | `3.5` | Signed Contract Evidence & Partner Occurrence Dispatch | Phùng Trung Quốc (`SE170027`) |
 | `FE-06` | `3.7` | Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS | Trần Tùng Bách (`SE180220`) |
 | `FE-07` | `3.8` | Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution | Trương Thái Như (`SE180082`) |
 | `FE-08` | `3.9` | Completion Report, 3-Way Re-inspection Verification & Cost Closure | Trương Thái Như (`SE180082`) |
