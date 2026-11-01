@@ -1,16 +1,24 @@
 %% title: Database Entity Relationship Diagram (ERD)
 erDiagram
   organizations ||--o{ users : employs
-  organizations ||--o{ subscriptions : holds
-  subscriptions ||--o{ payment_transactions : settles
-  organizations ||--o{ drones : owns
-  organizations ||--o{ drone_leases : contracts
-  platform_drones ||--o{ drone_leases : leased_via
-  drone_leases ||--o| drones : provisions
-  users ||--o{ drone_leases : requests
+  users ||--o| prospective_customer_registrations : submits
+  users ||--o{ inspector_partner_applications : reviews
+  users ||--o| contract_partner_inspectors : partner_profile
+  organizations ||--o{ drones : org_owns
+  users ||--o{ drones : inspector_owns
+  users ||--o{ drone_registration_applications : submits
+  drones |o--o{ drone_registration_applications : provisions
+  drones ||--o| contract_partner_drones : partner_drone
+  users ||--o{ inspection_finance_settings : configures
   organizations ||--o{ assets : owns
   asset_categories ||--o{ assets : categorizes
   assets ||--o{ asset_documents : attaches
+  organizations ||--o{ service_requests : requests
+  assets ||--o{ service_requests : targets
+  service_requests ||--o{ service_request_messages : discusses
+  service_requests ||--o{ service_request_quotes : versions
+  service_requests ||--o{ service_request_occurrences : materializes
+  service_request_occurrences |o--o| inspections : dispatches
   organizations ||--o{ audit_events : records
   organizations ||--o{ notifications : scopes
   users ||--o{ notifications : receives
@@ -21,23 +29,23 @@ erDiagram
   drones ||--o{ inspections : assigned_drone
   organizations ||--o{ recurring_inspection_schedules : schedules
   assets ||--o{ recurring_inspection_schedules : recurs_for
-  users ||--o{ recurring_inspection_schedules : default_inspector
-  drones ||--o{ recurring_inspection_schedules : default_drone
   recurring_inspection_schedules ||--o{ schedule_occurrences : generates
-  organizations ||--o{ schedule_occurrences : scopes
   inspections |o--o{ schedule_occurrences : fulfills
-  recurring_inspection_schedules ||--o{ inspections : dispatches
   inspections ||--o{ field_sessions : executes
   inspections ||--o{ evidence : contains
   field_sessions ||--o{ evidence : captures
   inspections ||--o{ findings : records
   evidence ||--o{ findings : locates
   inspections ||--o{ inspection_reports : delivers
+  inspections ||--o{ reinspection_defect_verifications : verifies
+  findings ||--o{ reinspection_defect_verifications : baseline_defect
+  evidence |o--o{ reinspection_defect_verifications : recapture_proof
   organizations ||--o{ maintenance_work_orders : owns
   assets ||--o{ maintenance_work_orders : remediates
   users ||--o{ maintenance_work_orders : governs
   findings ||--o{ maintenance_work_orders : initiates
   inspection_reports ||--o{ maintenance_work_orders : references
+  inspections |o--o{ maintenance_work_orders : reinspects
   maintenance_work_orders ||--o{ maintenance_team_members : deploys
   maintenance_work_orders ||--o{ maintenance_tasks : deconstructs
   maintenance_work_orders ||--o{ maintenance_estimate_versions : projects
@@ -96,93 +104,84 @@ erDiagram
     timestamptz revoked_at
     varchar revoked_reason
   }
-  subscriptions {
+  prospective_customer_registrations {
     uuid id PK
-    uuid organization_id FK
-    uuid confirmed_by_user_id FK
-    varchar plan_code
-    integer billing_period_months
-    numeric agreed_amount_usd
+    uuid user_id FK
+    varchar organization_name
+    varchar organization_code
+    uuid asset_category_id FK
+    varchar asset_code
+    varchar asset_name
+    varchar asset_location
+    numeric latitude
+    numeric longitude
     varchar status
-    timestamptz starts_at
-    timestamptz ends_at
-    varchar external_reference
-    jsonb terms_snapshot
-    timestamptz confirmed_at
-    timestamptz created_at
-    timestamptz updated_at
+    varchar airspace_classification
+    uuid reviewed_by_user_id FK
+    timestamptz reviewed_at
     bigint row_version
   }
-  payment_transactions {
+  inspector_partner_applications {
     uuid id PK
-    uuid subscription_id FK
-    varchar paypal_order_id
-    varchar paypal_capture_id
-    numeric amount
-    varchar currency
+    varchar email
+    varchar normalized_email
+    varchar full_name
+    varchar phone
+    varchar pilot_license_number
+    varchar pilot_license_class
+    date pilot_license_expires_at
+    varchar pilot_license_file_key
+    varchar partner_contract_file_key
     varchar status
-    varchar payer_email
-    timestamptz captured_at
-    timestamptz created_at
-    timestamptz updated_at
+    uuid reviewed_by_user_id FK
+    timestamptz reviewed_at
     bigint row_version
   }
-  platform_drones {
+  drone_registration_applications {
     uuid id PK
+    uuid inspector_user_id FK
     varchar serial_number
     varchar model
     varchar manufacturer
-    jsonb payload_metadata
-    numeric monthly_rate_usd
+    varchar registration_number
+    varchar registration_file_key
+    timestamptz registration_expires_at
+    varchar ownership_file_key
+    varchar inspection_file_key
     varchar status
-    varchar notes
-    timestamptz created_at
-    timestamptz updated_at
+    uuid drone_id FK
+    uuid reviewed_by_user_id FK
     bigint row_version
   }
-  drone_leases {
-    uuid id PK
-    uuid platform_drone_id FK
-    uuid organization_id FK
-    uuid customer_drone_id FK
-    uuid requested_by_user_id FK
-    uuid confirmed_by_user_id FK
-    integer lease_period_months
-    numeric monthly_rate_usd
-    numeric agreed_amount_usd
+  contract_partner_inspectors {
+    uuid inspector_user_id PK
+    uuid registered_by_user_id FK
     varchar status
-    timestamptz starts_at
-    timestamptz ends_at
-    timestamptz reclaimed_at
-    varchar external_reference
-    varchar paypal_order_id
-    varchar paypal_capture_id
-    timestamptz confirmed_at
-    varchar notes
     timestamptz created_at
     timestamptz updated_at
-    bigint row_version
+  }
+  contract_partner_drones {
+    uuid drone_id PK
+    uuid inspector_user_id FK
+    uuid registered_by_user_id FK
+    varchar status
+    timestamptz created_at
+    timestamptz updated_at
   }
   drones {
     uuid id PK
     uuid organization_id FK
-    uuid lease_id FK
+    uuid inspector_owner_id FK
     varchar serial_number
     varchar model
     varchar manufacturer
-    jsonb payload_metadata
-    varchar serviceability
-    timestamptz last_maintenance_at
-    timestamptz next_maintenance_at
-    varchar notes
+    varchar status
+    varchar serviceability_status
     varchar registration_number
-    varchar registration_file_key
     timestamptz registration_expires_at
     timestamptz created_at
     timestamptz updated_at
     bigint row_version
-    varchar ownership_type
-    timestamptz lease_expires_at
   }
   asset_categories {
     uuid id PK
@@ -198,31 +197,101 @@ erDiagram
     uuid id PK
     uuid organization_id FK
     uuid category_id FK
+    varchar code
     varchar name
     varchar description
+    varchar location
     numeric latitude
     numeric longitude
+    jsonb inspection_items
     varchar status
     timestamptz created_at
     timestamptz updated_at
     bigint row_version
-    varchar asset_code
-    jsonb location
-    jsonb technical_profile
-    jsonb inspection_items
   }
   asset_documents {
     uuid id PK
     uuid asset_id FK
+    uuid organization_id FK
     uuid uploaded_by_user_id FK
-    varchar document_type
     varchar file_name
     varchar content_type
     bigint size_bytes
-    character checksum_sha256
     varchar object_key
-    date document_date
+    character checksum_sha256
     timestamptz created_at
+  }
+  service_requests {
+    uuid id PK
+    uuid organization_id FK
+    uuid asset_id FK
+    uuid created_by_user_id FK
+    varchar description
+    date requested_from
+    date requested_until
+    varchar timezone
+    varchar request_type
+    varchar recurrence_unit
+    integer recurrence_interval
+    integer occurrence_count
+    date recurrence_end_date
+    varchar status
+    integer accepted_quote_version
+    uuid accepted_by_user_id FK
+    timestamptz accepted_at
+    varchar contract_object_key
+    varchar contract_file_name
+    varchar contract_content_type
+    character contract_checksum_sha256
+    bigint row_version
+  }
+  service_request_messages {
+    uuid id PK
+    uuid request_id FK
+    uuid author_user_id FK
+    varchar body
+    timestamptz created_at
+  }
+  service_request_quotes {
+    uuid id PK
+    uuid request_id FK
+    integer version_no
+    varchar scope_snapshot
+    timestamptz first_occurrence_start_at
+    timestamptz first_occurrence_end_at
+    uuid inspector_id FK
+    uuid drone_id FK
+    varchar currency
+    numeric price_per_occurrence_vnd
+    numeric price_per_occurrence_usd
+    uuid issued_by_user_id FK
+    timestamptz created_at
+  }
+  service_request_occurrences {
+    uuid id PK
+    uuid request_id FK
+    uuid organization_id FK
+    integer occurrence_index
+    timestamptz planned_start_at
+    timestamptz planned_end_at
+    uuid inspector_id FK
+    uuid drone_id FK
+    uuid inspection_id FK
+    varchar status
+    varchar payment_status
+    varchar payout_status
+    bigint payos_order_code
+    varchar payos_payment_link_id
+    varchar payment_method
+    bigint row_version
+  }
+  inspection_finance_settings {
+    uuid id PK
+    numeric commission_rate
+    numeric vat_rate
+    numeric tncn_rate
+    uuid updated_by_user_id FK
+    timestamptz updated_at
   }
   recurring_inspection_schedules {
     uuid id PK
@@ -231,17 +300,15 @@ erDiagram
     uuid created_by_user_id FK
     uuid inspector_id FK
     uuid drone_id FK
-    timestamp anchor_date
     varchar timezone
     varchar recurrence_unit
     integer recurrence_interval
+    timestamptz anchor_start_at
     bigint duration_seconds
     integer reminder_days
     timestamptz ends_at
     bigint next_occurrence
     varchar status
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   schedule_occurrences {
@@ -256,9 +323,6 @@ erDiagram
     varchar status
     varchar blocked_reason
     integer retry_count
-    timestamptz reminder_sent_at
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   inspections {
@@ -268,10 +332,11 @@ erDiagram
     uuid inspector_id FK
     uuid drone_id FK
     uuid recurring_schedule_id FK
+    varchar inspection_type
+    uuid work_order_id FK
+    uuid source_inspection_id FK
+    uuid source_report_version_id FK
     varchar status
-    timestamptz created_at
-    timestamptz updated_at
-    bigint row_version
     timestamptz planned_start_at
     timestamptz planned_end_at
     varchar flight_permit_file_key
@@ -279,6 +344,7 @@ erDiagram
     timestamptz flight_permit_uploaded_at
     timestamptz findings_confirmed_at
     varchar findings_snapshot_hash
+    bigint row_version
   }
   field_sessions {
     uuid id PK
@@ -286,13 +352,10 @@ erDiagram
     varchar status
     timestamptz started_at
     timestamptz ended_at
-    varchar postponement_reason
     varchar abort_reason
-    timestamptz created_at
-    timestamptz updated_at
-    bigint row_version
     varchar pre_flight_checklist_note
     varchar outcome_notes
+    bigint row_version
   }
   evidence {
     uuid id PK
@@ -307,7 +370,6 @@ erDiagram
     numeric longitude
     varchar location_description
     boolean is_deleted
-    timestamptz created_at
   }
   findings {
     uuid id PK
@@ -316,85 +378,43 @@ erDiagram
     varchar finding_code
     varchar defect_label
     varchar severity
+    varchar status
+    varchar source
+    numeric confidence
     jsonb bounding_box
+    varchar component
+    varchar location_description
     varchar technical_notes
     varchar recommended_action
-    varchar status
-    varchar model_name
-    numeric confidence
     timestamptz forwarded_to_maintenance_at
     boolean is_deleted
-    timestamptz created_at
   }
   inspection_reports {
     uuid id PK
     uuid inspection_id FK
+    uuid author_user_id FK
     uuid reviewer_user_id FK
     integer version_no
     varchar status
-    jsonb content_snapshot
     timestamptz submitted_at
     timestamptz reviewed_at
-    varchar return_reason
-    varchar rendered_object_key
-    character rendered_checksum_sha256
     timestamptz published_at
-    timestamptz created_at
+    varchar review_reason
+    varchar artefact_object_key
+    character artefact_checksum_sha256
+    bigint row_version
   }
-  repair_knowledge_chunks {
+  reinspection_defect_verifications {
     uuid id PK
-    varchar standard_code
-    varchar title
-    varchar category
-    varchar defect_patterns
-    text content
-    varchar reference_url
+    uuid reinspection_id FK
+    uuid source_finding_id FK
+    uuid new_evidence_id FK
+    varchar resolution_status
+    varchar inspector_notes
+    varchar repair_proof_url
+    varchar repair_engineer_notes
     timestamptz created_at
-  }
-  notifications {
-    uuid id PK
-    uuid recipient_user_id FK
-    uuid organization_id FK
-    varchar event_type
-    varchar channel
-    varchar title
-    varchar body
-    varchar target_path
-    varchar status
-    integer attempt_count
-    varchar last_error_code
-    timestamptz sent_at
-    timestamptz read_at
-    timestamptz created_at
-    varchar aggregate_type
-    uuid aggregate_id
-    varchar deduplication_key
-  }
-  audit_events {
-    uuid id PK
-    uuid organization_id FK
-    uuid actor_user_id FK
-    varchar action
-    varchar aggregate_type
-    uuid aggregate_id
-    varchar before_status
-    varchar after_status
-    bigint aggregate_version
-    varchar reason
-    varchar trace_id
-    jsonb safe_metadata
-    timestamptz created_at
-  }
-  event_publication {
-    uuid id PK
-    text listener_id
-    text event_type
-    text serialized_event
-    timestamptz publication_date
-    timestamptz completion_date
-    text status
-    integer completion_attempts
-    timestamptz last_resubmission_date
+    timestamptz updated_at
   }
   maintenance_work_orders {
     uuid id PK
@@ -402,6 +422,8 @@ erDiagram
     uuid asset_id FK
     uuid source_report_version_id FK
     uuid source_finding_id FK
+    uuid reinspection_id FK
+    uuid reinspection_report_version_id FK
     uuid owner_user_id FK
     uuid budget_approver_user_id FK
     uuid team_lead_user_id FK
@@ -412,8 +434,6 @@ erDiagram
     timestamptz due_at
     varchar corrective_scope
     varchar acceptance_criteria
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   maintenance_team_members {
@@ -422,9 +442,6 @@ erDiagram
     uuid engineer_user_id FK
     uuid assigned_by_user_id FK
     varchar member_role
-    timestamptz effective_from
-    timestamptz effective_until
-    varchar reason
     boolean active
     timestamptz created_at
   }
@@ -439,8 +456,6 @@ erDiagram
     timestamptz planned_end_at
     varchar acceptance_criteria
     varchar status
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   maintenance_estimate_versions {
@@ -470,7 +485,6 @@ erDiagram
     numeric unit_rate
     numeric amount
     character currency
-    timestamptz created_at
   }
   maintenance_change_orders {
     uuid id PK
@@ -483,8 +497,6 @@ erDiagram
     varchar status
     timestamptz decided_at
     varchar decision_reason
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   maintenance_work_logs {
@@ -498,8 +510,6 @@ erDiagram
     varchar as_left_condition
     varchar test_readings
     varchar status
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   maintenance_reports {
@@ -523,4 +533,45 @@ erDiagram
     varchar acceptance_checklist
     varchar test_result
     timestamptz decided_at
+  }
+  repair_knowledge_chunks {
+    uuid id PK
+    varchar standard_code
+    varchar title
+    varchar category
+    text content
+    vector embedding
+  }
+  notifications {
+    uuid id PK
+    uuid recipient_user_id FK
+    uuid organization_id FK
+    varchar event_type
+    varchar title
+    varchar body
+    varchar target_path
+    varchar status
+    varchar deduplication_key
+    timestamptz created_at
+  }
+  audit_events {
+    uuid id PK
+    uuid organization_id FK
+    uuid actor_user_id FK
+    varchar action
+    varchar aggregate_type
+    uuid aggregate_id
+    varchar before_status
+    varchar after_status
+    jsonb safe_metadata
+    timestamptz created_at
+  }
+  event_publication {
+    uuid id PK
+    text listener_id
+    text event_type
+    text serialized_event
+    timestamptz publication_date
+    timestamptz completion_date
+    text status
   }

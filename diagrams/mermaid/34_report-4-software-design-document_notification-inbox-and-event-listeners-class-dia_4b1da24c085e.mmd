@@ -1,0 +1,34 @@
+%% title: Notification Inbox and Event Listeners Class Diagram
+classDiagram
+  class NotificationController {
+    +listNotifications(Jwt, int, int, boolean) ApiResponse~PagedResponse~
+    +getUnreadCount(Jwt) ApiResponse~UnreadCountResponse~
+    +markRead(Jwt, UUID) ApiResponse~NotificationItemResponse~
+  }
+  class NotificationService {
+    +createInAppNotification(UUID orgId, UUID recipientId, String eventType, String title, String body, String targetPath, String deduplicationKey) void
+    +markAsRead(UUID orgId, UUID recipientId, UUID notificationId) Notification
+  }
+  class InspectionNotificationListener {
+    +onInspectionAssigned(InspectionAssignedEvent) void
+    +onFieldSessionAborted(FieldSessionAbortedEvent) void
+    +onInspectionReminderDue(InspectionReminderDueEvent) void
+  }
+  class MaintenanceNotificationListener {
+    +onWorkOrderAssigned(WorkOrderAssignedEvent) void
+    +onEstimateApproved(EstimateApprovedEvent) void
+    +onAcceptanceRecorded(AcceptanceRecordedEvent) void
+    +onWorkOrderClosed(WorkOrderClosedEvent) void
+  }
+  class Notification {
+    -UUID id
+    -UUID organizationId
+    -UUID recipientUserId
+    -NotificationStatus status
+    -String deduplicationKey
+    -String targetPath
+  }
+  NotificationController --> NotificationService
+  InspectionNotificationListener --> NotificationService
+  MaintenanceNotificationListener --> NotificationService
+  NotificationService --> Notification

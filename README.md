@@ -1,56 +1,45 @@
 # SmartDroneInspection Documentation
 
-Documentation for the SmartDroneInspection infrastructure inspection platform.
+Documentation for the SmartDroneInspection platform-managed infrastructure inspection and corrective maintenance service platform.
 
-SmartDroneInspection manages assets, inspection planning, uploaded inspection evidence, reports, findings, and maintenance tickets. Inspection images are uploaded through the web or mobile application and stored in MinIO.
+SmartDroneInspection connects customer asset registration (with no-fly zone guards) and partner inspector/drone onboarding (`MF1`), service requests, VND/USD quotations, order chat, offline paper contracts, and cross-organization mission dispatch (`MF2`), flight permits, on-site field sessions, photo/MP4 video evidence, YOLO11 defect detection, auto-compiled reporting with AI executive summaries, manager publication, and PayOS VietQR settlement (`MF3`), and pgvector RAG-assisted maintenance work orders, 3-way re-inspection defect verification, and cost reconciliation (`MF4`).
 
 ## Start here
 
 - [Documentation home](_index.md) - the current documentation map.
-- [Project reference](project-reference/) - workflows, data model, and project guides.
-- [Reports](reports/) - formal reports, including Report 3 SRS and Report 5 test report.
-- [Backend](backend/) - architecture, authentication, and Java/Spring conventions.
-- [Frontend](frontend/) - architecture and React/TypeScript conventions.
-- [Mobile](mobile/) - architecture and Flutter/Dart conventions.
-- [Development guide](development/) - shared AI-agent, Git, and pull-request rules.
+- [5-Role & 8-Feature Mainflows Reference](bao-cao-thay-doi-mainflows-5-roles.md) - complete `MF1`–`MF4` and `FE-01`–`FE-08` reference.
+- [Project reference](project-reference/) - error-prevention and reference guides.
+- [Reports](reports/) - formal project deliverables (Reports 1–5), including [Report 3 SRS](reports/report-3-software-requirement-specification/), [Report 4 SDD](reports/report-4-software-design-document/), and [Report 5 Test Report](reports/report-5-test-report/).
+- [Development guide](development/) - Git/pull-request rules and feature plans.
+- [Tools](tools/) - Office report exporters and automated test suites.
 
-Repository-specific setup commands are documented in the `README.md` files of `backend/`, `frontend/`, and `mobile/`.
+Repository-specific setup commands and architecture rules are documented in the `AGENTS.md` and `README.md` files of `SmartDroneInspection-backend/`, `SmartDroneInspection-frontend/`, and `SmartDroneInspection-mobile/`.
 
 ## Repositories
 
 | Repository | Stack | Scope |
 | --- | --- | --- |
-| `backend/` | Java 21, Spring Boot, Spring Modulith, PostgreSQL, MinIO | Modular monolith API, persistence, business logic, evidence storage, and AI integration |
-| `frontend/` | React 19, TypeScript, Vite, Material UI | Browser portal for platform, organization, and field operations |
-| `mobile/` | Flutter, Dart, Riverpod, GoRouter, Dio | Field workflows for inspectors and maintenance engineers |
-| `docs/` | Markdown, Hugo | Project reports, architecture, API, and operational documentation |
+| `SmartDroneInspection-backend/` | Java 21, Spring Boot 4.1, Spring Modulith, PostgreSQL 17 (`pgvector`), MinIO | Modular monolith API, 5-role RBAC, contracts & PayOS, inspections, maintenance, and AI/RAG adapters |
+| `SmartDroneInspection-frontend/` | React 19, strict TypeScript, Vite, Material UI | Web portals (`/admin`, `/client`, `/operations`) for platform management, customer service orders, and field/maintenance operations |
+| `SmartDroneInspection-mobile/` | Flutter, Dart, Riverpod, GoRouter, Dio | Field workflows for partner inspectors and maintenance engineers (Google OAuth2 deep-link, streaming photo/MP4 evidence upload) |
+| `SmartDroneInspection-docs/` | Markdown, Hugo, Python OOXML tools | Formal project reports (Reports 1–5), Mermaid diagrams, and export verification tooling |
 
-## Current roles
+## Current roles (5 canonical login roles)
 
-The Enterprise SaaS target has five human roles:
+- **`ADMIN`** (`ActorZone.PLATFORM`) - platform technical administration, internal accounts, standard asset categories, airspace/partner/drone onboarding review queues, finance settings, and audit logs.
+- **`MANAGER`** (`ActorZone.PLATFORM`) - platform service & partner operations: partner inspector and drone review, service request negotiation/chat, VND/USD quote issuance, signed paper contract upload, cross-org partner dispatch, abort reschedule/reassignment, independent inspection report review/publication, and partner payout recording.
+- **`CUSTOMER`** (`ActorZone.CUSTOMER_ORGANIZATION`) - customer organization owner/manager: airspace-checked onboarding with initial asset, asset & checkpoint registry, maintenance engineer account provisioning, service requests, quote acceptance, 5-stage inspection progress tracking, published report acceptance, PayOS VietQR payment, maintenance work order creation, budget/Change Order approval, re-inspection requests, and independent maintenance acceptance/closure.
+- **`INSPECTOR`** (`ActorZone.INSPECTOR_PARTNER`) - third-party partner pilot: partner application with pilot license (drone optional at signup), inspector-owned drone registration (registration, ownership, and inspection documents), mission flight permit upload, field session execution (`Start`, `Complete`, `Abort`), photo/MP4 evidence upload, YOLO11/manual finding confirmation, auto-compiled report submission, and 3-way re-inspection defect verification.
+- **`MAINTENANCE_ENGINEER`** (`ActorZone.CUSTOMER_ORGANIZATION`) - customer-side repair engineer (`Team Lead`, `Report Author`, `Team Member`): RAG-assisted repair scope planning, 1-click task creation, RAG norm-based cost estimation, Change Order requests, field repair work logs with before/after proof, batch log verification, and auto-drafted maintenance completion reports.
 
-- **`ADMIN`** - platform technical and account administration (`ADMIN`, `PLATFORM_MANAGER`, initial `ORG_MANAGER`), standard asset categories, security settings, and read-only support/audit/commercial views.
-- **`PLATFORM_MANAGER`** - platform commercial operations: enterprise subscription payment confirmation/activation, platform leasable drone pool (`platform_drones`), B2B drone lease contract settlement and provisioning (`drone_leases`), and leased drone reclaim.
-- **`ORG_MANAGER`** - organization users, credentials, owned and leased drone fleet, B2B drone lease requests, permits, assets, inspection setup, readiness/report review, repair team and budget assignment, and independent acceptance.
-- **`INSPECTOR`** - assigned inspection preparation, field-session records, evidence upload, findings confirmation, and inspection report author verification.
-- **`MAINTENANCE_ENGINEER`** - assigned repair tasks, work logs, actuals, evidence, and maintenance report author verification.
-
-The platform uses deny-by-default authorization. Resource ownership, organization scope, assignment scope, and separation-of-duties are enforced in application services in addition to role checks.
-
-## Documentation site
-
-The repository is configured for Hugo using the `hugo-book` theme. The maintained documentation is organized in the top-level folders listed below; do not create a new `content/` or `docs/content/` tree.
+The platform uses deny-by-default authorization. Resource ownership, `ActorZone`, organization scope, partner assignment scope, and separation-of-duties are enforced in backend application services in addition to role checks.
 
 ## Folder layout
 
 ```text
-backend/                 # Backend architecture and conventions
-development/             # Agent rules, Git/PR rules, and implementation plans
-frontend/                # Web architecture and conventions
-mobile/                  # Mobile architecture and conventions
-project-reference/       # Workflows, data model, and project guides
-reports/                 # Self-contained formal report folders
-tools/                   # Documentation/project-support tooling
+development/             # Git/PR rules and implementation plans
+diagrams/                # Canonical Mermaid (.mmd) and Draw.io diagram sources
+project-reference/       # Project reference and error-prevention guides
+reports/                 # Self-contained formal report folders (Reports 1-5)
+tools/                   # Report export and verification tooling
 ```
-
-Each report is maintained in one self-contained folder under `reports/`; do not add report content under legacy folders.

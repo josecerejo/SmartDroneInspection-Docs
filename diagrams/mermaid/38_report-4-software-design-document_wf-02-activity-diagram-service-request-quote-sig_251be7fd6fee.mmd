@@ -1,0 +1,27 @@
+%% title: WF-02 Activity Diagram - Service Request, Quote, Signed Contract and Partner Dispatch
+flowchart TD
+  subgraph CU2["Customer (CUSTOMER)"]
+    B1(["Start: Create Service Request (ONE_TIME / RECURRING) -> OPEN"])
+    B4{"Review Quote &\nNegotiate in Chat?"}
+    B5["Post Message in Order Chat (service_request_messages)"]
+    B6["Accept Latest Quote Version -> ACCEPTED (Occurrences Materialized)"]
+  end
+
+  subgraph MG2["Platform Manager (MANAGER)"]
+    B2["Select Vetted Partner Inspector & Owned Drone (Check Availability)"]
+    B3["Issue Versioned Quote (VND / USD) -> QUOTED"]
+    B7["Sign Paper Contract Offline & Upload Scan (PDF/DOCX/JPEG/PNG + SHA-256) -> CONTRACT_SIGNED"]
+    B8["Assign Partner Inspector & Owned Drone to Occurrence"]
+  end
+
+  subgraph SYS2["Automated System (Mf2InspectionAssignmentAdapter)"]
+    B9{"License Valid & Cross-Org\nSchedule Conflict-Free?"}
+    B10["Create Inspection (status=SCHEDULED, partnerAssignment=true) &\nLink Occurrence -> ASSIGNED"]
+    B11(["End: Emit InspectionAssignedEvent -> Hand Off to MF3"])
+  end
+
+  B1 --> B2 --> B3 --> B4
+  B4 -->|"Need Adjustment"| B5 --> B2
+  B4 -->|"Agree"| B6 --> B7 --> B8 --> B9
+  B9 -->|"Conflict / Expired"| B2
+  B9 -->|"Valid"| B10 --> B11

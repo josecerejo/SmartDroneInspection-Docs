@@ -11,12 +11,13 @@ from report_ooxml import Spreadsheet, sha256
 class Report5Tests(unittest.TestCase):
     def test_repeated_round_fields_remain_positional(self):
         cases, _, summaries = validate_cases(REPORTS / "report-5-test-report")
-        # WF3-002 is FE-08, so it lands on the sheet for feature 8.
-        row = next(row for _, row, _ in cases["Feature 8"] if row[0] == "WF3-002")
+        # WF3-002 is FE-06, so it lands on the sheet for feature 6.
+        row = next(row for _, row, _ in cases["Feature 6"] if row[0] == "WF3-002")
         self.assertEqual(len(row), 15)
         self.assertEqual(row[5:8], ["Passed", "2026-10-11", "Claude Code (automated)"])
         self.assertEqual(row[8:14], ["Pending", "", "", "Pending", "", ""])
-        self.assertEqual(summaries["Feature 8"]["B2"], "Evidence Management & AI Defect Detection")
+        self.assertEqual(summaries["Feature 6"]["B2"],
+                         "Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS")
 
     def test_workbook_has_correct_metadata_rounds_styles_and_calculation_chain(self):
         template = original(OFFICIAL, TEMPLATE_NAME)
@@ -29,30 +30,30 @@ class Report5Tests(unittest.TestCase):
             book, source = Spreadsheet(output), Spreadsheet(template)
             self.assertEqual(list(book.sheets)[:5],
                              ["Cover", "Test Cases", "Test Statistics", "Feature 1", "Feature 2"])
-            self.assertEqual(book.value("Feature 8", "B2"),
-                             "Evidence Management & AI Defect Detection")
+            self.assertEqual(book.value("Feature 6", "B2"),
+                             "Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS")
             for coord, expected in {"G12": "2026-10-11", "H12": "Claude Code (automated)",
                                     "J12": "", "K12": "", "M12": "", "N12": "",
-                                    "B4": "7", "B6": "6", "B7": "0", "D7": "7", "D8": "7"}.items():
-                self.assertEqual(book.value("Feature 8", coord), expected, coord)
-            self.assertTrue(book.value("Feature 8", "A11").startswith("FE-08"))
-            self.assertEqual(book.value("Feature 8", "A12"), "WF3-002")
-            self.assertEqual(book.value("Feature 9", "A12"), "WF3-005")
-            self.assertEqual(book.value("Feature 9", "F15"), "Pending")
-            self.assertEqual(book.value("Feature 9", "I15"), "Pending")
-            self.assertEqual(book.value("Feature 9", "L15"), "Pending")
-            self.assertEqual(book.value("Feature 8", "A17"), "WF3-017")
-            self.assertEqual(book.value("Test Statistics", "H23"), "65")
-            self.assertAlmostEqual(float(book.value("Test Statistics", "E25")), 92.31, places=2)
-            self.assertAlmostEqual(float(book.value("Test Statistics", "E26")), 92.31, places=2)
+                                    "B4": "12", "B6": "10", "B7": "0", "D7": "12", "D8": "12"}.items():
+                self.assertEqual(book.value("Feature 6", coord), expected, coord)
+            self.assertTrue(book.value("Feature 6", "A11").startswith("FE-06"))
+            self.assertEqual(book.value("Feature 6", "A12"), "WF3-002")
+            self.assertEqual(book.value("Feature 6", "A17"), "WF3-017")
+            self.assertEqual(book.value("Feature 6", "F17"), "Pending")
+            self.assertEqual(book.value("Feature 6", "I17"), "Pending")
+            self.assertEqual(book.value("Feature 6", "L17"), "Pending")
+            self.assertEqual(book.value("Feature 6", "A19"), "WF3-005")
+            self.assertEqual(book.value("Test Statistics", "H19"), "65")
+            self.assertAlmostEqual(float(book.value("Test Statistics", "E21")), 92.31, places=2)
+            self.assertAlmostEqual(float(book.value("Test Statistics", "E22")), 92.31, places=2)
             self.assertEqual(book.value("Cover", "E4"), "Creator")
             self.assertEqual(book.value("Test Statistics", "C3"), "SmartDroneInspection")
             self.assertNotIn("<List enviroment", book.value("Test Cases", "D5"))
-            self.assertEqual(book.cell("Feature 8", "C12").getAttribute("s"),
+            self.assertEqual(book.cell("Feature 6", "C12").getAttribute("s"),
                              source.cell("Feature 2", "C12").getAttribute("s"))
-            self.assertEqual(book.cell("Feature 8", "C13").getAttribute("s"),
+            self.assertEqual(book.cell("Feature 6", "C13").getAttribute("s"),
                              source.cell("Feature 2", "C12").getAttribute("s"))
-            self.assertEqual(book.cell("Feature 8", "A11").getAttribute("s"),
+            self.assertEqual(book.cell("Feature 6", "A11").getAttribute("s"),
                              source.cell("Feature 2", "A11").getAttribute("s"))
             with ZipFile(template) as original_zip, ZipFile(output) as output_zip:
                 for part in ("xl/styles.xml", "xl/sharedStrings.xml", "xl/theme/theme1.xml"):

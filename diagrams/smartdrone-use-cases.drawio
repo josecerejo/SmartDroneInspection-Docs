@@ -772,31 +772,31 @@
         <mxCell id="proc" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;gradientColor=none;" value="SmartDroneInspection&lt;br&gt;System" vertex="1">
           <mxGeometry height="220" width="220" x="510" y="250" as="geometry" />
         </mxCell>
-        <mxCell id="pa" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Platform Admin" vertex="1">
+        <mxCell id="pa" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Platform Admin &amp;amp; Manager&lt;br&gt;(ADMIN / MANAGER)" vertex="1">
           <mxGeometry height="70" width="190" x="40" y="70" as="geometry" />
         </mxCell>
-        <mxCell id="oa" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Organization Admin" vertex="1">
+        <mxCell id="oa" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Customer&lt;br&gt;(CUSTOMER)" vertex="1">
           <mxGeometry height="75" width="200" x="40" y="270" as="geometry" />
         </mxCell>
-        <mxCell id="ins" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Inspector" vertex="1">
+        <mxCell id="ins" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Partner Inspector&lt;br&gt;(INSPECTOR)" vertex="1">
           <mxGeometry height="70" width="190" x="40" y="570" as="geometry" />
         </mxCell>
-        <mxCell id="me" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Maintenance Engineer" vertex="1">
+        <mxCell id="me" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Maintenance Engineer&lt;br&gt;(MAINTENANCE_ENGINEER)" vertex="1">
           <mxGeometry height="70" width="195" x="500" y="680" as="geometry" />
         </mxCell>
-        <mxCell id="ai" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="AI Vision Service&lt;br&gt;YOLO11s" vertex="1">
+        <mxCell id="ai" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="AI Vision Service&lt;br&gt;YOLO11 + Vision Fallback" vertex="1">
           <mxGeometry height="70" width="200" x="1050" y="70" as="geometry" />
         </mxCell>
-        <mxCell id="llm" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="LLM Service&lt;br&gt;Report Drafter" vertex="1">
+        <mxCell id="llm" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="LLM &amp;amp; pgvector RAG&lt;br&gt;Summary, Scope &amp;amp; Norms" vertex="1">
           <mxGeometry height="70" width="200" x="1050" y="260" as="geometry" />
         </mxCell>
         <mxCell id="s3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Object Storage&lt;br&gt;MinIO / S3" vertex="1">
           <mxGeometry height="70" width="200" x="1050" y="370" as="geometry" />
         </mxCell>
-        <mxCell id="pay" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="Payment Gateway" vertex="1">
+        <mxCell id="pay" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1.5;fontStyle=1;fontSize=13;fontFamily=Helvetica;align=center;" value="PayOS (VietQR)&lt;br&gt;&amp;amp; Google OAuth2" vertex="1">
           <mxGeometry height="70" width="200" x="1050" y="512.22" as="geometry" />
         </mxCell>
-        <mxCell id="e_pa_1" edge="1" parent="1" source="pa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.2;endArrow=classic;endFill=1;fontSize=13;fontColor=#000000;fontFamily=Helvetica;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.25;entryX=0.365;entryY=0.022;entryDx=0;entryDy=0;entryPerimeter=0;" target="proc" value="Configure system settings&lt;br&gt;and manage subscription plans">
+        <mxCell id="e_pa_1" edge="1" parent="1" source="pa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.2;endArrow=classic;endFill=1;fontSize=13;fontColor=#000000;fontFamily=Helvetica;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.25;entryX=0.365;entryY=0.022;entryDx=0;entryDy=0;entryPerimeter=0;" target="proc" value="Approve partners/drones, issue VND/USD quotes,&lt;br&gt;upload signed contracts, dispatch &amp;amp; publish PDFs">
           <mxGeometry relative="1" x="-0.2647" y="8" as="geometry">
             <mxPoint y="1" as="offset" />
             <Array as="points">
@@ -903,7 +903,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e_pay_1" edge="1" parent="1" source="proc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.2;endArrow=classic;endFill=1;fontSize=13;fontColor=#000000;fontFamily=Helvetica;labelBackgroundColor=#FFFFFF;entryX=-0.015;entryY=0.778;entryDx=0;entryDy=0;entryPerimeter=0;" target="pay" value="Send subscription payment&lt;br&gt;request and invoice amount">
+        <mxCell id="e_pay_1" edge="1" parent="1" source="proc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;strokeWidth=1.2;endArrow=classic;endFill=1;fontSize=13;fontColor=#000000;fontFamily=Helvetica;labelBackgroundColor=#FFFFFF;entryX=-0.015;entryY=0.778;entryDx=0;entryDy=0;entryPerimeter=0;" target="pay" value="Create PayOS VietQR payment link&lt;br&gt;for accepted inspection report">
           <mxGeometry relative="1" x="0.4312" y="4" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -972,7 +972,7 @@
         <mxCell id="card_users" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#cce5ff;strokeColor=#36393d;strokeWidth=1.2;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="&lt;span style=&quot;font-size:12.5px;&quot;&gt;&lt;b&gt;Users &amp;amp; Tenancy&amp;nbsp;&lt;/b&gt;&lt;/span&gt;&lt;b&gt;Module&lt;/b&gt;" vertex="1">
           <mxGeometry height="80" width="177.5" x="631.25" y="410" as="geometry" />
         </mxCell>
-        <mxCell id="card_wf" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#cce5ff;strokeColor=#36393d;strokeWidth=1.2;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="&lt;span style=&quot;font-size:12.5px;&quot;&gt;&lt;b&gt;Workforce &amp;amp; Subscriptions&amp;nbsp;&lt;/b&gt;&lt;/span&gt;&lt;b&gt;Module&lt;/b&gt;" vertex="1">
+        <mxCell id="card_wf" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#cce5ff;strokeColor=#36393d;strokeWidth=1.2;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="&lt;span style=&quot;font-size:12.5px;&quot;&gt;&lt;b&gt;Contracts &amp;amp; PayOS&amp;nbsp;&lt;/b&gt;&lt;/span&gt;&lt;b&gt;Module&lt;/b&gt;" vertex="1">
           <mxGeometry height="80" width="177.5" x="631.25" y="518" as="geometry" />
         </mxCell>
         <mxCell id="card_infra" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#ffcc99;strokeColor=#36393d;strokeWidth=1.2;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="&lt;span style=&quot;font-size:12.5px;&quot;&gt;&lt;b&gt;Infrastructure Adapters&lt;/b&gt;&lt;/span&gt;" vertex="1">
@@ -1846,22 +1846,22 @@
         <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=5;fontColor=#000000;fontStyle=1;fontSize=18;fontFamily=Helvetica;" value="SmartDroneInspection - Use Case Diagram" vertex="1">
           <mxGeometry height="26" width="650" x="50" y="10" as="geometry" />
         </mxCell>
-        <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=5;fontColor=#555555;fontSize=11;fontFamily=Helvetica;" value="Report 3 Enterprise Target Scope (MF1 — MF4) | solid oval = implemented (MF1 — MF3) | dashed oval = MF4 target scope" vertex="1">
+        <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=5;fontColor=#555555;fontSize=11;fontFamily=Helvetica;" value="Report 3 Platform Inspection Service Scope (MF1 — MF4, 8 Features FE-01 to FE-08, 5 Roles)" vertex="1">
           <mxGeometry height="18" width="850" x="50" y="36" as="geometry" />
         </mxCell>
         <mxCell id="boundary" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontStyle=1;fontSize=14;fontFamily=Helvetica;verticalAlign=top;align=center;spacingTop=10;" value="SmartDroneInspection System" vertex="1">
           <mxGeometry height="890" width="1100" x="240" y="60" as="geometry" />
         </mxCell>
-        <mxCell id="a_pa" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.3;fontColor=#000000;fontSize=11;fontFamily=Helvetica;align=center;" value="Platform Admin&lt;br&gt;[ADMIN]" vertex="1">
+        <mxCell id="a_pa" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.3;fontColor=#000000;fontSize=11;fontFamily=Helvetica;align=center;" value="Platform Admin &amp;amp; Manager&lt;br&gt;[ADMIN / MANAGER]" vertex="1">
           <mxGeometry height="90" width="60" x="70" y="75" as="geometry" />
         </mxCell>
-        <mxCell id="a_pay" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.3;fontColor=#000000;fontSize=11;fontFamily=Helvetica;align=center;" value="Payment Gateway&lt;br&gt;[external system]" vertex="1">
+        <mxCell id="a_pay" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.3;fontColor=#000000;fontSize=11;fontFamily=Helvetica;align=center;" value="PayOS VietQR Gateway&lt;br&gt;[external system]" vertex="1">
           <mxGeometry height="90" width="50" x="1410" y="790" as="geometry" />
         </mxCell>
-        <mxCell id="a_oa" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.3;fontColor=#000000;fontSize=11;fontFamily=Helvetica;align=center;" value="Organization Admin&lt;br&gt;[ORG_ADMIN]" vertex="1">
+        <mxCell id="a_oa" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.3;fontColor=#000000;fontSize=11;fontFamily=Helvetica;align=center;" value="Customer&lt;br&gt;[CUSTOMER]" vertex="1">
           <mxGeometry height="90" width="60" x="80" y="405" as="geometry" />
         </mxCell>
-        <mxCell id="a_ins" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.3;fontColor=#000000;fontSize=11;fontFamily=Helvetica;align=center;" value="Inspector&lt;br&gt;[INSPECTOR]" vertex="1">
+        <mxCell id="a_ins" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.3;fontColor=#000000;fontSize=11;fontFamily=Helvetica;align=center;" value="Partner Inspector&lt;br&gt;[INSPECTOR]" vertex="1">
           <mxGeometry height="90" width="60" x="1435" y="148" as="geometry" />
         </mxCell>
         <mxCell id="mt55rlqucqoZ-rb7TOsu-1" edge="1" parent="1" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.98;entryY=0.426;entryDx=0;entryDy=0;defaultLabelBackgroundColor=gap;entryPerimeter=0;endArrow=none;endFill=0;" target="uc_llm">
@@ -1875,55 +1875,55 @@
         <mxCell id="a_me" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.3;fontColor=#000000;fontSize=11;fontFamily=Helvetica;align=center;" value="Maintenance Engineer&lt;br&gt;[MAINTENANCE_ENGINEER]" vertex="1">
           <mxGeometry height="90" width="67.5" x="62.5" y="850" as="geometry" />
         </mxCell>
-        <mxCell id="uc_pa_cfg" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Configure platform &amp;&lt;br&gt;subscription plans" vertex="1">
+        <mxCell id="uc_pa_cfg" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Review partner/drone 3-doc,&lt;br&gt;issue quotes &amp;amp; upload contracts" vertex="1">
           <mxGeometry height="58" width="230" x="265" y="75" as="geometry" />
         </mxCell>
-        <mxCell id="uc_oa_sub" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Subscribe enterprise&lt;br&gt;plan &amp; payment" vertex="1">
+        <mxCell id="uc_oa_sub" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Submit service request, accept&lt;br&gt;quote &amp;amp; settle via PayOS VietQR" vertex="1">
           <mxGeometry height="58" width="230" x="265" y="160" as="geometry" />
         </mxCell>
-        <mxCell id="uc_asset" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Manage asset &amp;amp; assign&lt;br&gt;Inspector-Drone pair" vertex="1">
+        <mxCell id="uc_asset" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Manage airspace-checked assets&lt;br&gt;&amp;amp; dispatch partner occurrences" vertex="1">
           <mxGeometry height="58" width="230" x="265" y="245" as="geometry" />
         </mxCell>
-        <mxCell id="uc_gate" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Review compliance &amp;&lt;br&gt;approve readiness gate" vertex="1">
+        <mxCell id="uc_gate" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Upload mission flight permit&lt;br&gt;&amp;amp; verify pilot readiness" vertex="1">
           <mxGeometry height="58" width="230" x="265" y="335" as="geometry" />
         </mxCell>
-        <mxCell id="uc_appr" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Review, approve / return&lt;br&gt;inspection report" vertex="1">
+        <mxCell id="uc_appr" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Independently review &amp;amp; publish&lt;br&gt;immutable PDF inspection report" vertex="1">
           <mxGeometry height="58" width="230" x="265" y="430" as="geometry" />
         </mxCell>
-        <mxCell id="uc_act" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Record corrective-action&lt;br&gt;decision per finding" vertex="1">
+        <mxCell id="uc_act" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Accept published report &amp;amp;&lt;br&gt;forward findings to maintenance" vertex="1">
           <mxGeometry height="58" width="230" x="300" y="510" as="geometry" />
         </mxCell>
-        <mxCell id="uc_order" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Assign repair team &amp;&lt;br&gt;approve budget" vertex="1">
+        <mxCell id="uc_order" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Create WO with 1-click RAG tasks,&lt;br&gt;assign team &amp;amp; approve budget" vertex="1">
           <mxGeometry height="58" width="230" x="320" y="602" as="geometry" />
         </mxCell>
-        <mxCell id="uc_acc" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Independent technical&lt;br&gt;acceptance &amp; close work" vertex="1">
+        <mxCell id="uc_acc" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="RAG compliance audit, 3-way&lt;br&gt;re-inspection &amp;amp; close work order" vertex="1">
           <mxGeometry height="58" width="230" x="265" y="745" as="geometry" />
         </mxCell>
         <mxCell id="uc_chk" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Complete pre-flight&lt;br&gt;safety checklist" vertex="1">
           <mxGeometry height="58" width="230" x="675" y="180" as="geometry" />
         </mxCell>
-        <mxCell id="uc_yolo" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Detect defect candidates&lt;br&gt;(YOLO11s advisory)" vertex="1">
+        <mxCell id="uc_yolo" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Detect defect candidates&lt;br&gt;(YOLO11 + Vision fallback)" vertex="1">
           <mxGeometry height="58" width="230" x="675" y="290" as="geometry" />
         </mxCell>
-        <mxCell id="uc_pub" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Publish immutable&lt;br&gt;report version" vertex="1">
+        <mxCell id="uc_pub" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Publish immutable&lt;br&gt;SHA-256 PDF report" vertex="1">
           <mxGeometry height="58" width="230" x="675" y="430" as="geometry" />
         </mxCell>
-        <mxCell id="uc_llm" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Generate grounded draft&lt;br&gt;narratives (LLM)" vertex="1">
+        <mxCell id="uc_llm" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Generate AI Executive Summary&lt;br&gt;&amp;amp; pgvector RAG advice" vertex="1">
           <mxGeometry height="58" width="230" x="675" y="530" as="geometry" />
         </mxCell>
-        <mxCell id="uc_prep" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Prepare checklist&lt;br&gt;&amp; component shot-list" vertex="1">
+        <mxCell id="uc_prep" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Register partner pilot &amp;amp;&lt;br&gt;owned drones (3 docs)" vertex="1">
           <mxGeometry height="58" width="230" x="1075" y="75" as="geometry" />
         </mxCell>
-        <mxCell id="uc_field" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Record field session&lt;br&gt;(start, pause, end)" vertex="1">
+        <mxCell id="uc_field" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Record field session&lt;br&gt;(start, complete, abort)" vertex="1">
           <mxGeometry height="58" width="230" x="1075" y="180" as="geometry" />
         </mxCell>
-        <mxCell id="uc_evi" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Upload evidence &amp;&lt;br&gt;decide quality" vertex="1">
+        <mxCell id="uc_evi" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Upload photo &amp;amp; streaming&lt;br&gt;MP4 video evidence" vertex="1">
           <mxGeometry height="58" width="230" x="1075" y="290" as="geometry" />
         </mxCell>
         <mxCell id="uc_find" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Review candidates &amp;&lt;br&gt;confirm defect findings" vertex="1">
           <mxGeometry height="58" width="230" x="1100" y="392" as="geometry" />
         </mxCell>
-        <mxCell id="uc_dft" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Author, verify &amp; submit&lt;br&gt;report draft" vertex="1">
+        <mxCell id="uc_dft" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Auto-compile SUBMITTED report&lt;br&gt;&amp;amp; 3-way re-inspection verify" vertex="1">
           <mxGeometry height="58" width="230" x="1075" y="544" as="geometry" />
         </mxCell>
         <mxCell id="uc_rep" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=10.5;fontFamily=Helvetica;align=center;verticalAlign=middle;" value="Record repair work,&lt;br&gt;actuals &amp; evidence" vertex="1">

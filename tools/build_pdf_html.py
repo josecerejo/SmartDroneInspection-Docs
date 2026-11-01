@@ -148,7 +148,7 @@ def main():
         ("SWP490_GFA26SE139_R2_Report2.pdf", "Report 2 – Project Management Plan", False, export_report2.SOURCES),
         ("SWP490_GFA26SE139_R2_Report3.pdf", "Report 3 – Software Requirement Specification", False, export_report3.SOURCES),
         ("SWP490_GFA26SE139_R2_Report4.pdf", "Report 4 – Software Design Document", False, export_report4.SOURCES),
-        ("SWP490_GFA26SE139_R2_Report5.pdf", "Report 5 – Software Test Documentation & Test Report (64 Cases)", False, list(export_report5_doc.SOURCES) + [
+        ("SWP490_GFA26SE139_R2_Report5.pdf", "Report 5 – Software Test Documentation & Test Report (65 Cases)", False, list(export_report5_doc.SOURCES) + [
             "report-5-test-report/02-test-statistics/test-statistics.md",
             "report-5-test-report/01-test-cases/test-case-list.md",
             "report-5-test-report/03-features/fe-01-authentication-access-control.md",
@@ -159,13 +159,9 @@ def main():
             "report-5-test-report/03-features/fe-06-flight-readiness-field-execution.md",
             "report-5-test-report/03-features/fe-07-operational-dashboard-schedule-calendar.md",
             "report-5-test-report/03-features/fe-08-evidence-ai-defect-detection.md",
-            "report-5-test-report/03-features/fe-09-inspection-reporting-publication.md",
-            "report-5-test-report/03-features/fe-10-maintenance-planning-ai-scope-advisor.md",
-            "report-5-test-report/03-features/fe-11-cost-estimation-repair-execution.md",
-            "report-5-test-report/03-features/fe-12-maintenance-acceptance-cost-closure.md",
         ]),
         ("SWP490_GFA26SE139_R2_Report5_TestDocumentation.pdf", "Report 5 – Software Test Documentation", False, export_report5_doc.SOURCES),
-        ("SWP490_GFA26SE139_R2_Report5_TestReport.pdf", "Report 5 – Software Test Report Workbook (64 Cases)", False, [
+        ("SWP490_GFA26SE139_R2_Report5_TestReport.pdf", "Report 5 – Software Test Report Workbook (65 Cases)", False, [
             "report-5-test-report/00-cover/cover.md",
             "report-5-test-report/02-test-statistics/test-statistics.md",
             "report-5-test-report/01-test-cases/test-case-list.md",
@@ -177,10 +173,6 @@ def main():
             "report-5-test-report/03-features/fe-06-flight-readiness-field-execution.md",
             "report-5-test-report/03-features/fe-07-operational-dashboard-schedule-calendar.md",
             "report-5-test-report/03-features/fe-08-evidence-ai-defect-detection.md",
-            "report-5-test-report/03-features/fe-09-inspection-reporting-publication.md",
-            "report-5-test-report/03-features/fe-10-maintenance-planning-ai-scope-advisor.md",
-            "report-5-test-report/03-features/fe-11-cost-estimation-repair-execution.md",
-            "report-5-test-report/03-features/fe-12-maintenance-acceptance-cost-closure.md",
         ]),
         ("SWP490_GFA26SE139_R2_ProjectTracking.pdf", "Report 3 – Project Tracking (WBS, Issues, Defects, Q&A)", False, [
             "project-tracking/project-tracking.md",

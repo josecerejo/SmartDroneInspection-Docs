@@ -1,0 +1,41 @@
+%% title: Flight Permit Gate, Field Session and Abort Dispatch Class Diagram
+classDiagram
+  class InspectionFieldSessionController {
+    +listSessions(Jwt, UUID) ApiResponse~List~
+    +startSession(Jwt, UUID, StartFieldSessionRequest) ResponseEntity~ApiResponse~
+    +completeSession(Jwt, UUID, UUID, EndFieldSessionRequest) ApiResponse~FieldSessionResponse~
+    +abortSession(Jwt, UUID, UUID, AbortFieldSessionRequest) ApiResponse~FieldSessionResponse~
+  }
+  class InspectionController {
+    +uploadFlightPermit(Jwt, UUID, MultipartFile) ApiResponse~InspectionResponse~
+    +reschedule(Jwt, UUID, RescheduleInspectionRequest) ApiResponse~InspectionResponse~
+    +reassign(Jwt, UUID, ReassignInspectionRequest) ApiResponse~InspectionResponse~
+    +cancel(Jwt, UUID, CancelInspectionRequest) ApiResponse~InspectionResponse~
+  }
+  class FieldSession {
+    -UUID id
+    -UUID inspectionId
+    -String status
+    -String preFlightChecklistNote
+    -String outcomeNotes
+    -String abortReason
+  }
+  class Inspection {
+    -UUID id
+    -InspectionStatus status
+    -String flightPermitFileKey
+    +hasFlightPermit() boolean
+    +startFieldSession() void
+    +completeFieldSession() void
+    +reopenAfterSessionAbort() void
+  }
+  class FieldSessionAbortedEvent {
+    +UUID inspectionId
+    +UUID sessionId
+    +UUID inspectorId
+    +String reason
+  }
+  InspectionFieldSessionController --> FieldSession
+  InspectionFieldSessionController --> Inspection
+  InspectionFieldSessionController --> FieldSessionAbortedEvent
+  InspectionController --> Inspection

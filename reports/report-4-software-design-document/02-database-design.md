@@ -7,22 +7,30 @@ source: "report4-software-design-document.docx"
 
 ## 2. Database Design
 
-The relational database architecture is implemented on PostgreSQL 17 with strict foreign key constraints, index-optimized tenant filtering, and cryptographic audit fields. The database schema encompasses 30 application tables (plus the `event_publication` transactional outbox) categorized across identity, assets and drone equipment leasing, inspection workflow, maintenance remediation, and cross-cutting infrastructure.
+The relational database architecture is implemented on PostgreSQL 17 (`pgvector`) with strict foreign key constraints, `ActorZone` and composite tenant boundary checks, optimistic concurrency control (`row_version`), and cryptographic `SHA-256` audit fields. Managed through Flyway migrations `V1`–`V17`, the active schema encompasses identity & onboarding (`MF1`), infrastructure assets & inspector-owned drones (`MF1`), commercial service requests, quotations, contracts & PayOS settlement (`MF2`), 6-state inspection execution & 5-state auto-compiled reporting (`MF3`), and 12-state RAG-assisted maintenance work orders & 3-way re-inspection verification (`MF4`), alongside cross-cutting notifications, audit logs, and the `event_publication` transactional outbox.
 
 ```mermaid
 %% title: Database Entity Relationship Diagram (ERD)
 erDiagram
   organizations ||--o{ users : employs
-  organizations ||--o{ subscriptions : holds
-  subscriptions ||--o{ payment_transactions : settles
-  organizations ||--o{ drones : owns
-  organizations ||--o{ drone_leases : contracts
-  platform_drones ||--o{ drone_leases : leased_via
-  drone_leases ||--o| drones : provisions
-  users ||--o{ drone_leases : requests
+  users ||--o| prospective_customer_registrations : submits
+  users ||--o{ inspector_partner_applications : reviews
+  users ||--o| contract_partner_inspectors : partner_profile
+  organizations ||--o{ drones : org_owns
+  users ||--o{ drones : inspector_owns
+  users ||--o{ drone_registration_applications : submits
+  drones |o--o{ drone_registration_applications : provisions
+  drones ||--o| contract_partner_drones : partner_drone
+  users ||--o{ inspection_finance_settings : configures
   organizations ||--o{ assets : owns
   asset_categories ||--o{ assets : categorizes
   assets ||--o{ asset_documents : attaches
+  organizations ||--o{ service_requests : requests
+  assets ||--o{ service_requests : targets
+  service_requests ||--o{ service_request_messages : discusses
+  service_requests ||--o{ service_request_quotes : versions
+  service_requests ||--o{ service_request_occurrences : materializes
+  service_request_occurrences |o--o| inspections : dispatches
   organizations ||--o{ audit_events : records
   organizations ||--o{ notifications : scopes
   users ||--o{ notifications : receives
@@ -33,23 +41,23 @@ erDiagram
   drones ||--o{ inspections : assigned_drone
   organizations ||--o{ recurring_inspection_schedules : schedules
   assets ||--o{ recurring_inspection_schedules : recurs_for
-  users ||--o{ recurring_inspection_schedules : default_inspector
-  drones ||--o{ recurring_inspection_schedules : default_drone
   recurring_inspection_schedules ||--o{ schedule_occurrences : generates
-  organizations ||--o{ schedule_occurrences : scopes
   inspections |o--o{ schedule_occurrences : fulfills
-  recurring_inspection_schedules ||--o{ inspections : dispatches
   inspections ||--o{ field_sessions : executes
   inspections ||--o{ evidence : contains
   field_sessions ||--o{ evidence : captures
   inspections ||--o{ findings : records
   evidence ||--o{ findings : locates
   inspections ||--o{ inspection_reports : delivers
+  inspections ||--o{ reinspection_defect_verifications : verifies
+  findings ||--o{ reinspection_defect_verifications : baseline_defect
+  evidence |o--o{ reinspection_defect_verifications : recapture_proof
   organizations ||--o{ maintenance_work_orders : owns
   assets ||--o{ maintenance_work_orders : remediates
   users ||--o{ maintenance_work_orders : governs
   findings ||--o{ maintenance_work_orders : initiates
   inspection_reports ||--o{ maintenance_work_orders : references
+  inspections |o--o{ maintenance_work_orders : reinspects
   maintenance_work_orders ||--o{ maintenance_team_members : deploys
   maintenance_work_orders ||--o{ maintenance_tasks : deconstructs
   maintenance_work_orders ||--o{ maintenance_estimate_versions : projects
@@ -108,93 +116,84 @@ erDiagram
     timestamptz revoked_at
     varchar revoked_reason
   }
-  subscriptions {
+  prospective_customer_registrations {
     uuid id PK
-    uuid organization_id FK
-    uuid confirmed_by_user_id FK
-    varchar plan_code
-    integer billing_period_months
-    numeric agreed_amount_usd
+    uuid user_id FK
+    varchar organization_name
+    varchar organization_code
+    uuid asset_category_id FK
+    varchar asset_code
+    varchar asset_name
+    varchar asset_location
+    numeric latitude
+    numeric longitude
     varchar status
-    timestamptz starts_at
-    timestamptz ends_at
-    varchar external_reference
-    jsonb terms_snapshot
-    timestamptz confirmed_at
-    timestamptz created_at
-    timestamptz updated_at
+    varchar airspace_classification
+    uuid reviewed_by_user_id FK
+    timestamptz reviewed_at
     bigint row_version
   }
-  payment_transactions {
+  inspector_partner_applications {
     uuid id PK
-    uuid subscription_id FK
-    varchar paypal_order_id
-    varchar paypal_capture_id
-    numeric amount
-    varchar currency
+    varchar email
+    varchar normalized_email
+    varchar full_name
+    varchar phone
+    varchar pilot_license_number
+    varchar pilot_license_class
+    date pilot_license_expires_at
+    varchar pilot_license_file_key
+    varchar partner_contract_file_key
     varchar status
-    varchar payer_email
-    timestamptz captured_at
-    timestamptz created_at
-    timestamptz updated_at
+    uuid reviewed_by_user_id FK
+    timestamptz reviewed_at
     bigint row_version
   }
-  platform_drones {
+  drone_registration_applications {
     uuid id PK
+    uuid inspector_user_id FK
     varchar serial_number
     varchar model
     varchar manufacturer
-    jsonb payload_metadata
-    numeric monthly_rate_usd
+    varchar registration_number
+    varchar registration_file_key
+    timestamptz registration_expires_at
+    varchar ownership_file_key
+    varchar inspection_file_key
     varchar status
-    varchar notes
-    timestamptz created_at
-    timestamptz updated_at
+    uuid drone_id FK
+    uuid reviewed_by_user_id FK
     bigint row_version
   }
-  drone_leases {
-    uuid id PK
-    uuid platform_drone_id FK
-    uuid organization_id FK
-    uuid customer_drone_id FK
-    uuid requested_by_user_id FK
-    uuid confirmed_by_user_id FK
-    integer lease_period_months
-    numeric monthly_rate_usd
-    numeric agreed_amount_usd
+  contract_partner_inspectors {
+    uuid inspector_user_id PK
+    uuid registered_by_user_id FK
     varchar status
-    timestamptz starts_at
-    timestamptz ends_at
-    timestamptz reclaimed_at
-    varchar external_reference
-    varchar paypal_order_id
-    varchar paypal_capture_id
-    timestamptz confirmed_at
-    varchar notes
     timestamptz created_at
     timestamptz updated_at
-    bigint row_version
+  }
+  contract_partner_drones {
+    uuid drone_id PK
+    uuid inspector_user_id FK
+    uuid registered_by_user_id FK
+    varchar status
+    timestamptz created_at
+    timestamptz updated_at
   }
   drones {
     uuid id PK
     uuid organization_id FK
-    uuid lease_id FK
+    uuid inspector_owner_id FK
     varchar serial_number
     varchar model
     varchar manufacturer
-    jsonb payload_metadata
-    varchar serviceability
-    timestamptz last_maintenance_at
-    timestamptz next_maintenance_at
-    varchar notes
+    varchar status
+    varchar serviceability_status
     varchar registration_number
-    varchar registration_file_key
     timestamptz registration_expires_at
     timestamptz created_at
     timestamptz updated_at
     bigint row_version
-    varchar ownership_type
-    timestamptz lease_expires_at
   }
   asset_categories {
     uuid id PK
@@ -210,31 +209,101 @@ erDiagram
     uuid id PK
     uuid organization_id FK
     uuid category_id FK
+    varchar code
     varchar name
     varchar description
+    varchar location
     numeric latitude
     numeric longitude
+    jsonb inspection_items
     varchar status
     timestamptz created_at
     timestamptz updated_at
     bigint row_version
-    varchar asset_code
-    jsonb location
-    jsonb technical_profile
-    jsonb inspection_items
   }
   asset_documents {
     uuid id PK
     uuid asset_id FK
+    uuid organization_id FK
     uuid uploaded_by_user_id FK
-    varchar document_type
     varchar file_name
     varchar content_type
     bigint size_bytes
-    character checksum_sha256
     varchar object_key
-    date document_date
+    character checksum_sha256
     timestamptz created_at
+  }
+  service_requests {
+    uuid id PK
+    uuid organization_id FK
+    uuid asset_id FK
+    uuid created_by_user_id FK
+    varchar description
+    date requested_from
+    date requested_until
+    varchar timezone
+    varchar request_type
+    varchar recurrence_unit
+    integer recurrence_interval
+    integer occurrence_count
+    date recurrence_end_date
+    varchar status
+    integer accepted_quote_version
+    uuid accepted_by_user_id FK
+    timestamptz accepted_at
+    varchar contract_object_key
+    varchar contract_file_name
+    varchar contract_content_type
+    character contract_checksum_sha256
+    bigint row_version
+  }
+  service_request_messages {
+    uuid id PK
+    uuid request_id FK
+    uuid author_user_id FK
+    varchar body
+    timestamptz created_at
+  }
+  service_request_quotes {
+    uuid id PK
+    uuid request_id FK
+    integer version_no
+    varchar scope_snapshot
+    timestamptz first_occurrence_start_at
+    timestamptz first_occurrence_end_at
+    uuid inspector_id FK
+    uuid drone_id FK
+    varchar currency
+    numeric price_per_occurrence_vnd
+    numeric price_per_occurrence_usd
+    uuid issued_by_user_id FK
+    timestamptz created_at
+  }
+  service_request_occurrences {
+    uuid id PK
+    uuid request_id FK
+    uuid organization_id FK
+    integer occurrence_index
+    timestamptz planned_start_at
+    timestamptz planned_end_at
+    uuid inspector_id FK
+    uuid drone_id FK
+    uuid inspection_id FK
+    varchar status
+    varchar payment_status
+    varchar payout_status
+    bigint payos_order_code
+    varchar payos_payment_link_id
+    varchar payment_method
+    bigint row_version
+  }
+  inspection_finance_settings {
+    uuid id PK
+    numeric commission_rate
+    numeric vat_rate
+    numeric tncn_rate
+    uuid updated_by_user_id FK
+    timestamptz updated_at
   }
   recurring_inspection_schedules {
     uuid id PK
@@ -243,17 +312,15 @@ erDiagram
     uuid created_by_user_id FK
     uuid inspector_id FK
     uuid drone_id FK
-    timestamp anchor_date
     varchar timezone
     varchar recurrence_unit
     integer recurrence_interval
+    timestamptz anchor_start_at
     bigint duration_seconds
     integer reminder_days
     timestamptz ends_at
     bigint next_occurrence
     varchar status
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   schedule_occurrences {
@@ -268,9 +335,6 @@ erDiagram
     varchar status
     varchar blocked_reason
     integer retry_count
-    timestamptz reminder_sent_at
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   inspections {
@@ -280,10 +344,11 @@ erDiagram
     uuid inspector_id FK
     uuid drone_id FK
     uuid recurring_schedule_id FK
+    varchar inspection_type
+    uuid work_order_id FK
+    uuid source_inspection_id FK
+    uuid source_report_version_id FK
     varchar status
-    timestamptz created_at
-    timestamptz updated_at
-    bigint row_version
     timestamptz planned_start_at
     timestamptz planned_end_at
     varchar flight_permit_file_key
@@ -291,6 +356,7 @@ erDiagram
     timestamptz flight_permit_uploaded_at
     timestamptz findings_confirmed_at
     varchar findings_snapshot_hash
+    bigint row_version
   }
   field_sessions {
     uuid id PK
@@ -298,13 +364,10 @@ erDiagram
     varchar status
     timestamptz started_at
     timestamptz ended_at
-    varchar postponement_reason
     varchar abort_reason
-    timestamptz created_at
-    timestamptz updated_at
-    bigint row_version
     varchar pre_flight_checklist_note
     varchar outcome_notes
+    bigint row_version
   }
   evidence {
     uuid id PK
@@ -319,7 +382,6 @@ erDiagram
     numeric longitude
     varchar location_description
     boolean is_deleted
-    timestamptz created_at
   }
   findings {
     uuid id PK
@@ -328,85 +390,43 @@ erDiagram
     varchar finding_code
     varchar defect_label
     varchar severity
+    varchar status
+    varchar source
+    numeric confidence
     jsonb bounding_box
+    varchar component
+    varchar location_description
     varchar technical_notes
     varchar recommended_action
-    varchar status
-    varchar model_name
-    numeric confidence
     timestamptz forwarded_to_maintenance_at
     boolean is_deleted
-    timestamptz created_at
   }
   inspection_reports {
     uuid id PK
     uuid inspection_id FK
+    uuid author_user_id FK
     uuid reviewer_user_id FK
     integer version_no
     varchar status
-    jsonb content_snapshot
     timestamptz submitted_at
     timestamptz reviewed_at
-    varchar return_reason
-    varchar rendered_object_key
-    character rendered_checksum_sha256
     timestamptz published_at
-    timestamptz created_at
+    varchar review_reason
+    varchar artefact_object_key
+    character artefact_checksum_sha256
+    bigint row_version
   }
-  repair_knowledge_chunks {
+  reinspection_defect_verifications {
     uuid id PK
-    varchar standard_code
-    varchar title
-    varchar category
-    varchar defect_patterns
-    text content
-    varchar reference_url
+    uuid reinspection_id FK
+    uuid source_finding_id FK
+    uuid new_evidence_id FK
+    varchar resolution_status
+    varchar inspector_notes
+    varchar repair_proof_url
+    varchar repair_engineer_notes
     timestamptz created_at
-  }
-  notifications {
-    uuid id PK
-    uuid recipient_user_id FK
-    uuid organization_id FK
-    varchar event_type
-    varchar channel
-    varchar title
-    varchar body
-    varchar target_path
-    varchar status
-    integer attempt_count
-    varchar last_error_code
-    timestamptz sent_at
-    timestamptz read_at
-    timestamptz created_at
-    varchar aggregate_type
-    uuid aggregate_id
-    varchar deduplication_key
-  }
-  audit_events {
-    uuid id PK
-    uuid organization_id FK
-    uuid actor_user_id FK
-    varchar action
-    varchar aggregate_type
-    uuid aggregate_id
-    varchar before_status
-    varchar after_status
-    bigint aggregate_version
-    varchar reason
-    varchar trace_id
-    jsonb safe_metadata
-    timestamptz created_at
-  }
-  event_publication {
-    uuid id PK
-    text listener_id
-    text event_type
-    text serialized_event
-    timestamptz publication_date
-    timestamptz completion_date
-    text status
-    integer completion_attempts
-    timestamptz last_resubmission_date
+    timestamptz updated_at
   }
   maintenance_work_orders {
     uuid id PK
@@ -414,6 +434,8 @@ erDiagram
     uuid asset_id FK
     uuid source_report_version_id FK
     uuid source_finding_id FK
+    uuid reinspection_id FK
+    uuid reinspection_report_version_id FK
     uuid owner_user_id FK
     uuid budget_approver_user_id FK
     uuid team_lead_user_id FK
@@ -424,8 +446,6 @@ erDiagram
     timestamptz due_at
     varchar corrective_scope
     varchar acceptance_criteria
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   maintenance_team_members {
@@ -434,9 +454,6 @@ erDiagram
     uuid engineer_user_id FK
     uuid assigned_by_user_id FK
     varchar member_role
-    timestamptz effective_from
-    timestamptz effective_until
-    varchar reason
     boolean active
     timestamptz created_at
   }
@@ -451,8 +468,6 @@ erDiagram
     timestamptz planned_end_at
     varchar acceptance_criteria
     varchar status
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   maintenance_estimate_versions {
@@ -482,7 +497,6 @@ erDiagram
     numeric unit_rate
     numeric amount
     character currency
-    timestamptz created_at
   }
   maintenance_change_orders {
     uuid id PK
@@ -495,8 +509,6 @@ erDiagram
     varchar status
     timestamptz decided_at
     varchar decision_reason
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   maintenance_work_logs {
@@ -510,8 +522,6 @@ erDiagram
     varchar as_left_condition
     varchar test_readings
     varchar status
-    timestamptz created_at
-    timestamptz updated_at
     bigint row_version
   }
   maintenance_reports {
@@ -536,44 +546,82 @@ erDiagram
     varchar test_result
     timestamptz decided_at
   }
+  repair_knowledge_chunks {
+    uuid id PK
+    varchar standard_code
+    varchar title
+    varchar category
+    text content
+    vector embedding
+  }
+  notifications {
+    uuid id PK
+    uuid recipient_user_id FK
+    uuid organization_id FK
+    varchar event_type
+    varchar title
+    varchar body
+    varchar target_path
+    varchar status
+    varchar deduplication_key
+    timestamptz created_at
+  }
+  audit_events {
+    uuid id PK
+    uuid organization_id FK
+    uuid actor_user_id FK
+    varchar action
+    varchar aggregate_type
+    uuid aggregate_id
+    varchar before_status
+    varchar after_status
+    jsonb safe_metadata
+    timestamptz created_at
+  }
+  event_publication {
+    uuid id PK
+    text listener_id
+    text event_type
+    text serialized_event
+    timestamptz publication_date
+    timestamptz completion_date
+    text status
+  }
 ```
 
 **Table Descriptions**
 
 | No | Table | Description |
 | :---: | :--- | :--- |
-| 01 | `organizations` | Stores tenant enterprise companies subscribing to the platform. (`10` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `created_by_user_id` references `users(id)`|
-| 02 | `users` | Stores system user accounts across `ADMIN`, `PLATFORM_MANAGER`, `ORG_MANAGER`, `INSPECTOR`, and `MAINTENANCE_ENGINEER`, account status (`ACTIVE`, `SUSPENDED`, `DISABLED`), and self-declared remote pilot license credentials. (`24` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `organization_id` references `organizations(id)`|
-| 03 | `auth_sessions` | Tracks active user login sessions (`WEB`, `MOBILE`), hashed refresh tokens, expiration timestamps, and revocation status. (`9` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `user_id` references `users(id)`|
-| 04 | `subscriptions` | Tracks ENTERPRISE subscription contracts, billing periods (`1..120` months), agreed USD amounts, immutable contract terms snapshots, and lifecycle status (`PENDING`, `ACTIVE`, `PAST_DUE`, `SUSPENDED`, `EXPIRED`, `CANCELLED`). (`15` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `confirmed_by_user_id` references `users(id)`, `organization_id` references `organizations(id)`|
-| 05 | `payment_transactions` | Records PayPal Orders v2 checkout and capture transactions linked to enterprise subscriptions (`PENDING`, `COMPLETED`, `FAILED`, `REFUNDED`). (`12` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `subscription_id` references `subscriptions(id)`|
-| 06 | `platform_drones` | Platform-owned serial-numbered leasable drone pool managed by `PLATFORM_MANAGER` (`AVAILABLE`, `LEASED`, `MAINTENANCE`, `RETIRED`). (`11` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: None|
-| 07 | `drone_leases` | drone equipment lease contracts between the platform and a customer organization (`PENDING`, `ACTIVE`, `RECLAIMED`, `CANCELLED`) with wire/PayPal settlement and customer fleet provisioning. (`21` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `platform_drone_id` references `platform_drones(id)`, `organization_id` references `organizations(id)`, `customer_drone_id` references `drones(id)`, `requested_by_user_id` references `users(id)`, `confirmed_by_user_id` references `users(id)`|
-| 08 | `drones` | Catalogs customer organization drone aircraft (`OWNED` or `LEASED`), hardware serial numbers, payload metadata, serviceability status (`ACTIVE`, `MAINTENANCE`, `SUSPENDED`, `RETIRED`), and CAAV registration metadata. (`19` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `organization_id` references `organizations(id)`, `lease_id` references `drone_leases(id)`|
-| 09 | `asset_categories` | Global structural categorization catalog for infrastructure assets managed by `ADMIN`. (`8` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: None|
-| 10 | `assets` | Manages physical infrastructure assets (`ACTIVE`, `INACTIVE`, `RETIRED`), GPS coordinates, and `inspection_items` (`jsonb` array of standardized structural checkpoints). (`15` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `category_id` references `asset_categories(id)`, `organization_id` references `organizations(id)`|
-| 11 | `asset_documents` | Engineering schematics, structural drawings, and technical specifications attached to an asset with 64-character SHA-256 deduplication. (`11` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `uploaded_by_user_id` references `users(id)`|
-| 12 | `inspections` | Core inspection mission table tracking scheduled time windows, direct Inspector and Drone assignment, optional `recurring_schedule_id`, self-service flight permit attributes, and 10-state lifecycle status. (`17` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `drone_id` references `drones(id)`, `inspector_id` references `users(id)`, `organization_id` references `organizations(id)`, `recurring_schedule_id` references `recurring_inspection_schedules(id)`|
-| 13 | `recurring_inspection_schedules` | Periodic inspection recurrence rules per asset with timezone-anchored cadence (`WEEK`, `MONTH`, `YEAR`), default Inspector/Drone, duration, reminder lead days, and status (`ACTIVE`, `PAUSED`, `ENDED`). (`18` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `organization_id` references `organizations(id)`, `asset_id` references `assets(id)`, `created_by_user_id` references `users(id)`, `inspector_id` references `users(id)`, `drone_id` references `drones(id)`|
-| 14 | `schedule_occurrences` | Individual `GENERATED`, `BLOCKED`, or `SKIPPED` recurring schedule occurrences linked to dispatched `inspections`. (`15` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `schedule_id` references `recurring_inspection_schedules(id)`, `organization_id` references `organizations(id)`, `inspection_id` references `inspections(id)`|
-| 15 | `field_sessions` | Records individual on-site flight survey sessions, pre-flight safety checklist notes, and operational outcomes (`PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `POSTPONED`, `ABORTED`). (`12` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `inspection_id` references `inspections(id)`|
-| 16 | `evidence` | Digital media captures collected during inspection field sessions with MinIO object keys, EXIF capture timestamps, GPS coordinates, location descriptions, and soft-delete flag (`is_deleted`). (`13` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `field_session_id` references `field_sessions(id)`, `inspection_id` references `inspections(id)`|
-| 17 | `findings` | Unified defect findings table managing YOLO11 AI defect candidates (`PENDING`) and human-verified official findings (`CONFIRMED`) with bounding boxes and maintenance forwarding timestamps. (`15` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `evidence_id` references `evidence(id)`, `inspection_id` references `inspections(id)`|
-| 18 | `inspection_reports` | Versioned inspection report deliverables (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`), review gates, rendered PDF object keys, and SHA-256 checksums. (`13` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reviewer_user_id` references `users(id)`, `inspection_id` references `inspections(id)`|
-| 19 | `maintenance_work_orders` | Remediation projects initiated from confirmed inspection findings, tracking corrective scope, acceptance criteria, team role assignments, and 12-state lifecycle status. (`18` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `accepting_reviewer_user_id` references `users(id)`, `budget_approver_user_id` references `users(id)`, `organization_id` references `organizations(id)`, `owner_user_id` references `users(id)`, `report_author_user_id` references `users(id)`, `source_finding_id` references `findings(id)`, `source_report_version_id` references `inspection_reports(id)`, `team_lead_user_id` references `users(id)`|
-| 20 | `maintenance_team_members` | Engineering team members allocated to a maintenance work order (`LEAD`, `REPORT_AUTHOR`, `MEMBER`) with partial unique indexes on active leadership roles. (`10` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `assigned_by_user_id` references `users(id)`, `engineer_user_id` references `users(id)`, `work_order_id` references `maintenance_work_orders(id)`|
-| 21 | `maintenance_tasks` | Decomposed repair tasks (`PLANNED`, `READY`, `IN_PROGRESS`, `PAUSED_FOR_CHANGE`, `WORK_COMPLETED`, `REWORK_REQUIRED`, `ACCEPTED`, `CANCELLED`) with technical methods and assigned engineers. (`13` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `assigned_engineer_user_id` references `users(id)`, `work_order_id` references `maintenance_work_orders(id)`|
-| 22 | `maintenance_estimate_versions` | Versioned financial projection baselines (`DRAFT`, `SUBMITTED`, `APPROVED`, `REJECTED`, `SUPERSEDED`) for labor, materials, equipment, and services. (`11` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `approved_by_user_id` references `users(id)`, `prepared_by_user_id` references `users(id)`, `work_order_id` references `maintenance_work_orders(id)`|
-| 23 | `maintenance_cost_lines` | Individual itemized cost rows (`LABOR`, `MATERIAL`, `EQUIPMENT`, `SERVICE`) within an `ESTIMATE` baseline or `ACTUAL` expenditure reconciliation. (`14` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `entered_by_user_id` references `users(id)`, `estimate_version_id` references `maintenance_estimate_versions(id)`, `task_id` references `maintenance_tasks(id)`, `work_order_id` references `maintenance_work_orders(id)`|
-| 24 | `maintenance_change_orders` | Formal variance requests (`DRAFT`, `AWAITING_APPROVAL`, `APPROVED`, `REJECTED`, `RETURNED`, `SUPERSEDED`) adjusting repair scope or budget ceiling. (`13` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `decided_by_user_id` references `users(id)`, `requested_by_user_id` references `users(id)`, `work_order_id` references `maintenance_work_orders(id)`|
-| 25 | `maintenance_work_logs` | Execution entries (`IN_PROGRESS`, `PAUSED_FOR_CHANGE`, `SUBMITTED`, `VERIFIED`) logging task labor hours, as-left conditions, and test readings. (`13` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `task_id` references `maintenance_tasks(id)`, `engineer_user_id` references `users(id)`, `work_order_id` references `maintenance_work_orders(id)`|
-| 26 | `maintenance_reports` | Versioned maintenance completion deliverables (`DRAFT`, `AUTHOR_VERIFIED`, `SUBMITTED`, `RETURNED`, `APPROVED`, `SUPERSEDED`) verified by the Report Author and rendered to PDF. (`9` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `work_order_id` references `maintenance_work_orders(id)`|
-| 27 | `maintenance_acceptance_decisions` | Formal independent technical acceptance records (`ACCEPTED`, `REWORK_REQUIRED`, `REINSPECTION_REQUIRED`) evaluating repair completion. (`9` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `report_version_id` references `maintenance_reports(id)`, `reviewer_user_id` references `users(id)`, `work_order_id` references `maintenance_work_orders(id)`|
-| 28 | `repair_knowledge_chunks` | Civil and structural engineering repair standard chunks (`TCVN`, `EN`, `ISO`, `ASTM`) and 1536-dim `pgvector` embeddings supporting RAG scope suggestions. (`9` columns including `embedding vector(1536)`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: None|
-| 29 | `notifications` | Operational alerts and deduplicated in-app notifications (`SENT`, `READ`, `FAILED`) delivered to system users. (`17` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `organization_id` references `organizations(id)`, `recipient_user_id` references `users(id)`|
-| 30 | `audit_events` | Append-only security audit trail recording consequential domain transitions and access events. (`13` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `actor_user_id` references `users(id)`, `organization_id` references `organizations(id)`|
-| 31 | `event_publication` | Spring Modulith transactional outbox table for reliable asynchronous domain event delivery. (`9` columns).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: None|
-
+| 01 | `organizations` | Stores customer organizations (`ActorZone.CUSTOMER_ORGANIZATION`) that own assets, commission inspection service contracts, and govern maintenance work orders.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `created_by_user_id` references `users(id)` |
+| 02 | `users` | Stores system user accounts across the 5 canonical roles (`ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`), `actor_zone` (`PLATFORM`, `CUSTOMER_ORGANIZATION`, `INSPECTOR_PARTNER`, `PROSPECT_CUSTOMER`), account status (`ACTIVE`, `SUSPENDED`, `DISABLED`), and remote pilot license credentials (`V7`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `organization_id` references `organizations(id)` |
+| 03 | `auth_sessions` | Tracks active user login sessions (`WEB`, `MOBILE`), hashed refresh tokens, expiration timestamps, and revocation status.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `user_id` references `users(id)` |
+| 04 | `prospective_customer_registrations` | Holds prospective customer onboarding records and initial asset coordinates when airspace evaluation returns `RESTRICTED_ZONE` (`PENDING`, `APPROVED`, `REJECTED` — `V7`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `user_id` references `users(id)`, `asset_category_id` references `asset_categories(id)`, `reviewed_by_user_id` references `users(id)` |
+| 05 | `inspector_partner_applications` | Tracks partner Inspector onboarding applications, pilot license metadata, uploaded license file keys, and executed offline partner contract keys (`partner_contract_file_key` — `V7`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reviewed_by_user_id` references `users(id)` |
+| 06 | `drone_registration_applications` | Stores partner Inspector owned-drone registration applications requiring 3 mandatory document keys (`registration_file_key`, `ownership_file_key`, `inspection_file_key` — `V7`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `inspector_user_id` references `users(id)`, `drone_id` references `drones(id)`, `reviewed_by_user_id` references `users(id)` |
+| 07 | `drones` | Catalogs aircraft scoped either to a partner Inspector (`inspector_owner_id`) or a customer organization (`organization_id`), enforcing `ck_drones_owner_scope` and global serial uniqueness (`V7`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `inspector_owner_id` references `users(id)`, `organization_id` references `organizations(id)` |
+| 08 | `asset_categories` | Global structural categorization catalog for infrastructure assets managed by `ADMIN`.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: None |
+| 09 | `assets` | Manages physical infrastructure assets (`ACTIVE`, `INACTIVE`, `RETIRED`), GPS coordinates verified against No-Fly Zones, and `inspection_items` (`jsonb` array of structural checkpoints).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `category_id` references `asset_categories(id)`, `organization_id` references `organizations(id)` |
+| 10 | `asset_documents` | Engineering schematics, structural drawings, and technical specifications attached to an asset with 64-character `SHA-256` deduplication.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `uploaded_by_user_id` references `users(id)` |
+| 11 | `contract_partner_inspectors` & `contract_partner_drones` | Registry tables linking approved partner Inspectors and inspector-owned Drones into the commercial contract assignment pool (`ACTIVE`, `INACTIVE` — `V8`, `V9`).<br>- Primary keys: `inspector_user_id` / `drone_id` (UUID)<br>- Foreign keys: `registered_by_user_id` references `users(id)` |
+| 12 | `service_requests` | Commercial inspection service requests (`ONE_TIME`, `RECURRING`) tracking lifecycle status (`OPEN`, `QUOTED`, `ACCEPTED`, `CONTRACT_SIGNED`, `ASSIGNED`, `CANCELLED`), accepted quote version, and uploaded signed paper contract scan (`PDF`, `DOCX`, `JPEG`, `PNG` with `SHA-256` — `V8`, `V12`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `organization_id` references `organizations(id)`, `asset_id` references `assets(id)`, `created_by_user_id` references `users(id)`, `accepted_by_user_id` references `users(id)`, `contract_uploaded_by_user_id` references `users(id)` |
+| 13 | `service_request_messages` | In-context order chat messages exchanged between `CUSTOMER` and `MANAGER` during service request and quote negotiation (`V8`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `request_id` references `service_requests(id)`, `author_user_id` references `users(id)` |
+| 14 | `service_request_quotes` | Versioned commercial quotations (`version_no`) recording scope snapshot, proposed schedule, partner `inspector_id`, inspector-owned `drone_id`, currency (`VND`, `USD`), and price per occurrence (`V8`, `V12`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `request_id` references `service_requests(id)`, `inspector_id` references `users(id)`, `drone_id` references `drones(id)`, `issued_by_user_id` references `users(id)` |
+| 15 | `service_request_occurrences` | Individual inspection delivery occurrences (`PENDING_ASSIGNMENT`, `ASSIGNED`, `CANCELLED`) tracking inherited/attached contracts, `payos_order_code`, `payos_payment_link_id`, `payment_status` (`PENDING`, `PAYMENT_DUE`, `PAID`), and `payout_status` (`PENDING`, `ELIGIBLE`, `PAID` — `V8`, `V12`, `V13`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `request_id` references `service_requests(id)`, `inspector_id` references `users(id)`, `drone_id` references `drones(id)`, `inspection_id` references `inspections(id)` |
+| 16 | `inspection_finance_settings` | Platform financial rate configuration (`commission_rate`, `vat_rate`, `tncn_rate`) governing VND quote settlement and partner net payout calculations (`V12`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `updated_by_user_id` references `users(id)` |
+| 17 | `inspections` | Core inspection mission table tracking 6-state canonical lifecycle status (`SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED` — `V15`), `inspection_type` (`INITIAL`, `RE_INSPECTION` — `V10`), partner assignment flag, flight permit attributes, and source Work Order linkage.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `drone_id` references `drones(id)`, `inspector_id` references `users(id)`, `organization_id` references `organizations(id)`, `work_order_id` references `maintenance_work_orders(id)`, `source_inspection_id` references `inspections(id)` |
+| 18 | `recurring_inspection_schedules` & `schedule_occurrences` | Timezone-anchored repeating inspection rules (`WEEK`, `MONTH`, `YEAR`) and generated/blocked/skipped occurrence records (`V4`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `organization_id` references `organizations(id)`, `asset_id` references `assets(id)`, `inspection_id` references `inspections(id)` |
+| 19 | `field_sessions` | Records individual on-site flight survey sessions, pre-flight safety checklist notes, abort reasons, and operational outcomes (`PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `ABORTED`; historical `POSTPONED` read-only).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `inspection_id` references `inspections(id)` |
+| 20 | `evidence` | Digital photo and `video/mp4` captures collected during field sessions with MinIO object keys, EXIF capture timestamps, GPS coordinates, location descriptions, and soft-delete flag (`is_deleted`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `field_session_id` references `field_sessions(id)`, `inspection_id` references `inspections(id)` |
+| 21 | `findings` | Unified defect findings table managing `YOLO11` / Vision fallback candidates (`PENDING`) and Inspector-confirmed findings (`CONFIRMED`) with bounding boxes and maintenance forwarding timestamps.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `evidence_id` references `evidence(id)`, `inspection_id` references `inspections(id)` |
+| 22 | `inspection_reports` | Versioned inspection report deliverables with 5 canonical states (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED` — `V16`, `V17`), auto-compiled from confirmed findings and rendered to immutable `SHA-256` PDFs.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `author_user_id` references `users(id)`, `reviewer_user_id` references `users(id)`, `inspection_id` references `inspections(id)` |
+| 23 | `reinspection_defect_verifications` | Three-way comparative defect verification records (`V10`, `V14`) linking a `RE_INSPECTION` mission to each original `source_finding_id`, engineer `repair_proof_url` and `repair_engineer_notes`, drone `new_evidence_id`, and `resolution_status` (`RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reinspection_id` references `inspections(id)`, `source_finding_id` references `findings(id)`, `new_evidence_id` references `evidence(id)` |
+| 24 | `maintenance_work_orders` | Remediation projects initiated from confirmed published findings, tracking corrective scope, acceptance criteria, team role assignments, `reinspection_id`, `reinspection_report_version_id`, and 12-state lifecycle status (`V6`, `V10`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `organization_id` references `organizations(id)`, `source_finding_id` references `findings(id)`, `source_report_version_id` references `inspection_reports(id)`, `reinspection_id` references `inspections(id)`, `reinspection_report_version_id` references `inspection_reports(id)` |
+| 25 | `maintenance_team_members` & `maintenance_tasks` | Engineering team members (`LEAD`, `REPORT_AUTHOR`, `MEMBER`) and decomposed repair tasks (`PLANNED`, `READY`, `IN_PROGRESS`, `PAUSED_FOR_CHANGE`, `WORK_COMPLETED`, `REWORK_REQUIRED`, `ACCEPTED`, `CANCELLED`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `work_order_id` references `maintenance_work_orders(id)`, `engineer_user_id` / `assigned_engineer_user_id` references `users(id)` |
+| 26 | `maintenance_estimate_versions`, `maintenance_cost_lines` & `maintenance_change_orders` | Versioned repair budgets (`DRAFT`, `SUBMITTED`, `APPROVED`, `REJECTED`, `SUPERSEDED`), itemized cost rows (`LABOR`, `MATERIAL`, `EQUIPMENT`, `SERVICE`, `CONTINGENCY`), and Change Order variance requests.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `work_order_id` references `maintenance_work_orders(id)` |
+| 27 | `maintenance_work_logs`, `maintenance_reports` & `maintenance_acceptance_decisions` | Field execution logs (`IN_PROGRESS`, `PAUSED_FOR_CHANGE`, `SUBMITTED`, `VERIFIED`), auto-drafted completion reports rendered to PDF, and independent `CUSTOMER` acceptance decisions (`ACCEPTED`, `REWORK_REQUIRED`, `REINSPECTION_REQUIRED`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `work_order_id` references `maintenance_work_orders(id)` |
+| 28 | `repair_knowledge_chunks` | Civil and structural engineering repair standard chunks (`TCVN`, `ACI`, `EN`, `ISO`, `ASTM`) and 1536-dim `pgvector` embeddings supporting RAG scope, cost norm, and compliance advisors.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: None |
+| 29 | `notifications`, `audit_events` & `event_publication` | Deduplicated in-app notifications (`V5`), append-only security/workflow audit trail, and Spring Modulith transactional event outbox.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `organization_id` references `organizations(id)`, `recipient_user_id` / `actor_user_id` references `users(id)` |
 
 ---
 
@@ -581,42 +629,41 @@ erDiagram
 
 Every lifecycle entity in `SmartDroneInspection-backend` is governed by an explicit state machine with guarded domain methods.
 
-**1. Enterprise Subscription & Drone Equipment Lease State Machines**
+**1. Service Request, Contract Occurrence & PayOS Payment State Machines**
 
 ```mermaid
-%% title: Subscription and Drone Equipment Lease State Machines
+%% title: Service Request, Contract Occurrence and PayOS Payment State Machines
 stateDiagram-v2
   direction LR
-  state "Enterprise Subscription (subscriptions.status)" as SubSM {
-    [*] --> SUB_PENDING : requestEnterprise() [FR-03]
-    SUB_PENDING --> SUB_ACTIVE : confirmPayment() / captureOrder() [FR-03]
-    SUB_PENDING --> SUB_CANCELLED : cancel() [FR-03]
-    SUB_ACTIVE --> SUB_PAST_DUE : markPastDue() [FR-03]
-    SUB_PAST_DUE --> SUB_ACTIVE : confirmPayment() [FR-03]
-    SUB_PAST_DUE --> SUB_SUSPENDED : suspend() [FR-03]
-    SUB_SUSPENDED --> SUB_ACTIVE : confirmPayment() [FR-03]
-    SUB_ACTIVE --> SUB_EXPIRED : expire() / superseded by renewal [FR-03]
-    SUB_ACTIVE --> SUB_CANCELLED : cancel() [FR-03]
-    SUB_EXPIRED --> [*]
-    SUB_CANCELLED --> [*]
+  state "Service Request (service_requests.status)" as ReqSM {
+    [*] --> REQ_OPEN : createRequest() [FE-04]
+    REQ_OPEN --> REQ_QUOTED : issueQuote(VND/USD) [FE-04]
+    REQ_QUOTED --> REQ_QUOTED : issueQuote(versionNo + 1) [FE-04]
+    REQ_QUOTED --> REQ_ACCEPTED : acceptQuote(versionNo) [FE-04]
+    REQ_ACCEPTED --> REQ_CONTRACT_SIGNED : uploadSignedContract(SHA-256) [FE-04]
+    REQ_CONTRACT_SIGNED --> REQ_ASSIGNED : assignOccurrences() [FE-04]
+    REQ_OPEN --> REQ_CANCELLED : cancel() [FE-04]
+    REQ_QUOTED --> REQ_CANCELLED : cancel() [FE-04]
+    REQ_ASSIGNED --> [*]
+    REQ_CANCELLED --> [*]
   }
 
-  state "Drone Equipment Lease (drone_leases.status)" as LeaseSM {
-    [*] --> LEASE_PENDING : requestLease() [FR-05]
-    LEASE_PENDING --> LEASE_ACTIVE : activateWire() / activatePayPal() [FR-05]
-    LEASE_PENDING --> LEASE_CANCELLED : cancel() [FR-05]
-    LEASE_ACTIVE --> LEASE_RECLAIMED : reclaim() [FR-05]
-    LEASE_RECLAIMED --> [*]
-    LEASE_CANCELLED --> [*]
+  state "Occurrence Payment & Payout (service_request_occurrences)" as PaySM {
+    [*] --> PAY_PENDING : occurrenceCreated() [FE-03, FE-04]
+    PAY_PENDING --> PAYMENT_DUE : customerAcceptsReport() [FE-06]
+    PAYMENT_DUE --> PAID : payOSWebhookVerified() / confirmPayment() [FE-06]
+    PAID --> PAYOUT_ELIGIBLE : unlockPartnerPayout() [FE-06]
+    PAYOUT_ELIGIBLE --> PAYOUT_PAID : recordPayout() [FE-06]
+    PAYOUT_PAID --> [*]
   }
 ```
 
 | Domain Entity | Lifecycle States & Key Transitions | Business Rule Guards |
 | --- | --- | --- |
-| **Enterprise Subscription**<br>(`Subscription.Status`) | - **States**: `PENDING`, `ACTIVE`, `PAST_DUE`, `SUSPENDED`, `EXPIRED`, `CANCELLED`<br>- **Request**: `POST /subscriptions` (`-> PENDING`)<br>- **Activate**: Wire confirmation or PayPal capture (`-> ACTIVE`)<br>- **Renew / End**: Prior active term transitions to `EXPIRED` | - Enforces at most one `ACTIVE` subscription per organization (unique active subscription index). |
-| **Drone Equipment Lease & Pool**<br>(`DroneLeaseStatus`) | - **Lease States**: `PENDING`, `ACTIVE`, `RECLAIMED`, `CANCELLED`<br>- **Pool States**: `AVAILABLE`, `LEASED`, `MAINTENANCE`, `RETIRED`<br>- **Activate / Reclaim**: `/confirm-payment` (`-> ACTIVE`), `/reclaim` (`-> RECLAIMED`) | - Auto-provisions customer `Drone` (`LEASED`, `ACTIVE`) on activation.<br>- Retires customer `Drone` (`RETIRED`) on reclaim. |
-| **Asset & Drone Fleet**<br>(`AssetStatus`, `DroneStatus`) | - **Asset States**: `ACTIVE`, `INACTIVE`, `RETIRED`<br>- **Drone States**: `ACTIVE`, `MAINTENANCE`, `SUSPENDED`, `RETIRED`<br>- **Transitions**: `/retire` (`-> RETIRED`), `/serviceability` | - `RETIRED` is terminal and blocks new edits or schedules.<br>- Only `ACTIVE` assets and `ACTIVE` drones can be scheduled. |
-| **Recurring Schedule & Inbox**<br>(`ScheduleStatus`) | - **Schedule**: `ACTIVE`, `PAUSED`, `ENDED` (`/pause`, `/resume`, `/end`)<br>- **Occurrence**: `GENERATED`, `BLOCKED`, `SKIPPED` (`/retry`, `/skip`)<br>- **Notification**: `PENDING`, `SENT`, `READ`, `FAILED` | - At most one `ACTIVE` schedule per asset.<br>- `GENERATED` occurrence links to a dispatched `ASSIGNED` inspection. |
+| **Onboarding Applications**<br>(`ProspectiveCustomerRegistration`, `InspectorPartnerApplication`, `DroneRegistrationApplication`) | - **States**: `PENDING`, `APPROVED`, `REJECTED`<br>- **Customer Airspace**: `NO_FLY_ZONE` rejected immediately (`403`); `RESTRICTED_ZONE` $\rightarrow$ `PENDING`; `CLEAR_ZONE` auto-approved<br>- **Partner & Drone**: `/approve` (`-> APPROVED`), `/reject` (`-> REJECTED`) | - Partner Inspector approval requires `partnerContractFileKey`.<br>- Drone approval requires all 3 files (`REGISTRATION`, `OWNERSHIP`, `INSPECTION`) and provisions `Drone` (`inspector_owner_id`). |
+| **Service Request & Quote**<br>(`ServiceRequestStatus`) | - **States**: `OPEN`, `QUOTED`, `ACCEPTED`, `CONTRACT_SIGNED`, `ASSIGNED`, `CANCELLED`<br>- **Transitions**: `/quotes` (`-> QUOTED`), `/accept` (`-> ACCEPTED`), `/signed-contract` (`-> CONTRACT_SIGNED`), `/assign` (`-> ASSIGNED`) | - Quote drone must belong to the selected partner Inspector (`inspector_owner_id`).<br>- Recurring occurrences inherit the parent request's signed paper contract (Decision D2). |
+| **Occurrence Payment & Payout**<br>(`OccurrencePaymentStatus`, `PayoutStatus`) | - **Payment States**: `PENDING` $\rightarrow$ `PAYMENT_DUE` $\rightarrow$ `PAID`<br>- **Payout States**: `PENDING` $\rightarrow$ `ELIGIBLE` $\rightarrow$ `PAID`<br>- **Transitions**: `/accept` (`-> PAYMENT_DUE`), `/payos/create-payment-link` & `/webhooks/payos` (`-> PAID`), `/record-payout` (`-> PAID`) | - Customer PDF report download requires `payment_status = PAID` (`402 Payment Required` when `PAYMENT_DUE`).<br>- Net payout deducts platform commission and PIT/TNCN withholding per `inspection_finance_settings`. |
+| **Asset & Drone Fleet**<br>(`AssetStatus`, `DroneStatus`) | - **Asset States**: `ACTIVE`, `INACTIVE`, `RETIRED`<br>- **Drone States**: `AVAILABLE` / `ACTIVE`, `MAINTENANCE`, `SUSPENDED`, `RETIRED`<br>- **Transitions**: `/retire` (`-> RETIRED`), `/serviceability` | - Asset creation in a `NO_FLY_ZONE` is blocked.<br>- Only `ACTIVE` assets and `ACTIVE` inspector-owned drones can be dispatched. |
 
 **2. Inspection, FieldSession, Finding & InspectionReport State Machines**
 
@@ -624,16 +671,15 @@ stateDiagram-v2
 %% title: Inspection, FieldSession and InspectionReport State Machine Diagram
 stateDiagram-v2
   direction TB
-  [*] --> SCHEDULED : createInspection(inspectorId, droneId) [FR-06, FR-07]
-  SCHEDULED --> IN_PROGRESS : startFieldSession(preFlightNote) [FR-09] (requires hasFlightPermit())
-  IN_PROGRESS --> SCHEDULED : postponeSession(reason) [FR-09]
-  IN_PROGRESS --> FIELD_COMPLETED : completeSession(outcomeNotes) [FR-09]
-  FIELD_COMPLETED --> IN_PROGRESS : startAdditionalSession() [FR-09]
-  FIELD_COMPLETED --> UNDER_REVIEW : submitReport() [FR-13]
-  UNDER_REVIEW --> FIELD_COMPLETED : returnToDraft() / withdraw() [FR-13, FR-14]
-  UNDER_REVIEW --> COMPLETED : publishReport() (PDF + SHA-256) [FR-14]
-  FIELD_COMPLETED --> COMPLETED : publishReport() [FR-14]
-  SCHEDULED --> CANCELLED : cancel() [FR-06]
+  [*] --> SCHEDULED : assignOccurrence / createInspection(inspectorId, droneId) [FE-04]
+  SCHEDULED --> IN_PROGRESS : startFieldSession(preFlightNote) [FE-05] (requires hasFlightPermit())
+  IN_PROGRESS --> SCHEDULED : abortSession(reason) [FE-05] (notifies MANAGER)
+  IN_PROGRESS --> FIELD_COMPLETED : completeSession(outcomeNotes) [FE-05]
+  FIELD_COMPLETED --> IN_PROGRESS : startAdditionalSession() [FE-05]
+  FIELD_COMPLETED --> UNDER_REVIEW : autoCompileAndSubmitReport() [FE-06]
+  UNDER_REVIEW --> FIELD_COMPLETED : returnReport(reason) / withdraw() [FE-06]
+  UNDER_REVIEW --> COMPLETED : publishReport() (PDF + SHA-256) [FE-06]
+  SCHEDULED --> CANCELLED : cancel() [FE-04]
   COMPLETED --> [*]
   CANCELLED --> [*]
 ```
@@ -642,23 +688,23 @@ stateDiagram-v2
 %% title: InspectionReport Version Lifecycle State Machine Diagram
 stateDiagram-v2
   direction LR
-  [*] --> SUBMITTED : submitReport (auto-compiled from confirmed findings) [FR-13]
-  SUBMITTED --> RETURNED : reviewBy(approve=false, reason) [FR-14]
-  SUBMITTED --> RETURNED : withdraw() (before review decision) [FR-13]
-  RETURNED --> SUBMITTED : submit() (after re-confirming findings) [FR-13]
-  SUBMITTED --> APPROVED : reviewBy(approve=true) [FR-14]
-  APPROVED --> PUBLISHED : publish() (renders PDF to MinIO) [FR-14]
-  PUBLISHED --> SUPERSEDED : newer version PUBLISHED [FR-14]
+  [*] --> SUBMITTED : submitReport (auto-compiled from confirmed findings) [FE-06]
+  SUBMITTED --> RETURNED : reviewBy(approve=false, reason) [FE-06]
+  SUBMITTED --> RETURNED : withdraw() (before review decision) [FE-06]
+  RETURNED --> SUBMITTED : submit() (after re-confirming findings) [FE-06]
+  SUBMITTED --> APPROVED : reviewBy(approve=true) [FE-06]
+  APPROVED --> PUBLISHED : publish() (renders PDF to MinIO) [FE-06]
+  PUBLISHED --> SUPERSEDED : newer version PUBLISHED [FE-06]
   PUBLISHED --> [*]
   SUPERSEDED --> [*]
 ```
 
 | Domain Entity | Lifecycle States & Key Transitions | Business Rule Guards |
 | --- | --- | --- |
-| **Inspection Mission**<br>(`InspectionStatus`) | - **States**: `SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED`<br>- **Key Steps**: Create (`-> SCHEDULED`), Field Session (`-> IN_PROGRESS -> FIELD_COMPLETED`), Submit Report (`-> UNDER_REVIEW`), Publish / Close (`-> COMPLETED`) | - Flight readiness verified via permit on file (`hasFlightPermit()`) and active pilot licensing.<br>- Findings confirmation and report submission occur within `FIELD_COMPLETED`; publication moves directly to `COMPLETED`. |
-| **Field Session**<br>(`FieldSessionStatus`) | - **States**: `PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `ABORTED` (historical `POSTPONED` retained for read-only history)<br>- **Transitions**: Start (`/field-sessions`), Abort (`/abort`), Complete (`/completion`) | - Requires non-blank `preFlightChecklistNote` on start and `outcomeNotes` on completion.<br>- Aborting a session returns the inspection to `SCHEDULED` and emits an alert to managers for rescheduling, reassignment, or cancellation.<br>- At most one `IN_PROGRESS` session per mission. |
-| **Defect Finding**<br>(`FindingStatus`) | - **States**: `PENDING`, `CONFIRMED`, plus soft-delete (`is_deleted`)<br>- **Transitions**: AI/Manual create (`-> PENDING`), Confirm (`/confirmation -> CONFIRMED`), Retire (`DELETE`), Restore (`/restore`) | - Every `PENDING` AI candidate must be confirmed or soft-deleted before `POST /findings/confirm`. |
-| **Inspection Report**<br>(`ReportStatus`) | - **States**: `SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`<br>- **Transitions**: Submit (`/report/draft`), Review (`/review`), Publish (`/publish`), Withdraw (`/withdraw`) | - Independent reviewer must not equal the author `Inspector`.<br>- Evidence and findings are locked during `SUBMITTED`, `APPROVED`, and `PUBLISHED`, and editable when `RETURNED`. |
+| **Inspection Mission**<br>(`InspectionStatus` — 6 Canonical States `V15`) | - **States**: `SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED`<br>- **Key Steps**: Dispatch (`-> SCHEDULED`), Field Session (`-> IN_PROGRESS -> FIELD_COMPLETED`), Auto-Compile & Submit Report (`-> UNDER_REVIEW`), Publish (`-> COMPLETED`) | - Flight readiness verified via permit on file (`hasFlightPermit()`) and active pilot licensing.<br>- Findings confirmation and report auto-compilation occur in `FIELD_COMPLETED`; publication moves directly to `COMPLETED`. |
+| **Field Session**<br>(`FieldSessionStatus`) | - **States**: `PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `ABORTED` (historical `POSTPONED` retained for read-only history)<br>- **Transitions**: Start (`/field-sessions`), Abort (`/abort`), Complete (`/completion`) | - Requires non-blank `preFlightChecklistNote` on start and `outcomeNotes` on completion.<br>- Aborting a session returns the inspection to `SCHEDULED` and emits `FieldSessionAbortedEvent` to `MANAGER` for rescheduling, reassignment, or cancellation.<br>- At most one `IN_PROGRESS` session per mission. |
+| **Defect Finding & 3-Way Verification**<br>(`FindingStatus`, `ResolutionStatus`) | - **Finding States**: `PENDING`, `CONFIRMED`, plus soft-delete (`is_deleted`)<br>- **Re-inspection 3-Way States**: `RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`<br>- **Transitions**: AI/Manual create (`-> PENDING`), Confirm (`/confirmation -> CONFIRMED`), Verify (`/reinspection-verifications/{id}`) | - Every `PENDING` AI candidate must be confirmed or soft-deleted before `POST /findings/confirm`.<br>- `RE_INSPECTION` compares Prior Defect vs Engineer Repair Proof (`repair_proof_url`) vs Drone Re-capture (`new_evidence_id`). |
+| **Inspection Report**<br>(`ReportStatus` — 5 Canonical States `V17`) | - **States**: `SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`<br>- **Transitions**: Auto-Compile & Submit (`/report/draft`), Review (`/review`), Publish (`/publish`), Withdraw (`/withdraw`) | - `DRAFT` and `AUTHOR_VERIFIED` states and manual `content_snapshot` notes are eliminated (`V16`, `V17`).<br>- Independent reviewer (`MANAGER` / `ADMIN`) must not equal the author `INSPECTOR`.<br>- `CUSTOMER` access is restricted to `PUBLISHED` reports (`403 REPORT_NOT_PUBLISHED`). |
 
 **3. Maintenance Work Order & Sub-Entity State Machines**
 
@@ -666,29 +712,30 @@ stateDiagram-v2
 %% title: MaintenanceWorkOrder 12-State Lifecycle Diagram
 stateDiagram-v2
   direction TB
-  [*] --> WO_DRAFT : createWorkOrder() [FR-15]
-  WO_DRAFT --> AWAITING_APPROVAL : submitEstimate() [FR-15]
-  AWAITING_APPROVAL --> APPROVED : approveEstimate() [FR-15]
-  AWAITING_APPROVAL --> REWORK_REQUIRED : rejectEstimate(reason) [FR-15]
-  REWORK_REQUIRED --> AWAITING_APPROVAL : submitEstimate() (revised) [FR-15]
-  APPROVED --> READY : release() [FR-15]
-  READY --> IN_PROGRESS : start() [FR-15]
-  IN_PROGRESS --> WORK_COMPLETED : declareComplete() (all logs VERIFIED) [FR-15]
-  WORK_COMPLETED --> SUBMITTED_FOR_ACCEPTANCE : submitCompletionReport() [FR-16]
-  SUBMITTED_FOR_ACCEPTANCE --> ACCEPTED : recordAcceptance(ACCEPTED) [FR-16]
-  SUBMITTED_FOR_ACCEPTANCE --> REWORK_REQUIRED : recordAcceptance(REWORK_REQUIRED) [FR-16]
-  SUBMITTED_FOR_ACCEPTANCE --> REINSPECTION_REQUIRED : recordAcceptance(REINSPECTION_REQUIRED) [FR-16]
-  REWORK_REQUIRED --> IN_PROGRESS : resumeAfterRework() [FR-15]
-  REINSPECTION_REQUIRED --> IN_PROGRESS : resumeAfterReinspection() [FR-15]
-  ACCEPTED --> COST_RECONCILED : reconcileCosts(actualLines) [FR-16]
-  COST_RECONCILED --> CLOSED : close() [FR-16]
+  [*] --> WO_DRAFT : createWorkOrder(initialTasks) [FE-07]
+  WO_DRAFT --> AWAITING_APPROVAL : submitEstimate() [FE-07]
+  AWAITING_APPROVAL --> APPROVED : approveEstimate() [FE-07]
+  AWAITING_APPROVAL --> REWORK_REQUIRED : rejectEstimate(reason) [FE-07]
+  REWORK_REQUIRED --> AWAITING_APPROVAL : submitEstimate() (revised) [FE-07]
+  APPROVED --> READY : release() [FE-07]
+  READY --> IN_PROGRESS : start() [FE-07]
+  IN_PROGRESS --> WORK_COMPLETED : declareComplete() (all logs VERIFIED) [FE-07]
+  WORK_COMPLETED --> SUBMITTED_FOR_ACCEPTANCE : submitCompletionReport(autoDraft) [FE-08]
+  SUBMITTED_FOR_ACCEPTANCE --> ACCEPTED : recordAcceptance(ACCEPTED) [FE-08]
+  SUBMITTED_FOR_ACCEPTANCE --> REWORK_REQUIRED : recordAcceptance(REWORK_REQUIRED) [FE-08]
+  SUBMITTED_FOR_ACCEPTANCE --> REINSPECTION_REQUIRED : recordAcceptance(REINSPECTION_REQUIRED) [FE-08]
+  REWORK_REQUIRED --> IN_PROGRESS : resumeAfterRework() [FE-07]
+  REINSPECTION_REQUIRED --> SUBMITTED_FOR_ACCEPTANCE : reinspectionReportPublished() [FE-08]
+  REINSPECTION_REQUIRED --> IN_PROGRESS : resumeAfterReinspection() [FE-07]
+  ACCEPTED --> COST_RECONCILED : reconcileCosts(actualLines) [FE-08]
+  COST_RECONCILED --> CLOSED : close() [FE-08]
   CLOSED --> [*]
 ```
 
 | Domain Entity | Lifecycle States & Key Transitions | Business Rule Guards |
 | --- | --- | --- |
-| **Maintenance Work Order**<br>(`WorkOrderStatus`) | - **12 States**: `DRAFT`, `AWAITING_APPROVAL`, `APPROVED`, `READY`, `IN_PROGRESS`, `WORK_COMPLETED`, `SUBMITTED_FOR_ACCEPTANCE`, `ACCEPTED`, `REWORK_REQUIRED`, `REINSPECTION_REQUIRED`, `COST_RECONCILED`, `CLOSED`<br>- **Plan & Budget**: Create (`-> DRAFT`), Submit Estimate (`-> AWAITING_APPROVAL`), Approve (`-> APPROVED`)<br>- **Execute**: Release (`-> READY`), Start (`-> IN_PROGRESS`), Declare Complete (`-> WORK_COMPLETED`)<br>- **Accept & Close**: Submit Report (`-> SUBMITTED_FOR_ACCEPTANCE`), Accept (`-> ACCEPTED`), Reconcile (`-> COST_RECONCILED`), Close (`-> CLOSED`) | - Budget Approver and Accepting Reviewer must be independent `ORG_MANAGER`s outside the executing repair team.<br>- `REINSPECTION_REQUIRED` automatically creates a linked verification `Inspection`. |
-| **Estimate Version**<br>(`EstimateStatus`) | - **States**: `DRAFT`, `SUBMITTED`, `APPROVED`, `REJECTED`, `SUPERSEDED`<br>- **Transitions**: Submit (`/submit`), Approve (`/approve`, prior `-> SUPERSEDED`), Reject (`/reject`) | - Approver (`ORG_MANAGER`) must not equal `preparedByUserId`. |
-| **Maintenance Work Log**<br>(`WorkLogStatus`) | - **States**: `IN_PROGRESS`, `PAUSED_FOR_CHANGE`, `SUBMITTED`, `VERIFIED`<br>- **Transitions**: Log (`/work-logs`), Submit (`/submit`), Verify (`/verify` by Team Lead) | - Every submitted work log must be `VERIFIED` by the Team Lead before `declareComplete()` is allowed. |
+| **Maintenance Work Order**<br>(`WorkOrderStatus`) | - **12 States**: `DRAFT`, `AWAITING_APPROVAL`, `APPROVED`, `READY`, `IN_PROGRESS`, `WORK_COMPLETED`, `SUBMITTED_FOR_ACCEPTANCE`, `ACCEPTED`, `REWORK_REQUIRED`, `REINSPECTION_REQUIRED`, `COST_RECONCILED`, `CLOSED`<br>- **Plan & Budget**: Create with 1-Click `initialTasks` (`-> DRAFT`), Submit RAG Estimate (`-> AWAITING_APPROVAL`), Approve (`-> APPROVED`)<br>- **Execute**: Release (`-> READY`), Start (`-> IN_PROGRESS`), Batch-Verify & Declare Complete (`-> WORK_COMPLETED`)<br>- **Accept & Close**: Auto-Draft & Submit Report (`-> SUBMITTED_FOR_ACCEPTANCE`), Accept (`-> ACCEPTED`), Reconcile (`-> COST_RECONCILED`), Close (`-> CLOSED`) | - Budget Approver and Accepting Reviewer must be independent `CUSTOMER` users outside the executing repair team.<br>- `REINSPECTION_REQUIRED` emits `ReinspectionRequestedEvent` to spawn a linked `RE_INSPECTION` mission; `ReinspectionReportPublishedEvent` attaches the published report and reinstates the Work Order for final acceptance. |
+| **Estimate Version**<br>(`EstimateStatus`) | - **States**: `DRAFT`, `SUBMITTED`, `APPROVED`, `REJECTED`, `SUPERSEDED`<br>- **Transitions**: RAG Norms (`/suggest-estimate`), Submit (`/submit`), Approve (`/approve`, prior `-> SUPERSEDED`), Reject (`/reject`) | - Approver (`CUSTOMER`) must not equal `preparedByUserId`. |
+| **Maintenance Work Log**<br>(`WorkLogStatus`) | - **States**: `IN_PROGRESS`, `PAUSED_FOR_CHANGE`, `SUBMITTED`, `VERIFIED`<br>- **Transitions**: Log (`/work-logs`), Submit (`/submit`), Verify (`/verify` or 1-Click `/work-logs/batch-verify` by Team Lead) | - Every submitted work log must be `VERIFIED` by the Team Lead and no Change Order may be `AWAITING_APPROVAL` before `declareComplete()` is allowed. |
 | **Change Order**<br>(`ChangeOrderStatus`) | - **States**: `DRAFT`, `AWAITING_APPROVAL`, `APPROVED`, `REJECTED`, `RETURNED`, `SUPERSEDED`<br>- **Transitions**: Propose (`/changes`), Decide (`/approve`, `/reject`, `/return`) | - Approved deltas adjust the budget ceiling during cost reconciliation without mutating the initial baseline. |
-| **Completion Report**<br>(`ReportVersionStatus`) | - **States**: `DRAFT`, `AUTHOR_VERIFIED`, `SUBMITTED`, `RETURNED`, `APPROVED`, `SUPERSEDED`<br>- **Transitions**: Author (`/reports`, `/verify`, `/submit`), Accept (`/acceptance-decisions`) | - Only the designated Report Author can verify/submit; only the independent Accepting Reviewer can accept. |
+| **Completion Report**<br>(`ReportVersionStatus`) | - **States**: `DRAFT`, `AUTHOR_VERIFIED`, `SUBMITTED`, `RETURNED`, `APPROVED`, `SUPERSEDED`<br>- **Transitions**: Auto-Draft (`/reports/auto-draft`), Verify & Submit (`/verify`, `/submit`), RAG Audit (`/acceptance-compliance`), Accept (`/acceptance-decisions`) | - Only the designated Report Author can verify/submit; only the independent `CUSTOMER` Accepting Reviewer can accept. |

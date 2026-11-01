@@ -9,51 +9,55 @@ source: "report3-software-requirement-specification.docx"
 
 ## 1. Product Overview
 
-SmartDroneInspection is an enterprise web and mobile platform that helps infrastructure-owning organizations (such as bridge authorities, building operators, power utilities, and industrial facilities) manage structural inspections and maintenance repairs from start to finish. Organizations can subscribe to the platform, register their infrastructure assets and drone fleets (or lease drones from the platform), schedule one-off or recurring inspections, check restricted airspace zones, log field flight sessions, review AI-detected defects on inspection photos, publish official PDF inspection reports, and manage maintenance repair work orders and costs.
+SmartDroneInspection is a web and mobile infrastructure inspection and corrective maintenance service platform that helps infrastructure-owning customer organizations (such as bridge authorities, building operators, power utilities, and industrial facilities) commission certified drone inspections and govern engineering repairs from start to finish. Customer organizations register their workspace with an initial infrastructure asset verified against Vietnam prohibited airspace zones, submit one-time or recurring inspection service requests, negotiate VND/USD quotations via order chat, sign offline service contracts, track 5-stage mission progress, accept published PDF inspection reports, pay online via PayOS (VietQR), and manage RAG-assisted maintenance repair work orders, 3-way re-inspection verification, and cost closure. Meanwhile, the Platform coordinates a vetted network of third-party partner Inspectors and their registered drones across customer engagements.
 
 ```mermaid
 %% title: System Context Diagram
 flowchart LR
-  PA["Platform Admin"]
-  PM["Platform Manager"]
-  OM["Organization Manager"]
-  IN["Inspector"]
-  ME["Maintenance Engineer"]
+  PA["Platform Admin (ADMIN)"]
+  PM["Platform Manager (MANAGER)"]
+  CU["Customer (CUSTOMER)"]
+  IN["Partner Inspector (INSPECTOR)"]
+  ME["Maintenance Engineer (MAINTENANCE_ENGINEER)"]
 
   SDI[["SmartDroneInspection Platform
-(Web Portal & Mobile Application)"]]
+(Web Portals & Flutter Mobile App)"]]
 
-  PAYPAL["Online Payment Gateway
-(PayPal)"]
+  PAYOS["Online Payment Gateway
+(PayOS VietQR)"]
+  OAUTH["Identity Provider
+(Google OAuth2)"]
   YOLO["AI Defect Detection
 Service (YOLO11)"]
-  LLM["AI Report & Repair Scope
-Advisory Service"]
+  LLM["AI Executive Summary &
+pgvector RAG Advisory Service"]
 
-  PA -->|"Platform accounts, asset categories
-& audit logs"| SDI
-  PM -->|"Subscription & drone lease approvals,
-leasable drone pool"| SDI
-  OM -->|"Organization setup, assets, fleet, schedules,
-report & budget approvals"| SDI
-  IN -->|"Pilot license, flight permits, field sessions,
-photos, findings & report drafts"| SDI
-  ME -->|"Repair plans, cost estimates,
-work logs & completion reports"| SDI
+  PA -->|"Platform accounts, asset categories,
+onboarding reviews & finance settings"| SDI
+  PM -->|"Partner & drone approvals, quotes,
+chat, signed contracts, dispatch & report publish"| SDI
+  CU -->|"Assets, service requests, quote acceptance,
+PayOS payment, work orders, budgets & acceptance"| SDI
+  IN -->|"Pilot license, owned drones, flight permits,
+field sessions, photo/MP4 evidence & findings"| SDI
+  ME -->|"RAG repair plans, cost estimates,
+work logs, batch verification & completion reports"| SDI
 
-  SDI <-->|"Online subscription &
-lease payments"| PAYPAL
+  SDI <-->|"Google OAuth2 sign-in
+(Web & Mobile deep-link)"| OAUTH
+  SDI <-->|"Service occurrence VietQR
+checkout & HMAC webhooks"| PAYOS
   SDI <-->|"Inspection photos ->
-suggested defects"| YOLO
-  SDI <-->|"Report drafts &
-repair recommendations"| LLM
+candidate defects"| YOLO
+  SDI <-->|"Executive summaries, RAG repair scope,
+cost norms & compliance audits"| LLM
 ```
 
-The platform supports five user roles across two management levels:
-- **Platform Admin**: Manages platform-level administrator accounts, initial customer organization accounts, standard infrastructure asset categories, and system audit logs.
-- **Platform Manager**: Manages commercial subscription requests, confirms bank transfer or online payments, manages the platform's leasable drone catalog, and approves or reclaims drone equipment lease.
-- **Organization Manager**: Manages a customer organization's workspace, workforce accounts, subscriptions, owned and leased drones, infrastructure assets, inspection schedules, report approvals, and maintenance budgets and acceptance.
-- **Inspector**: Manages remote pilot license details, checks airspace advisories, uploads mission flight permits, logs field flight sessions on Web or Mobile, uploads inspection photos, reviews AI-suggested defects, and writes inspection reports.
-- **Maintenance Engineer**: Plans and executes maintenance work orders as a Team Lead, Report Author, or Team Member, prepares repair cost estimates, logs repair work, and writes maintenance completion reports.
+The platform enforces five canonical login roles across three operational zones (`PLATFORM`, `CUSTOMER_ORGANIZATION`, and `INSPECTOR_PARTNER`):
+- **Platform Admin (`ADMIN`)**: Manages platform-level internal accounts, standard infrastructure asset categories, customer airspace review queues, partner inspector and drone registration approvals, platform finance settings (commission, VAT, and PIT/TNCN withholding rates), and system audit logs.
+- **Platform Manager (`MANAGER`)**: Manages third-party partner Inspectors and their registered drones, reviews customer service requests, negotiates via order chat, issues versioned VND/USD quotations, uploads executed paper service contracts, dispatches partner Inspectors and drones across occurrences with cross-organization conflict checking, handles aborted-session rescheduling/reassignment, independently reviews and publishes immutable PDF inspection reports, and records partner payouts.
+- **Customer (`CUSTOMER`)**: Registers the customer organization and initial asset through the airspace no-fly zone gate, manages infrastructure assets and checkpoints, provisions customer Maintenance Engineer accounts, submits one-time or recurring service requests, accepts quotations, tracks 5-stage mission progress, accepts published inspection reports, settles service fees via PayOS (VietQR), creates maintenance work orders from confirmed defects, approves repair budgets and Change Orders, requests re-inspection verification flights, and performs independent technical acceptance and cost closure.
+- **Inspector (`INSPECTOR`)**: Applies as a licensed partner drone pilot (without requiring drone ownership at signup), registers owned drones with three mandatory documents (registration, ownership, and technical inspection), uploads mission flight permits, executes on-site field flight sessions (`Start`, `Complete`, `Abort`) on Web or Mobile, uploads geotagged photos and MP4 videos, reviews `YOLO11` defect suggestions, confirms the findings baseline, submits auto-compiled inspection reports, and performs 3-way defect verification during re-inspection missions.
+- **Maintenance Engineer (`MAINTENANCE_ENGINEER`)**: Provisioned within a Customer organization to plan and execute maintenance work orders as a designated `Team Lead`, `Report Author`, or `Team Member`, uses the `pgvector` RAG advisor for 1-click task initialization and norm-based cost estimation, logs field repair work with before-and-after proof, batch-verifies team work logs, and submits auto-drafted maintenance completion reports.
 
-**System Boundaries**: SmartDroneInspection manages inspection planning, compliance records, photos, AI-assisted analysis, reporting, and maintenance tracking. It does not pilot physical drones or connect directly to drone flight controllers (`BR-16`). All AI defect detections and AI-generated text are suggestions only and require human review before becoming official records (`BR-20`, `BR-27`).
+**System Boundaries**: SmartDroneInspection governs commercial service requests, aviation compliance records, aerial photo/video evidence, human-verified AI defect analysis, official PDF reporting, PayOS settlement, and engineering maintenance tracking across eight product features (`FE-01` to `FE-08`). It does not pilot physical drones or connect directly to aircraft flight controllers (`BR-16`). All AI defect detections, executive summaries, and RAG engineering recommendations are advisory only and require explicit human verification before becoming official records (`BR-20`, `BR-27`).

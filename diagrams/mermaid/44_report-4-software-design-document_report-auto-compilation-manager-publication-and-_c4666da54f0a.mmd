@@ -1,0 +1,34 @@
+%% title: Report Auto-Compilation, Manager Publication and PayOS Settlement Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Inspector as Assigned Partner Inspector
+  actor Manager as Platform Manager (MANAGER)
+  actor Customer as Customer (CUSTOMER)
+  participant Client as Web Portal
+  participant InspCtrl as InspectionController
+  participant PayOS as PayOS Gateway & Webhook
+  participant MinIO as MinIO Object Storage
+  participant DB as PostgreSQL (inspection_reports, inspections, occurrences)
+
+  Inspector->>Client: Open Report Tab (InspectionDraftPage auto-triggers compilation)
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/report/draft
+  InspCtrl->>DB: autoCompileFromConfirmedFindings() -> Report: SUBMITTED, Inspection: UNDER_REVIEW
+  InspCtrl-->>Client: 200 OK (InspectionReportResponse status=SUBMITTED)
+
+  Manager->>Client: View AI Summary (/ai-summary), Review & Publish Report
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/report/versions/{vId}/review?approve=true
+  InspCtrl->>DB: reviewBy(managerId != inspectorId, approve=true) -> Report: APPROVED
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/report/versions/{vId}/publish
+  InspCtrl->>MinIO: putObject(renderedPdfBytes, sha256)
+  InspCtrl->>DB: publish() -> Report: PUBLISHED, Inspection: COMPLETED
+  InspCtrl-->>Client: 200 OK (ReportPublishedResponse)
+
+  Customer->>Client: Review Published Report & Click Accept Report
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/report/versions/{vId}/accept
+  InspCtrl->>DB: markOccurrencePaymentDue(paymentStatus=PAYMENT_DUE)
+  Customer->>Client: Click Proceed to VietQR Payment via PayOS
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/payos/create-payment-link
+  InspCtrl->>PayOS: createPaymentLink(payosOrderCode, amountVnd)
+  PayOS-->>Client: Redirect to checkoutUrl (VietQR)
+  PayOS->>DB: POST /api/v1/webhooks/payos (HMAC-SHA256 verified) -> paymentStatus=PAID, payoutStatus=ELIGIBLE
+  Customer->>InspCtrl: GET /api/v1/inspections/{id}/report/versions/{vId}/document (200 OK PDF Stream)

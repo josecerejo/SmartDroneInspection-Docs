@@ -1,0 +1,21 @@
+%% title: MaintenanceWorkOrder 12-State Lifecycle Diagram
+stateDiagram-v2
+  direction TB
+  [*] --> WO_DRAFT : createWorkOrder(initialTasks) [FE-07]
+  WO_DRAFT --> AWAITING_APPROVAL : submitEstimate() [FE-07]
+  AWAITING_APPROVAL --> APPROVED : approveEstimate() [FE-07]
+  AWAITING_APPROVAL --> REWORK_REQUIRED : rejectEstimate(reason) [FE-07]
+  REWORK_REQUIRED --> AWAITING_APPROVAL : submitEstimate() (revised) [FE-07]
+  APPROVED --> READY : release() [FE-07]
+  READY --> IN_PROGRESS : start() [FE-07]
+  IN_PROGRESS --> WORK_COMPLETED : declareComplete() (all logs VERIFIED) [FE-07]
+  WORK_COMPLETED --> SUBMITTED_FOR_ACCEPTANCE : submitCompletionReport(autoDraft) [FE-08]
+  SUBMITTED_FOR_ACCEPTANCE --> ACCEPTED : recordAcceptance(ACCEPTED) [FE-08]
+  SUBMITTED_FOR_ACCEPTANCE --> REWORK_REQUIRED : recordAcceptance(REWORK_REQUIRED) [FE-08]
+  SUBMITTED_FOR_ACCEPTANCE --> REINSPECTION_REQUIRED : recordAcceptance(REINSPECTION_REQUIRED) [FE-08]
+  REWORK_REQUIRED --> IN_PROGRESS : resumeAfterRework() [FE-07]
+  REINSPECTION_REQUIRED --> SUBMITTED_FOR_ACCEPTANCE : reinspectionReportPublished() [FE-08]
+  REINSPECTION_REQUIRED --> IN_PROGRESS : resumeAfterReinspection() [FE-07]
+  ACCEPTED --> COST_RECONCILED : reconcileCosts(actualLines) [FE-08]
+  COST_RECONCILED --> CLOSED : close() [FE-08]
+  CLOSED --> [*]

@@ -1,0 +1,30 @@
+%% title: Service Request Negotiation, Signed Contract and Cross-Org Partner Dispatch Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Cust as Customer (CUSTOMER)
+  actor Mgr as Platform Manager (MANAGER)
+  participant Ctrl as ContractWorkflowController
+  participant Svc as ContractWorkflowService
+  participant Bridge as Mf2InspectionAssignmentAdapter
+  participant MinIO as MinIO Object Storage
+  participant DB as PostgreSQL (service_requests, quotes, occurrences, inspections)
+
+  Cust->>Ctrl: POST /api/v1/contracts/requests (assetId, ONE_TIME/RECURRING, window)
+  Ctrl->>Svc: create(customerId, request) -> status=OPEN
+  Mgr->>Ctrl: POST /api/v1/contracts/requests/{id}/quotes (inspectorId, inspectorOwnedDroneId, VND/USD)
+  Ctrl->>Svc: issueQuote() -> verifyDroneOwnedByInspector & saveQuote(versionNo) -> status=QUOTED
+  Cust->>Ctrl: POST /api/v1/contracts/requests/{id}/messages (Order Chat negotiation)
+  Cust->>Ctrl: POST /api/v1/contracts/requests/{id}/accept?versionNo={v}
+  Ctrl->>Svc: acceptQuote() -> materializeOccurrences(PENDING_ASSIGNMENT) -> status=ACCEPTED
+
+  Mgr->>Ctrl: POST /api/v1/contracts/requests/{id}/signed-contract (MultipartFile PDF/DOCX/Image)
+  Ctrl->>Svc: uploadSignedContract()
+  Svc->>MinIO: putObject(signedContractBytes, sha256)
+  Svc->>DB: saveContractMetadata & inheritAcrossOccurrences() -> status=CONTRACT_SIGNED
+
+  Mgr->>Ctrl: POST /api/v1/contracts/requests/{id}/occurrences/{occId}/assign
+  Ctrl->>Svc: assignOccurrence(inspectorId, droneId, plannedStartAt, plannedEndAt)
+  Svc->>Bridge: assignPartnerInspection()
+  Bridge->>DB: verifyPilotLicense & verifyNoCrossOrgConflict(hasPlatformPartnerScheduleConflict)
+  Bridge->>DB: insertInspection(status=SCHEDULED, partnerAssignment=true)
+  Bridge-->>Svc: inspectionId -> Occurrence: ASSIGNED, ServiceRequest: ASSIGNED

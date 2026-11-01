@@ -1,0 +1,31 @@
+%% title: YOLO11 Defect Detection, Vision Fallback and Finding Confirmation Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Inspector as Assigned Partner Inspector
+  participant Client as Web Portal
+  participant InspCtrl as InspectionController
+  participant Infer as PrimaryWithFallbackInference
+  participant YoloSvc as FastAPI YOLO11 (/predict)
+  participant VisionLLM as Vision LLM Fallback
+  participant DB as PostgreSQL (findings, inspections)
+
+  Inspector->>Client: Select Evidence Image & Click AI Analyze
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/evidence/{evidenceId}/analyze
+  InspCtrl->>Infer: analyze(imageBytes, contentType)
+  Infer->>YoloSvc: POST /predict (multipart image)
+  YoloSvc-->>Infer: YOLO Detections
+  opt YOLO returns empty detections (ac50d56)
+    Infer->>VisionLLM: analyzeImageWithVisionModel(imageBytes)
+    VisionLLM-->>Infer: Fallback Candidate Detections
+  end
+  InspCtrl->>DB: insertFindings(status=PENDING, confidence, boundingBox)
+  InspCtrl-->>Client: 200 OK (Pending Candidates Rendered on Capture)
+
+  Inspector->>Client: Review Preview Chips, Edit Severity & Confirm Finding
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/findings/{findingId}/confirmation
+  InspCtrl->>DB: confirmFinding() -> status=CONFIRMED
+
+  Inspector->>Client: Confirm Official Findings Baseline
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/findings/confirm
+  InspCtrl->>DB: ensureNoPendingCandidates & saveSnapshotHash(findingsConfirmedAt, status remains FIELD_COMPLETED)
+  InspCtrl-->>Client: 200 OK

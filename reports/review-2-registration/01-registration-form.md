@@ -1,118 +1,76 @@
 ---
-title: "SWP490 Review 2 - Capstone Project Registration Form (Proposed Final v2.0)"
+title: "SWP490 Review 2 - Registration Form (v2.0)"
 document_type: review2-registration
 version: "2.0"
-date: "2026-10-27"
+date: "2026-11-01"
 project_code: "GFA26SE139"
 group_name: "FA26SE112"
 ---
 
-# I. Capstone Project Registration Form (Version 2.0)
+# I. Capstone Project Registration Form (Updated v2.0 for Review 2)
 
-| Field | Value |
-| --- | --- |
-| **Document Code** | `SWP490_GFA26SE139_R2_Registration` |
-| **Version** | `2.0 (Proposed Final at Review 2)` |
-| **Effective Date** | `2026-10-27` |
-| **Class / Group Name** | `FA26SE112` |
-| **Project Code** | `GFA26SE139` |
-| **Duration Time** | `From 09/2026 to 03/2027` |
-| **Profession & Specialty** | `Software Engineering (SE)` |
-| **Kind of Person Making Register** | `Lecturer & Students` |
+## 1. Capstone Project Name
+- **English Name**: **SmartDroneInspection: AI-powered Infrastructure Inspection Management Platform**
+- **Vietnamese Name**: **Nền tảng Quản lý Dịch vụ Kiểm tra và Bảo trì Hạ tầng bằng Drone ứng dụng Trí tuệ Nhân tạo**
+- **Abbreviation**: **SDI**
+- **Project Code**: `GFA26SE139` | **Group Name**: `FA26SE112`
 
-## 1. Register Information for Supervisors
+## 2. Project Team & Supervisors
 
-| No. | Full Name | Phone | E-Mail | Title |
-| :---: | --- | --- | --- | --- |
-| 1 | Phạm Minh Trí | — | `tripm14@fpt.edu.vn` | Giảng viên (Supervisor) |
-| 2 | Đặng Ngọc Minh Đức | — | `ducdnm2@fpt.edu.vn` | Giảng viên (Co-Supervisor) |
+### 2.1 Supervisors (Mentors)
 
-## 2. Register Information for Students
+| Full Name | Title / Department | Email | Phone | Role |
+| --- | --- | --- | --- | --- |
+| **Phạm Minh Trí** | Lecturer, Software Engineering Dept., FPT University HCMC | `tripm14@fpt.edu.vn` | — | Primary Supervisor |
+| **Đặng Ngọc Minh Đức** | Lecturer, Software Engineering Dept., FPT University HCMC | `ducdnm2@fpt.edu.vn` | — | Co-Supervisor |
 
-| No. | Full Name | Student Code | Phone | E-Mail | Role in Group |
-| :---: | --- | :---: | :---: | --- | :---: |
-| 1 | Trần Hoàng Trung Hiếu | `SE184212` | `0963832382` | `hieuthtse184212@fpt.edu.vn` | Leader |
-| 2 | Phùng Trung Quốc | `SE170027` | `0896986551` | `quocptse170027@fpt.edu.vn` | Member |
-| 3 | Trương Thái Như | `SE180082` | `0328416716` | `nhuttse180082@fpt.edu.vn` | Member |
-| 4 | Trần Tùng Bách | `SE180220` | `0378351050` | `bachttse180220@fpt.edu.vn` | Member |
+### 2.2 Student Members
 
-## 3. Register Content of Capstone Project
+| No. | Full Name | Student Code | Email | Phone | Role & Owned Features (`2` Features / Member) |
+| :---: | --- | :---: | --- | :---: | --- |
+| 1 | **Trần Hoàng Trung Hiếu** | `SE184212` | `hieuthtse184212@fpt.edu.vn` | `0963832382` | **Team Leader** — Owns `FE-02`, `FE-03` (`WF-01`) |
+| 2 | **Phùng Trung Quốc** | `SE170027` | `quocptse170027@fpt.edu.vn` | `0896986551` | **Member** — Owns `FE-04`, `FE-05` (`WF-02`) |
+| 3 | **Trần Tùng Bách** | `SE180220` | `bachttse180220@fpt.edu.vn` | `0378351050` | **Member** — Owns `FE-01`, `FE-06` (`WF-03`) |
+| 4 | **Trương Thái Như** | `SE180082` | `nhuttse180082@fpt.edu.vn` | `0328416716` | **Member** — Owns `FE-07`, `FE-08` (`WF-04`) |
 
-### 3.1. Capstone Project Name
-- **3.1.1. English**: `SmartDroneInspection: AI-powered Infrastructure Inspection Management Platform`
-- **3.1.2. Vietnamese**: `SmartDroneInspection: Nền tảng Quản lý Kiểm tra Hạ tầng bằng Drone tích hợp AI`
+---
 
-### 3.2. Main Proposal Content (Including Result and Product)
+## 3. Capstone Project Description
 
-#### a) Context
-Infrastructure assets such as bridges, commercial buildings, roads, transmission towers, solar farms, wind turbines, and industrial facilities require periodic structural inspections to ensure operational safety, regulatory compliance, and timely maintenance remediation. Traditional manual inspection processes are labor-intensive, fragmented across spreadsheets and paper checklists, and hazardous for field personnel.
+### 3.1 Business Context & Problem Statement
+Civil, industrial, and energy infrastructure operators (highway bridges, commercial buildings, transmission towers, solar farms, wind turbines) require periodic structural inspections and standards-compliant corrective maintenance. In practice, commercial service requests, quotations, signed paper contracts, partner drone pilot scheduling, Vietnam aviation compliance checks (Decision No. 18/2020/QĐ-TTg & Decree No. 288/2025/NĐ-CP), field flight logs, aerial imagery/video, defect analysis, formal PDF reporting, payment settlement, and maintenance work order cost reconciliation are fragmented across spreadsheets, chat apps, and manual file shares. This fragmentation prevents cross-customer schedule conflict detection, breaks traceability between physical structural defects and geotagged aerial evidence, and leaves maintenance budgets and post-repair re-inspections unaudited.
 
-While commercial drones allow organizations to capture high-resolution aerial imagery efficiently, infrastructure-owning enterprises still lack a centralized, multi-tenant Enterprise System platform that governs the complete enterprise lifecycle: tenant subscription & drone equipment leasing, asset checkpoint registration, aviation flight-permit readiness gates, field flight session logging, AI-assisted defect detection with mandatory human verification, certified PDF inspection reporting, and engineering maintenance work orders with itemized budget and acceptance controls.
+**SmartDroneInspection (SDI)** solves this by providing an end-to-end **Platform-Managed Infrastructure Inspection & Corrective Maintenance Service Platform** that unifies four core operational stages (`MF1` to `MF4` / `WF-01` to `WF-04`):
+1. **MF1 — Partner Inspector Onboarding, Customer Airspace Registration, Asset & Owned-Drone Registry**: Customer self-registration with initial asset evaluation against Vietnam No-Fly Zones (`NO_FLY_ZONE` rejected, `RESTRICTED_ZONE` routed to `PROSPECT_CUSTOMER` review, `CLEAR_ZONE` activated), Partner Inspector onboarding with remote pilot license and offline partner contract verification (no drone required at signup), Inspector-owned drone registration with 3 mandatory documents (`REGISTRATION`, `OWNERSHIP`, `INSPECTION`), customer asset catalog with standardized checkpoints, and Customer Maintenance Engineer provisioning.
+2. **MF2 — Service Requests, VND/USD Quotations, Order Chat, Signed Contracts & Partner Dispatch**: One-time and recurring customer Service Requests (`OPEN`), in-context Order Chat negotiation, versioned VND/USD Quotations bound to a partner Inspector and their owned drone (`QUOTED`), Quote Acceptance (`ACCEPTED`), offline Signed Paper Contract scan upload (`CONTRACT_SIGNED`, inherited across recurring occurrences per Decision D2), and cross-organization conflict-checked partner occurrence dispatch (`ASSIGNED` -> `Inspection: SCHEDULED`).
+3. **MF3 — Flight Permit Gate, Field Execution, Photo/MP4 Evidence, YOLO11 Detection, Auto-Compiled Report & PayOS Settlement**: Aviation flight permit upload and pilot license readiness guard (`hasFlightPermit()`), Web/Flutter Mobile 2-outcome field flight sessions (`IN_PROGRESS` -> `FIELD_COMPLETED` or `ABORTED` with automatic reversion to `SCHEDULED` and manager reschedule/reassign/cancel dispatch), photo and streaming `video/mp4` evidence intake into MinIO, `YOLO11` + Vision LLM fallback defect detection, findings preview chips & baseline confirmation, 6-state Inspection & 5-state auto-compiled Report submission (`SUBMITTED`, mission `UNDER_REVIEW`), AI Executive Summary card, independent `MANAGER` review and immutable SHA-256 PDF publication (`PUBLISHED`, mission `COMPLETED`), Customer report acceptance (`PAYMENT_DUE`), and **PayOS (VietQR)** payment settlement (`PAID`, unlocking PDF download and partner payout eligibility).
+4. **MF4 — Maintenance Work Orders, RAG Scope/Norms Advisor, Field Repair, 3-Way Re-inspection & Cost Closure**: Forwarded defect triage into `MaintenanceWorkOrder`s, `pgvector` RAG repair scope advisor (`TCVN`/`EN`/`ISO`) with 1-click `initialTasks` provisioning, team role allocation, RAG Cost & Norms Estimator (`suggest-estimate`), independent Customer budget & Change Order approval, field repair execution with 1-click Team Lead batch work-log verification (`batch-verify`), smart auto-drafted Maintenance Completion Report (`auto-draft`), RAG Technical Acceptance Compliance Audit (`acceptance-compliance`), automated 3-step/3-way Re-inspection defect verification loop (`RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`), independent Customer acceptance, baseline-to-actual cost reconciliation, and Work Order closure (`CLOSED`).
 
-Furthermore, physical aircraft flight control (RC telemetry and autopilot execution) must remain strictly separated from enterprise business governance. **SmartDroneInspection** is engineered as a multi-tenant Enterprise Inspection & Drone Equipment Leasing platform that manages the end-to-end inspection and maintenance lifecycle across Web and Mobile clients while enforcing human-in-the-loop accountability over AI computer vision and generative language models.
+### 3.2 Primary Actors & Five-Role Governance Model
+The platform enforces strict role-based and zone-scoped access control across **5 human login roles** in **3 operational zones** (`PLATFORM`, `INSPECTOR_PARTNER`, `CUSTOMER_ORGANIZATION`):
+- **Platform Admin (`ADMIN` — `ActorZone.PLATFORM`)**: Governs internal platform accounts (`MANAGER`, `ADMIN`), global asset categories, restricted-airspace prospective customer approvals, partner inspector & 3-document drone approvals, finance settings (`commission_rate`, `vat_rate`, `tncn_rate`), and system-wide security audit logs.
+- **Platform Manager (`MANAGER` — `ActorZone.PLATFORM`)**: Governs partner Inspector and owned-drone registries, customer Service Requests, Order Chat negotiation, VND/USD Quotations, signed paper contract uploads, cross-organization partner dispatch, abort re-dispatch (`Reschedule`, `Reassign`, `Cancel`), independent inspection report review/publication (`PUBLISHED`), and partner payouts.
+- **Partner Inspector (`INSPECTOR` — `ActorZone.INSPECTOR_PARTNER`)**: Independent licensed drone pilot (`organization_id = NULL`) who applies with a remote pilot license (drone optional at signup), registers owned drones with 3 documents (`REGISTRATION`, `OWNERSHIP`, `INSPECTION`), uploads mission flight permits, executes field sessions (`Start`, `Complete`, `Abort`) on Web and Flutter Mobile, uploads photo/MP4 evidence, confirms `YOLO11`/manual findings, submits auto-compiled reports, and performs 3-way defect verification on re-inspection missions.
+- **Customer (`CUSTOMER` — `ActorZone.CUSTOMER_ORGANIZATION`)**: Customer organization owner/manager who registers with an airspace-checked initial asset, provisions `MAINTENANCE_ENGINEER` accounts, manages organization assets, submits one-time/recurring Service Requests, accepts quotes, tracks 5-stage inspection progress, accepts published reports, settles fees via **PayOS (VietQR)**, creates maintenance work orders, approves repair budgets/Change Orders, triggers re-inspection missions, and acts as independent maintenance acceptance reviewer.
+- **Maintenance Engineer (`MAINTENANCE_ENGINEER` — `ActorZone.CUSTOMER_ORGANIZATION`)**: Customer engineering specialist (`Team Lead`, `Report Author`, `Team Member`) who invokes the `pgvector` RAG Scope Advisor and Cost Norms Estimator, executes field repair tasks, batch-verifies team work logs, submits auto-drafted completion reports, and reconciles actual costs.
+- **Automated System & AI Actors**: **Self-Hosted YOLO11 Service (`MBDD2025`) + Vision Fallback**; **LLM & `pgvector` RAG Advisor (`TCVN 9343:2012`, `EN 1504-9`, `ISO 12944-5`)**; **PayOS VietQR Gateway**; **Spring Modulith Outbox Scheduler**.
 
-#### b) Proposed Solutions
-**SmartDroneInspection** is architected as a modular, multi-tenant business and engineering governance platform rather than a real-time aircraft flight controller. It isolates platform governance from customer enterprise workspaces across **five distinct human roles**:
+### 3.3 Core Functional Scope (8 Mandatory Features — 2 Features per Member)
 
-**Human Actors (5 Roles across 2 Governance Zones)**
-- **Platform Admin (`Platform Admin` — Platform Zone)**: Governs technical platform administration, provisions platform accounts (`Platform Admin`, `Platform Manager`) and customer workspace managers (`Organization Manager`), maintains the global infrastructure asset category catalog (`asset_categories`), and reviews platform-wide security/audit logs (`audit_events`). Enforces strict single-role separation of duties (Platform Admin and Platform Manager single-role separation).
-- **Platform Manager (`Platform Manager` — Platform Zone)**: Governs commercial enterprise inspection subscriptions (`subscriptions`, `payment_transactions`), reconciles corporate wire or PayPal Orders v2 payments, manages the platform's serial-numbered leasable drone pool (`platform_drones`), approves and provisions drone equipment lease contracts (`drone_leases`) into customer fleets, and reclaims leased drones upon contract expiration.
-- **Organization Manager (`Organization Manager` — Customer Enterprise Zone)**: Registers and administers the customer organization workspace; requests Enterprise subscriptions (1, 6, 12, or custom 1–120 months) and drone equipment lease; provisions workforce accounts (`Inspector`, `Maintenance Engineer`); registers owned/leased drones (`drones`) and infrastructure assets (`assets`, `asset_documents`) with standardized inspection checkpoints (`inspection_items`); schedules one-off (`inspections`) and recurring inspection schedules (`recurring_inspection_schedules`, `schedule_occurrences`) with direct Inspector + Drone conflict checking; reviews and publishes immutable PDF inspection reports (`inspection_reports`); forwards confirmed defects to maintenance; approves repair estimates and change orders; and performs independent technical work acceptance (`maintenance_acceptance_decisions`), cost reconciliation, and work order closure (`maintenance_work_orders`).
-- **Inspector (`Inspector` — Customer Enterprise Zone)**: Self-declares remote pilot license credentials (`pilot_license_*`); uploads mission-specific aviation flight permits (`Ready for Flight` operational gate); executes on-site field flight sessions (`field_sessions`) via Web or Flutter Mobile app; uploads aerial photographic evidence (`evidence`) with EXIF GPS/capture-time extraction; triggers advisory YOLO11 defect detection; verifies, edits, or manually records findings (`findings`); confirms the official findings baseline; and authors, verifies (`Author Verified`), and submits structured inspection report drafts (`inspection_reports`).
-- **Maintenance Engineer (`Maintenance Engineer` — Customer Enterprise Zone)**: Participates in corrective maintenance work orders as designated `Team Lead`, `Report Author`, or `Team Member` (`maintenance_team_members`); uses the RAG-assisted Maintenance Scope Advisor (`repair_knowledge_chunks`); decomposes repair tasks (`maintenance_tasks`); prepares itemized cost estimates (`maintenance_estimate_versions`, `maintenance_cost_lines`); logs field repair execution (`maintenance_work_logs`) and change orders (`maintenance_change_orders`); and authors/verifies maintenance completion reports (`maintenance_reports`).
+| Feature ID | Feature Name | Sub-Functions (SRS §3.2–§3.9) | Primary Owner |
+| :---: | --- | --- | --- |
+| **`FE-01`** | **Authentication, Google OAuth2 & 5-Role Access Control** | `3.2.1` Customer Airspace Registration, Argon2id Sign-In & Google OAuth2 (`Web` & `Mobile` deep-link)<br>`3.2.2` HS256 JWT, Refresh Rotation, `/users/me` Profile & 5-Role `ActorZone` RBAC | **Trần Tùng Bách** (`SE180220`) |
+| **`FE-02`** | **Partner Onboarding, Workforce, Asset & Inspector Drone Registry** | `3.3.1` Partner Inspector Onboarding, Pilot License Review & Customer Maintenance Workforce<br>`3.3.2` Infrastructure Asset Catalog, No-Fly Zone Guard & Inspector-Owned Drone 3-Doc Review | **Trần Hoàng Trung Hiếu** (`SE184212`) |
+| **`FE-03`** | **Recurring Schedules, Contract Occurrences & Outbox Notifications** | `3.4.1` Timezone-Anchored Recurring Schedules & Multi-Occurrence Contract Inheritance (Decision D2)<br>`3.4.2` Spring Modulith Transactional Outbox & Deduplicated In-App Notification Inbox | **Trần Hoàng Trung Hiếu** (`SE184212`) |
+| **`FE-04`** | **Service Requests, Quotations, Contracts, Dispatch & Airspace Map** | `3.5.1` Service Requests, VND/USD Quotations, Order Chat & Signed Paper Contract Upload<br>`3.5.2` Cross-Org Partner Inspector/Drone Dispatch, Abort Re-Dispatch & Vietnam Airspace Map | **Phùng Trung Quốc** (`SE170027`) |
+| **`FE-05`** | **Flight Permit Gate, Field Execution, Dashboard & Calendar** | `3.6.1` Aviation Flight Permit Upload Gate & Web/Mobile Field Flight Sessions (`Start`/`Complete`/`Abort`)<br>`3.6.2` 5-Role Operational Analytics Dashboard, Schedule Calendar & Customer 5-Stage Progress Tracker | **Phùng Trung Quốc** (`SE170027`) |
+| **`FE-06`** | **Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS** | `3.7.1` Photo & Streaming MP4 Video Intake, YOLO11 + Vision Fallback & Findings Confirmation<br>`3.7.2` Auto-Compiled Report (`SUBMITTED`), AI Executive Summary, Manager PDF Publish & PayOS VietQR | **Trần Tùng Bách** (`SE180220`) |
+| **`FE-07`** | **Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution** | `3.8.1` Work Order Creation, `pgvector` RAG Scope Advisor & 1-Click Initial Task Provisioning<br>`3.8.2` RAG Cost Norms Estimator (`suggest-estimate`), Budget Approval & 1-Click Batch Log Verify | **Trương Thái Như** (`SE180082`) |
+| **`FE-08`** | **Completion Report, 3-Way Re-inspection Verification & Cost Closure** | `3.9.1` Smart Auto-Drafted Maintenance Completion Report (`auto-draft`) & RAG Acceptance Compliance Audit<br>`3.9.2` 3-Step / 3-Way Re-inspection Defect Verification Loop, Independent Acceptance & Cost Closure | **Trương Thái Như** (`SE180082`) |
 
-**Twelve Core Product Features (`FE-01` to `FE-12` — 2 Functions per Feature = 24 Functions, 3 Features per Member)**
-1. **`FE-01` — Authentication & Access Control** *(Owner: Trần Tùng Bách)*: Organization self-registration with active Terms/Privacy consent, Web/Mobile Argon2id sign-in, HS256 JWT + HmacSHA256 refresh token rotation, CSRF & IP rate limiting (`10 req/60s`), and 5-role RBAC separation of duties (Platform Admin and Platform Manager single-role separation).
-2. **`FE-02` — Workforce & Subscription Management** *(Owner: Trần Hoàng Trung Hiếu)*: Platform user administration, customer workforce provisioning (`Inspector`, `Maintenance Engineer`), Inspector remote pilot license self-declaration, and Enterprise Subscription billing (`1..120` months via Corporate Wire & PayPal Orders v2 + signed Webhooks).
-3. **`FE-03` — Asset & Drone Fleet Management** *(Owner: Trần Hoàng Trung Hiếu)*: Global asset categories, tenant infrastructure assets with GPS coordinates and standardized inspection checkpoints (`inspection_items`), reference engineering documents in MinIO, asset retirement archival, owned drone inventory, and Platform Drone Equipment Leasing (`platform_drones` → `drone_leases` → `drones`).
-4. **`FE-04` — Recurring Schedule & Notifications** *(Owner: Trần Hoàng Trung Hiếu)*: Timezone-anchored recurring inspection schedules (`Week`, `Month`, `Year`), rolling 14-day occurrence generation, `Blocked` occurrence retry/skip, 3-day advance reminders, and deduplicated event-driven in-app notifications (`notifications` + `event_publication` outbox).
-5. **`FE-05` — Mission Dispatch & Airspace Advisory** *(Owner: Phùng Trung Quốc)*: One-off inspection mission scheduling with direct Inspector + Drone conflict checking, and the interactive Vietnam Airspace & No-Fly Zone Map (`AirspaceNoFlyMap` on Web, `AirspaceAdvisoryCard` on Mobile, `/api/v1/airspace/zones` & `/evaluate` under Decree No. 288/2025/NĐ-CP).
-6. **`FE-06` — Flight Readiness & Field Execution** *(Owner: Phùng Trung Quốc)*: Self-service aviation flight permit upload gate (`Assigned` → `Ready for Flight` upon unexpired pilot license check) and Web/Flutter Mobile on-site field flight session logging (`Start`, `Postpone`, `Abort`, `Complete`, and Additional Sessions).
-7. **`FE-07` — Operational Dashboard & Schedule Calendar** *(Owner: Phùng Trung Quốc)*: Role-scoped operational analytics dashboards, server-paged inspection/report queues, interactive Month/Week/Agenda `InspectorScheduleCalendar`, Enterprise Dark Mode, and bilingual (EN/VI) localization.
-8. **`FE-08` — Evidence Management & AI Defect Detection** *(Owner: Trần Tùng Bách)*: Multipart evidence intake into MinIO with EXIF GPS/timestamp extraction, single/bulk soft-retirement, Inspector-invoked Ultralytics `YOLO11 (MBDD2025)` defect detection (with multimodal fallback), human finding verification (`Confirmed`), and confirmed findings baseline lock (`Report Draft`).
-9. **`FE-09` — Inspection Reporting & Publication** *(Owner: Trần Tùng Bách)*: Context-grounded LLM & manual report drafting, live OpenHTMLtoPDF preview, author verification (`Author Verified`), independent `Organization Manager` approval/return, immutable A4 PDF publication as an immutable PDF document (`Published`), and per-finding corrective handoff (`Repair Pending` / `Completed`).
-10. **`FE-10` — Maintenance Planning & AI Scope Advisory** *(Owner: Trương Thái Như)*: Forwarded defect triage, `pgvector` RAG engineering standard scope advisor (`TCVN 9343:2012`, `EN 1504-9`, `ISO 12944-5` + `DeterministicScopeFallback`), work order creation (`Draft`), team role assignment (`Team Lead`, `Report Author`, `Team Member`, independent reviewer), and task decomposition.
-11. **`FE-11` — Cost Estimation & Repair Execution** *(Owner: Trương Thái Như)*: Versioned itemized cost estimation (`Labor`, `Material`, `Equipment`), independent budget approval (`Approved`), Change Order governance, and Web/Mobile repair task execution with Team Lead work log verification (`Verified` → `Work Completed`).
-12. **`FE-12` — Maintenance Acceptance & Cost Closure** *(Owner: Trương Thái Như)*: Author-verified maintenance completion report PDF, independent technical acceptance (`Accepted` / `Rework Required` / `Re-Inspection Required`), actual cost reconciliation (`Cost Reconciled`), and work order closure (`Closed`).
-
-#### c) Functional Requirements Summary (12 Features / 24 Functions)
-- **`FE-01` Authentication & Access Control**: (1) Organization Registration & User Sign-In; (2) Session Management & Role-Based Access Control.
-- **`FE-02` Workforce & Subscription Management**: (1) Workforce Provisioning & Pilot License Profile; (2) Enterprise Subscription & Online Payment.
-- **`FE-03` Asset & Drone Fleet Management**: (1) Infrastructure Asset & Document Management; (2) Drone Inventory & Drone Equipment Leasing.
-- **`FE-04` Recurring Schedule & Notifications**: (1) Recurring Inspection Schedule Management; (2) Event-Driven In-App Notifications.
-- **`FE-05` Mission Dispatch & Airspace Advisory**: (1) Inspection Mission Scheduling & Conflict Check; (2) Interactive Airspace & No-Fly Zone Map.
-- **`FE-06` Flight Readiness & Field Execution**: (1) Flight Permit Upload & Readiness Gate; (2) On-Site Field Flight Session Logging.
-- **`FE-07` Operational Dashboard & Schedule Calendar**: (1) Multi-Role Operational Analytics Dashboard; (2) Inspector Schedule Calendar & Localization.
-- **`FE-08` Evidence Management & AI Defect Detection**: (1) Inspection Evidence Upload & Metadata Management; (2) AI Defect Detection & Finding Verification.
-- **`FE-09` Inspection Reporting & Publication**: (1) AI-Assisted & Manual Report Drafting; (2) Report Review, PDF Publication & Maintenance Handoff.
-- **`FE-10` Maintenance Planning & AI Scope Advisory**: (1) Work Order Creation & AI Repair Scope Advisory; (2) Maintenance Team & Task Assignment.
-- **`FE-11` Cost Estimation & Repair Execution**: (1) Cost Estimation, Budget Approval & Change Orders; (2) Field Repair Execution & Work Log Verification.
-- **`FE-12` Maintenance Acceptance & Cost Closure**: (1) Maintenance Completion Reporting & Technical Acceptance; (2) Cost Reconciliation & Work Order Closure.
-
-#### d) Non-Functional Requirements Summary
-- **Performance (`NFR-01`, `NFR-02`)**: 95th percentile (`p95`) latency $\le 2,000\text{ ms}$ for standard JSON REST API endpoints under 50 concurrent users; single-image YOLO11 CPU inference latency $\le 5,000\text{ ms}$ for images up to $10\text{ MB}$.
-- **Security & Multi-Tenant Isolation (`NFR-03`, `NFR-04`)**: 100% tenant boundary isolation via composite database foreign keys `(id, organization_id)` and Spring Security `@PreAuthorize` checks; Argon2id password hashing, 15-minute HS256 JWT access tokens, 7-day HmacSHA256 rotated refresh tokens, CSRF protection, and IP rate-limiting ($10\text{ req} / 60\text{ s}$ on auth endpoints).
-- **Reliability & Data Integrity (`NFR-05`)**: 100% immutability of published inspection and maintenance PDF reports stored in MinIO with complete version history (`Superseded`); graceful manual fallback when AI vision or LLM services are offline.
-- **Maintainability & Automated Test Quality (`NFR-06`)**: Spring Modulith 2.1 boundary verification (`ModulithArchitectureTest` = 0 cycle/visibility violations), $\ge 80\%$ backend JaCoCo instruction/line coverage gate in CI, and $\ge 50\%$ automated execution across functional test cases.
-
-#### e) Theory & Practical (Technologies)
-- **Backend**: Java `21`, Spring Boot `4.1.0`, Spring Modulith `2.1.1`, Spring Security OAuth2 Resource Server (Nimbus JWT), Spring Data JPA / Hibernate, Flyway, OpenHTMLtoPDF `1.0.10`, MinIO SDK `9.0.3`.
-- **AI & Computer Vision Microservice**: Python `3.11`, FastAPI `0.115.6`, Uvicorn `0.34.0`, Ultralytics `8.3.55` (`YOLO11` trained on `MBDD2025` dataset, PyTorch `2.5.1`), plus OpenAI-compatible Vision Fallback, LLM Report Drafting, and `pgvector` RAG Maintenance Scope Advisor.
-- **Frontend Web Portal**: React `19.2.8`, TypeScript `6.0.2`, Vite `8.2.2`, Material UI (`@mui/material` `9.4.0`), TanStack React Query `5.102.8`, React Router `7.18.3`, Zustand `5.0.15`, React Hook Form + Zod.
-- **Mobile Application**: Flutter (`1.0.0+1`), Dart `3.13.2`, Riverpod `3.4.2`, GoRouter `18.0.0`, Dio `5.11.0`, Freezed `4.0.1`.
-- **Database & Object Storage**: PostgreSQL `17` with `pgvector` (`hnsw` cosine index) and `pgcrypto`; MinIO S3-compatible object storage.
-- **Third-Party Payment & DevOps**: PayPal REST API v2 (Orders v2 & Webhook verification); Docker & Docker Compose, Nginx `1.27-alpine`, GitHub Actions CI/CD, Tailscale SSH deployment to staging/production (`smartdroneinspection.duckdns.org`).
-
-#### f) Products (Expected Deliverables)
-1. **SmartDroneInspection Web Portal** (Multi-portal React 19 SPA: Admin, Client/Organization Manager, Operations).
-2. **SmartDroneInspection Mobile Application** (Flutter cross-platform app for Field Inspectors & Maintenance Engineers).
-3. **Spring Boot 4.1 Modular Monolith Backend API** (9 Spring Modulith modules, 21 REST controllers, Flyway `V1`–`V5` schema).
-4. **Containerized YOLO11 Defect Detection Microservice** (`FastAPI` + `best.pt` weights) & RAG/LLM Integration Adapters.
-5. **Docker Compose Deployment Package, Automated Test Suites & Full SEP490 Documentation** (Reports 1–7, Review 2 Package).
-
-#### g) Proposed Tasks (Work Packages — Mapped 1-to-1 to Git Authorship)
-- **Work Package 1 — Requirement Specification, Architecture & Database Foundation**: Finalize 5-role Enterprise Inspection & Drone Equipment Leasing SRS/SDD, Flyway `V1`–`V5` 30-table schema, and Spring Modulith boundaries *(Owner: All members, Led by Trần Hoàng Trung Hiếu)*.
-- **Work Package 2 — Workforce, Subscriptions, Assets, Drone Equipment Leasing & Recurring Schedules (`FE-02`, `FE-03`, `FE-04` — `WF-01`)**: Platform/Workforce user governance, pilot licenses, PayPal/wire subscriptions, drone equipment leasing pool, asset registry with checkpoints, recurring inspection schedules, and in-app notifications *(Owner: Trần Hoàng Trung Hiếu)*.
-- **Work Package 3 — Mission Dispatch, Airspace Map, Flight Permit Gate, Field Sessions & Dashboards (`FE-05`, `FE-06`, `FE-07` — `WF-02`)**: One-off/scheduled mission dispatch, interactive Vietnam Airspace & No-Fly Zone Map, self-service flight permit upload gate, Web & Flutter mobile field session execution, operational dashboards, and Inspector Schedule Calendar *(Owner: Phùng Trung Quốc)*.
-- **Work Package 4 — Authentication/RBAC, Evidence Intake, YOLO11 Defect Detection & Inspection Report Publication (`FE-01`, `FE-08`, `FE-09` — `WF-03`)**: Argon2id/JWT/CSRF/RBAC security foundation, EXIF/MinIO evidence management, FastAPI YOLO11 inference & vision fallback, human findings verification, LLM/manual report drafting, OpenHTMLtoPDF rendering, independent review/publication, and corrective handoff *(Owner: Trần Tùng Bách)*.
-- **Work Package 5 — Maintenance Work Orders, RAG Scope Advisor, Cost Estimation, Field Repair & Acceptance Closure (`FE-10`, `FE-11`, `FE-12` — `WF-04`)**: `pgvector` RAG repair standard advisor, work order lifecycle, team/task planning, itemized estimates, change orders, mobile/web work logs with Lead verification, completion report PDFs, independent technical acceptance, cost reconciliation, and closure *(Owner: Trương Thái Như)*.
+### 3.4 Technology Stack & Deployment Architecture
+- **Backend API**: **Java 21**, **Spring Boot 4.1.0**, **Spring Modulith 2.1.1** (7 bounded modules: `users`, `assets`, `contracts`, `inspections`, `maintenance`, `notifications`, `infrastructure`), Spring Security OAuth2 Resource Server (HS256 JWT + Google OAuth2 + CSRF + Argon2id), Hibernate/JPA, **Flyway (`V1`–`V17`)**, **OpenHTMLtoPDF 1.0.10**.
+- **AI & Vector Services**: **Python 3.11 + FastAPI 0.115.6 + Ultralytics 8.3.55 (`YOLO11 mbdd2025-v1`)** container; multimodal Vision LLM fallback; LLM Executive Summary generator; **`pgvector` (`vector(768)`)** RAG Scope, Cost Norms & Acceptance Compliance Advisor.
+- **Database, Storage & Payments**: **PostgreSQL 17 (`pgvector/pgvector:pg17`)**, **MinIO S3-compatible Object Storage**, **PayOS (VietQR)** online payment links & HMAC-SHA256 webhook verification.
+- **Web & Mobile Clients**: **React 19.2.8**, **TypeScript 6.0.2**, **Vite 8.2.2**, **Material UI (MUI) 9.4.0**, **TanStack Query v5**, **Leaflet 1.9.4**; **Flutter 3.13.2 (Dart)**, **Riverpod 3.4.2**, **GoRouter 17.2.1**, **Dio 5.11.0**, **file_picker 12.1.3** (streaming MP4 & PDF uploads).
+- **CI/CD & Cloud Staging**: GitHub Actions (`JUnit 5 + Testcontainers`, `JaCoCo >= 80%`, `Vitest`, `Flutter analyze/test`, `Python OOXML verification`) with automated deployment to **`https://smartdroneinspection.duckdns.org`**.

@@ -1,0 +1,39 @@
+%% title: System Context Diagram
+flowchart LR
+  PA["Platform Admin (ADMIN)"]
+  PM["Platform Manager (MANAGER)"]
+  CU["Customer (CUSTOMER)"]
+  IN["Partner Inspector (INSPECTOR)"]
+  ME["Maintenance Engineer (MAINTENANCE_ENGINEER)"]
+
+  SDI[["SmartDroneInspection Platform
+(Web Portals & Flutter Mobile App)"]]
+
+  PAYOS["Online Payment Gateway
+(PayOS VietQR)"]
+  OAUTH["Identity Provider
+(Google OAuth2)"]
+  YOLO["AI Defect Detection
+Service (YOLO11)"]
+  LLM["AI Executive Summary &
+pgvector RAG Advisory Service"]
+
+  PA -->|"Platform accounts, asset categories,
+onboarding reviews & finance settings"| SDI
+  PM -->|"Partner & drone approvals, quotes,
+chat, signed contracts, dispatch & report publish"| SDI
+  CU -->|"Assets, service requests, quote acceptance,
+PayOS payment, work orders, budgets & acceptance"| SDI
+  IN -->|"Pilot license, owned drones, flight permits,
+field sessions, photo/MP4 evidence & findings"| SDI
+  ME -->|"RAG repair plans, cost estimates,
+work logs, batch verification & completion reports"| SDI
+
+  SDI <-->|"Google OAuth2 sign-in
+(Web & Mobile deep-link)"| OAUTH
+  SDI <-->|"Service occurrence VietQR
+checkout & HMAC webhooks"| PAYOS
+  SDI <-->|"Inspection photos ->
+candidate defects"| YOLO
+  SDI <-->|"Executive summaries, RAG repair scope,
+cost norms & compliance audits"| LLM

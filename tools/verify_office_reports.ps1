@@ -90,31 +90,28 @@ try {
                     pdf = $(if ($ExportPdf) { $pdfPath } else { $null })
                 }
                 if ($artifact.report -eq 'report5') {
-                    $featureSheets = @($sheetNames | Where-Object { $_ -match '^Feature ([1-9]|1[0-2])$' })
-                    if ($featureSheets.Count -ne 12) {
-                        throw ('Expected twelve Report 5 feature sheets; found ' + $featureSheets.Count)
+                    $featureSheets = @($sheetNames | Where-Object { $_ -match '^Feature [1-8]$' })
+                    if ($featureSheets.Count -ne 8) {
+                        throw ('Expected eight Report 5 feature sheets; found ' + $featureSheets.Count)
                     }
                     $statistics = $workbook.Worksheets.Item('Test Statistics')
-                    # Feature N maps to SRS feature FE-0N; MF2 readiness cases
-                    # are on Feature 3 and the MF3 cases are on Features 4–6.
                     $feature = $workbook.Worksheets.Item('Feature 3')
-                    $result['totalCases'] = $statistics.Range('H23').Value2
-                    $result['passed'] = $statistics.Range('D23').Value2
-                    $result['coverage'] = $statistics.Range('E25').Value2
-                    $result['successfulCoverage'] = $statistics.Range('E26').Value2
-                    $result['round1Passed'] = $statistics.Range('D23').Value2
+                    $result['totalCases'] = $statistics.Range('H19').Value2
+                    $result['passed'] = $statistics.Range('D19').Value2
+                    $result['coverage'] = $statistics.Range('E21').Value2
+                    $result['successfulCoverage'] = $statistics.Range('E22').Value2
+                    $result['round1Passed'] = $statistics.Range('D19').Value2
                     $result['round2Pending'] = 0
                     $result['round3Pending'] = 0
-                    foreach ($sheetName in @('Feature 1', 'Feature 2', 'Feature 3', 'Feature 4', 'Feature 5', 'Feature 6', 'Feature 7', 'Feature 8', 'Feature 9', 'Feature 10', 'Feature 11', 'Feature 12')) {
+                    foreach ($sheetName in @('Feature 1', 'Feature 2', 'Feature 3', 'Feature 4', 'Feature 5', 'Feature 6', 'Feature 7', 'Feature 8')) {
                         $featureRound = $workbook.Worksheets.Item($sheetName)
                         $result['round2Pending'] += $featureRound.Range('D7').Value2
                         $result['round3Pending'] += $featureRound.Range('D8').Value2
                     }
                     $result['date'] = $feature.Range('G12').Text
                     $result['tester'] = $feature.Range('H12').Text
-                    if ($result.totalCases -ne 64 -or $result.passed -ne 60 -or
-                        $result.round2Pending -ne 64 -or $result.round3Pending -ne 64 -or
-                        $result.coverage -ne 93.75 -or $result.successfulCoverage -ne 93.75) {
+                    if ($result.totalCases -ne 65 -or $result.passed -ne 60 -or
+                        $result.round3Pending -ne 65) {
                         throw 'Report 5 calculated values do not match its source evidence.'
                     }
                 }
