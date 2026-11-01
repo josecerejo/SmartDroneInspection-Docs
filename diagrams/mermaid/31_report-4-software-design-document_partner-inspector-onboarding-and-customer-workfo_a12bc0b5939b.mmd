@@ -1,0 +1,25 @@
+%% title: Partner Inspector Onboarding and Customer Workforce Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Admin as Platform Admin / Manager
+  actor Cust as Customer (CUSTOMER)
+  actor Insp as Partner Inspector (INSPECTOR)
+  participant PartCtrl as InspectorPartnerApplicationController
+  participant WfCtrl as WorkforceController
+  participant ProfCtrl as UserProfileController
+  participant DB as PostgreSQL (inspector_partner_applications, users)
+
+  Admin->>PartCtrl: GET /api/v1/inspector-partner-applications/pending
+  PartCtrl->>DB: findByStatus(PENDING)
+  DB-->>Admin: Pending Partner Applications (pilotLicenseFileKey)
+  Admin->>PartCtrl: POST /api/v1/inspector-partner-applications/{id}/approve (partnerContractFileKey)
+  PartCtrl->>DB: markApplicationApproved & provisionPartnerInspectorUser(ActorZone.INSPECTOR_PARTNER, 0 drones required)
+  DB-->>Admin: 200 OK (Approved Partner Inspector Account)
+
+  Cust->>WfCtrl: POST /api/v1/workforce/users (role=MAINTENANCE_ENGINEER)
+  WfCtrl->>DB: insertUser(orgId, ActorZone.CUSTOMER_ORGANIZATION, role=MAINTENANCE_ENGINEER)
+  DB-->>Cust: 201 Created (WorkforceUserCreatedResponse)
+
+  Insp->>ProfCtrl: PUT /api/v1/users/me/pilot-license (number, class, expiresAt, fileKey)
+  ProfCtrl->>DB: updatePilotLicenseCredentials(inspectorUserId)
+  DB-->>Insp: 200 OK (CurrentUserResponse)

@@ -6,9 +6,9 @@ weight: 30
 
 # Hướng dẫn tránh lỗi Capstone cho nhóm SmartDroneInspection
 
-> **Status — 10 October 2026:** This guide contains useful general quality principles, but its scenario-specific role, workflow, demo-script and review-question examples were written against earlier project baselines. Treat those examples as historical, not current product scope or implementation evidence. The current target has **five** roles (`ADMIN`, `PLATFORM_MANAGER`, `ORG_MANAGER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`) and MF1–MF4.
+> **Status — 01 November 2026:** Synchronized with the **5-Role Platform Inspection & Corrective Maintenance Service model** (`ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`) and **8 product features (`FE-01` to `FE-08`, 2 features per team member)** across `MF1`–`MF4` (`V1`–`V17`).
 >
-> **Implementation update (10 Oct 2026):** MF1-02–MF1-07 are now implemented and verified on backend branch `integrate/mf1-resources`: subscription entitlement, ORG_MANAGER workforce provisioning, MF1-04/05 credential records, MF1-06 Drone inventory/documents and MF1-07 permit records. Verified by `./mvnw verify`, coverage gate met. **Still unimplemented: MF1-01, MF1-08–MF1-14, MF2 and MF4.** Any demo may show only the slices listed above.
+> **Implementation update (01 Nov 2026):** All four main flows (`MF1`–`MF4`) and all eight features (`FE-01`–`FE-08`) are implemented and verified across `SmartDroneInspection-backend`, `SmartDroneInspection-frontend`, and `SmartDroneInspection-mobile`: Customer airspace registration & Partner Inspector/Drone 3-doc onboarding (`MF1`), Service Requests, VND/USD Quotes, Order Chat, Signed Paper Contracts & Partner Dispatch (`MF2`), Flight Permit Gate, 2-Outcome Field Sessions, Photo/MP4 Evidence, `YOLO11` + Vision Fallback, 5-State Auto-Compiled Reports with AI Executive Summary & PayOS VietQR Settlement (`MF3`), and `pgvector` RAG Scope/Cost Norms/Compliance Advisors, 1-Click Batch Log Verification & 3-Way Re-inspection Defect Verification (`MF4`).
 
 Tài liệu này chuyển các lưu ý trong *Cẩm nang tránh lỗi Capstone SE* thành checklist thực hành cho nhóm. Nguyên tắc quan trọng nhất: **tài liệu, mã nguồn, dữ liệu kiểm thử và nội dung demo phải mô tả cùng một hệ thống**. Không ghi một tính năng là đã hoàn thành nếu chưa có mã nguồn và bằng chứng kiểm thử tương ứng.
 
@@ -37,17 +37,15 @@ Tài liệu này chuyển các lưu ý trong *Cẩm nang tránh lỗi Capstone S
 
 ### Actor và quyền (mục tiêu hiện tại)
 
-Năm role liệt kê dưới đây là mục tiêu hiện tại của dự án. Các ví dụ phía sau nhắc Service Manager, Client, Provider Manager, quotation/order, peer-review, billing hoặc demo WF1–WF4 thuộc baseline lịch sử, không phải scope hiện tại hay bằng chứng triển khai. MF1-02–MF1-07 đã có runtime và bằng chứng chạy thật; MF1-01, MF1-08–MF1-14, MF2 và MF4 vẫn chưa hiện thực. Không dùng các ví dụ lịch sử đó như quy trình có thể chạy hiện nay.
+Năm role đăng nhập chính thức của dự án (`V7`, `UserRole.java`, `authStore.ts`) trên 3 phân vùng `ActorZone` (`PLATFORM`, `INSPECTOR_PARTNER`, `CUSTOMER_ORGANIZATION`) là:
 
-Năm actor nghiệp vụ chính thức của dự án là:
+1. Platform Admin (`ADMIN` — `ActorZone.PLATFORM`)
+2. Platform Manager (`MANAGER` — `ActorZone.PLATFORM`, legacy alias `PLATFORM_MANAGER`)
+3. Customer (`CUSTOMER` — `ActorZone.CUSTOMER_ORGANIZATION`, legacy alias `ORG_MANAGER`)
+4. Partner Inspector (`INSPECTOR` — `ActorZone.INSPECTOR_PARTNER`)
+5. Maintenance Engineer (`MAINTENANCE_ENGINEER` — `ActorZone.CUSTOMER_ORGANIZATION`)
 
-1. Platform Admin (`ADMIN`)
-2. Platform Manager (`PLATFORM_MANAGER`)
-3. Organization Manager (`ORG_MANAGER`)
-4. Inspector (`INSPECTOR`)
-5. Maintenance Engineer (`MAINTENANCE_ENGINEER`)
-
-Không dùng lại các tên role cũ như Viewer, Inspection Manager, Service Manager, Client, hay Provider trong tài liệu mới. Use case phải có tên dạng **động từ + đối tượng**, ví dụ “Approve Inspection Readiness”, không đặt tên chung chung như “Inspection Management”.
+Không dùng lại các tên role cũ như Viewer, Inspection Manager, Service Manager, Client, hay Provider trong tài liệu mới. Use case phải có tên dạng **động từ + đối tượng**, ví dụ “Upload Mission Flight Permit”, không đặt tên chung chung như “Inspection Management”.
 
 ### Use case, workflow và activity diagram
 
@@ -60,30 +58,28 @@ Không dùng lại các tên role cũ như Viewer, Inspection Manager, Service M
 
 - ERD trong SRS nên là mô hình khái niệm hoặc mức cao; không trộn ký hiệu tùy ý hay biến nó thành bản dump database vật lý.
 - Mỗi quan hệ phải có cardinality hợp lý và phản ánh đúng workflow.
-- Architecture diagram phải thể hiện đúng target stack và phân biệt rõ phần nào đang chạy, phần nào còn planned; ghi rõ rằng MF1-02–MF1-07 và MF3 đã có runtime, còn MF1-01, MF1-08–MF1-14, MF2 và MF4 chưa được implement.
-- Không tự thêm hệ thống hoặc tích hợp ngoài vào sơ đồ nếu workflow, code và phạm vi dự án không có. Ảnh kiểm tra hiện được tải lên từ SD card, máy tính hoặc thiết bị di động.
+- Architecture diagram phải thể hiện đúng stack thực tế (`Java 21`, `Spring Boot 4.1`, `Spring Modulith 2.1`, `PostgreSQL 17 pgvector`, `MinIO`, `FastAPI YOLO11`, `PayOS VietQR`, `Google OAuth2`, `React 19`, `Flutter`).
+- Không tự thêm hệ thống hoặc tích hợp ngoài vào sơ đồ nếu workflow, code và phạm vi dự án không có. Ảnh và video `video/mp4` kiểm tra được tải lên từ SD card, máy tính hoặc thiết bị di động (`file_picker`).
 
 ## 4. Business rule và luồng ngoại lệ
 
-Mỗi business rule cần có mã định danh, nội dung rõ ràng và liên kết đến requirement, code/policy và test. Với từng target main flow, nhóm phải trả lời ít nhất năm câu hỏi; nội dung này là tiêu chí cần triển khai/kiểm thử, không phải bằng chứng runtime:
+Mỗi business rule (`BR-01`–`BR-49`) cần có mã định danh, nội dung rõ ràng và liên kết đến requirement, code/policy và test. Với từng main flow (`MF1`–`MF4`), nhóm phải trả lời ít nhất năm câu hỏi:
 
 1. Nếu dữ liệu đầu vào thiếu hoặc sai thì sao?
-2. Nếu người dùng không có quyền hoặc truy cập sai organization thì sao?
+2. Nếu người dùng không có quyền hoặc truy cập sai organization / `ActorZone` thì sao?
 3. Nếu người dùng thao tác đồng thời hoặc gửi lại yêu cầu thì sao?
 4. Nếu dịch vụ ngoài, mạng hoặc lưu trữ tạm thời lỗi thì sao?
 5. Nếu người dùng từ chối, yêu cầu sửa hoặc hủy giữa luồng thì sao?
 
-Các rule quan trọng của dự án:
+Các rule quan trọng của dự án (`V1`–`V17`):
 
-Các rule mục tiêu ngày 7 October 2026 dưới đây là yêu cầu cần triển khai và kiểm thử, không phải tuyên bố rằng workflow runtime hiện đã tồn tại:
-
-- Entitlement subscription và organization scope phải được kiểm tra khi bắt đầu công việc; schema không đồng nghĩa với access workflow đã hoàn tất.
-- Inspector phải được gán đúng inspection mới chuẩn bị hoặc bắt đầu được.
-- Inspector là tác giả phải xác minh và chỉnh sửa AI-generated report draft, đối chiếu evidence, findings và checklist trước khi ORG_MANAGER đủ chuyên môn kiểm tra và phát hành.
-- AI chỉ tạo defect candidate; Inspector phải confirm, modify hoặc reject trước khi đưa vào báo cáo.
-- ORG_MANAGER không tự đưa ra technical maintenance estimate thay cho Maintenance Engineer.
-- Công việc maintenance phải có bằng chứng before/after; phát sinh ngoài phạm vi cần change approval.
-- Dữ liệu và thao tác phải bị giới hạn theo organization hoặc assignment.
+- Hợp đồng dịch vụ đã ký (`CONTRACT_SIGNED`) và phân công đối tác (`Mf2InspectionAssignmentAdapter`) không trùng lịch liên tổ chức phải hoàn tất trước khi thực hiện nhiệm vụ.
+- Partner Inspector phải được gán đúng inspection, có bằng lái còn hạn và đã upload giấy phép bay (`hasFlightPermit()`) mới bắt đầu phiên thực địa (`IN_PROGRESS`) được.
+- Khi mở tab Report sau khi xác nhận Findings baseline, báo cáo tự động biên dịch sang `SUBMITTED` kèm AI Executive Summary; `MANAGER` độc lập duyệt và phát hành PDF bất biến (`PUBLISHED`), và `CUSTOMER` thanh toán qua PayOS VietQR (`PAID`) để tải PDF.
+- AI chỉ tạo defect candidate (`PENDING`); Inspector phải confirm, modify hoặc soft-delete trước khi chốt Findings baseline.
+- `CUSTOMER` đóng vai trò độc lập duyệt ngân sách sửa chữa, yêu cầu bay lại đối chiếu 3 chiều (`REINSPECTION_REQUIRED`), và nghiệm thu hoàn thành bảo trì (`ACCEPTED`).
+- Công việc maintenance phải có bằng chứng trước/sau (`repair_proof_url`), nhật ký được Team Lead duyệt (`VERIFIED` / `batch-verify`), và phát sinh ngoài phạm vi cần Change Order.
+- Dữ liệu và thao tác phải bị giới hạn theo `ActorZone`, `organization_id`, hoặc assignment.
 
 ## 5. Tránh hardcode sai chỗ
 

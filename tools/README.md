@@ -53,10 +53,13 @@ avoids overwriting an Office workbook already open or edited by someone.
 | --- | --- | --- |
 | Report 1 Project Introduction | `report-1-project-introduction/report1-project-introduction.md` | Generated DOCX |
 | Report 2 Project Management Plan | `report-2-project-management-plan/report2-project-management-plan.md` | Generated DOCX |
-| Report 3 SRS | Seven ordered sources in `report-3-software-requirement-specification/` | Generated DOCX |
-| Report 5 Test Report | Cover/history, case index, statistics and eight FE sources | Generated XLSX |
-| Project Weekly Report | `weekly-project-reports/week-01.md` through `week-05.md` | One XLSX per week |
-| Report 4, Report 5 Test Documentation/Unit Test, Report 6, Report 7, Project Tracking | No corresponding editable source under `reports/` | `missing_source` in the manifest; no fabricated output |
+| Report 3 SRS (`FE-01`–`FE-08`) | Six ordered sources in `report-3-software-requirement-specification/` | Generated DOCX |
+| Report 3 Project Tracking | `project-tracking/project-tracking.md` | Generated XLSX |
+| Report 4 SDD (`V1`–`V17`) | Four ordered sources in `report-4-software-design-document/` + rendered Mermaid PNGs | Generated DOCX |
+| Report 5 Test Documentation | Two ordered sources in `report-5-test-documentation/` | Generated DOCX |
+| Report 5 Test Report (`Feature 1`–`Feature 8`) | Cover/history, case index (`65` cases), statistics and eight FE sources (`fe-01`–`fe-08`) | Generated XLSX |
+| Review 2 Submission Pack (`BM01`–`BM04`) | `review-2-registration/`, `review-2-design-brief/`, `review-2-self-review/` (`export_review2_pack.py`) | Generated DOCX |
+| Project Weekly Report | `weekly-project-reports/week-01.md` through `week-07.md` | One XLSX per week |
 
 Student guides, sample schedules and example reference images are not report
 content sources. The generator does not invent new requirements, test results,

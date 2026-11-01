@@ -1,0 +1,31 @@
+%% title: Auto-Draft Completion Report, 3-Way Re-inspection and Cost Closure Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Author as Maintenance Engineer (REPORT_AUTHOR)
+  actor Cust as Customer (Accepting Reviewer)
+  actor Insp as Partner Inspector (INSPECTOR)
+  actor Mgr as Platform Manager (MANAGER)
+  participant ExecCtrl as MaintenanceExecutionController
+  participant InspCtrl as InspectionController
+  participant Outbox as Spring Modulith Events
+  participant DB as PostgreSQL (maintenance_*, inspections, reinspection_defect_verifications)
+
+  Author->>ExecCtrl: GET /api/v1/maintenance/work-orders/{id}/reports/auto-draft
+  ExecCtrl-->>Author: 5-Part Synthesized Markdown Draft
+  Author->>ExecCtrl: POST /reports -> POST /verify -> POST /submit -> WorkOrder: SUBMITTED_FOR_ACCEPTANCE
+
+  Cust->>ExecCtrl: GET /api/v1/maintenance/work-orders/{id}/acceptance-compliance (RAG Audit)
+  ExecCtrl-->>Cust: AcceptanceComplianceResponse (complianceScore, status, checks)
+  Cust->>ExecCtrl: POST /acceptance-decisions (decision=REINSPECTION_REQUIRED)
+  ExecCtrl->>Outbox: publish ReinspectionRequestedEvent
+  Outbox->>DB: createInspection(type=RE_INSPECTION) + createDefectVerifications(repairProofUrl, repairEngineerNotes)
+  Outbox->>DB: emit ReinspectionCreatedEvent -> attach reinspectionId to WorkOrder
+
+  Insp->>InspCtrl: Execute 3-Step Re-inspection & PUT /reinspection-verifications/{vId} (newEvidenceId, RESOLVED)
+  Insp->>InspCtrl: Auto-Compile & Submit Re-inspection Report (SUBMITTED)
+  Mgr->>InspCtrl: Review & Publish Re-inspection Report (PUBLISHED)
+  InspCtrl->>Outbox: publish ReinspectionReportPublishedEvent
+  Outbox->>DB: attach reinspectionReportVersionId & reinstate Completion Report to SUBMITTED
+
+  Cust->>ExecCtrl: Review Published Re-inspection Report -> POST /acceptance-decisions (ACCEPTED)
+  Cust->>ExecCtrl: Inherit Baseline Costs -> POST /cost-reconciliation (COST_RECONCILED) -> POST /close (CLOSED)

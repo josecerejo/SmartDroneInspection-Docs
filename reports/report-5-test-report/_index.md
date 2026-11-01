@@ -5,11 +5,11 @@ weight: 10
 
 # Report 5 — Test Report
 
-This folder is the editable source for the Report 5 workbook. The workbook
+This folder is the editable source for the Report 5 workbook (`Report5_Test Report.xlsx`). The workbook
 template is kept unchanged under `template/`; the Markdown files are the
 working source for test cases, execution rounds, and statistics across the five
-current roles (`Platform Admin`, `Platform Manager`, `Organization Manager`, `Inspector`, `Maintenance Engineer`).
+canonical roles (`ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`) and eight product features (`FE-01` to `FE-08`, 2 features per team member).
 
 See [README.md](README.md) for the editing workflow.
 
-Current source revision: **4.50** (2026-10-26). Functional workbook totals remain **11 cases (`8 Passed`, `0 Failed`, `3 Pending`)**; supporting FE-02/FE-03/FE-08 recurrence, calendar, asset retirement, web notification inbox, and `V3`/`V4`/`V5` migration-safety reconciliation notes are recorded outside the fixed workbook case rows.
+Current source revision: **2.0** (2026-11-01). Functional workbook totals track **65 cases (`60 Passed`, `0 Failed`, `5 Pending` — `92.31%` overall / `93.75%` baseline pass rate)** across `Feature 1` through `Feature 8`.

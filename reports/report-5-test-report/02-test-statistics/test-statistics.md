@@ -10,25 +10,21 @@ round.
 | --- | --- |
 | Project Name | SmartDroneInspection |
 | Project Code | GFA26SE139 |
-| Test round | 2026-10-27 Review 2 Full 64-Case Baseline across 12 Features FE-01 to FE-12 (3 features / 16 test cases per team member). Backed by 850 passing backend JUnit/Testcontainers tests, 602 passing frontend Vitest tests, and 20 passing Flutter mobile tests. |
-| Last updated | 2026-10-27 (Report 5 version 5.00; 64 cases: 60 Passed, 0 Failed, 4 Pending, 93.75% coverage) |
+| Test round | 2026-11-01 Synchronized 65-Case Test Suite across 8 Features FE-01 to FE-08 (2 features per team member, mapped 1-to-1 to Feature 1 to Feature 8). Backed by automated backend JUnit/Testcontainers tests (migrations V1–V17), frontend Vitest suites, and Flutter mobile tests. |
+| Last updated | 2026-11-01 (Report 5 version 2.0; 65 cases across 8 feature sheets: 60 Passed, 0 Failed, 5 Pending, 92.31% overall / 93.75% baseline coverage) |
 
 ## Module summary
 
 | No | Module code | Passed | Failed | Pending | N/A | Number of test cases |
 | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| 1 | Authentication & Access Control | 5 | 0 | 0 | 0 | 5 |
-| 2 | Workforce & Subscription Management | 4 | 0 | 1 | 0 | 5 |
-| 3 | Asset & Drone Fleet Management | 6 | 0 | 0 | 0 | 6 |
-| 4 | Recurring Schedule & Notifications | 5 | 0 | 0 | 0 | 5 |
-| 5 | Mission Dispatch & Airspace Advisory | 5 | 0 | 0 | 0 | 5 |
-| 6 | Flight Readiness & Field Execution | 5 | 0 | 1 | 0 | 6 |
-| 7 | Operational Dashboard & Schedule Calendar | 5 | 0 | 0 | 0 | 5 |
-| 8 | Evidence Management & AI Defect Detection | 6 | 0 | 1 | 0 | 7 |
-| 9 | Inspection Reporting & Publication | 4 | 0 | 1 | 0 | 5 |
-| 10 | Maintenance Planning & AI Scope Advisory | 5 | 0 | 0 | 0 | 5 |
-| 11 | Cost Estimation & Repair Execution | 5 | 0 | 1 | 0 | 6 |
-| 12 | Maintenance Acceptance & Cost Closure | 5 | 0 | 0 | 0 | 5 |
+| 1 | Authentication, Google OAuth2 & 5-Role Access Control | 5 | 0 | 0 | 0 | 5 |
+| 2 | Partner Onboarding, Workforce, Asset & Inspector Drone Registry | 10 | 0 | 1 | 0 | 11 |
+| 3 | Recurring Schedules, Contract Occurrences & Outbox Notifications | 5 | 0 | 0 | 0 | 5 |
+| 4 | Service Requests, Quotations, Contracts, Dispatch & Airspace Map | 5 | 0 | 0 | 0 | 5 |
+| 5 | Flight Permit Gate, Field Execution, Dashboard & Calendar | 10 | 0 | 1 | 0 | 11 |
+| 6 | Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS | 10 | 0 | 2 | 0 | 12 |
+| 7 | Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution | 10 | 0 | 1 | 0 | 11 |
+| 8 | Completion Report, 3-Way Re-inspection Verification & Cost Closure | 5 | 0 | 0 | 0 | 5 |
 | **Subtotal** |  | **60** | **0** | **5** | **0** | **65** |
 | **Review 2 baseline** |  | **60** | **0** | **4** | **0** | **64** |
 | **Implementation-specific pending** |  | **0** | **0** | **1** | **0** | **1** |

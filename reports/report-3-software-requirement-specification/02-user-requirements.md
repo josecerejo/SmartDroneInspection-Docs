@@ -11,75 +11,78 @@ source: "report3-software-requirement-specification.docx"
 
 | # | Actor | Description |
 | --- | --- | --- |
-| 1 | Platform Admin | Manages platform-level user accounts, initial customer workspace accounts, standard infrastructure asset categories, and system-wide audit logs. Does not approve commercial payments, customer inspection reports, or maintenance budgets. |
-| 2 | Platform Manager | Manages commercial subscription requests, confirms bank transfer and online payments, maintains the platform's leasable drone catalog, and approves or reclaims drone leases for customer organizations. |
-| 3 | Organization Manager | Manages a customer organization's workspace, including subscriptions, drone leases, workforce accounts, owned and leased drones, infrastructure assets, inspection schedules, report publication, and maintenance budget and acceptance decisions. |
-| 4 | Inspector | Licensed drone pilot and inspection specialist who updates pilot license details, uploads flight permits, logs field flight sessions, uploads inspection photos, reviews AI defect suggestions, and drafts inspection reports. |
-| 5 | Maintenance Engineer | Engineering technician who plans repair tasks, prepares cost estimates, executes field repairs, records work logs, and prepares maintenance completion reports. |
-| 6 | Automated System (AI & Background Services) | System services that generate recurring inspection missions, send reminder notifications, detect candidate defects on photos (`YOLO11`), and draft report or repair scope suggestions under human supervision. |
-| 7 | Online Payment Gateway (PayPal) | Optional external payment service that processes online checkout for enterprise subscriptions and drone leases. |
+| 1 | Platform Admin (`ADMIN`) | Platform-scoped administrator (`ActorZone.PLATFORM`) who manages internal platform accounts, standard infrastructure asset categories, customer restricted-airspace onboarding reviews, partner inspector and drone registration approvals, platform finance settings (commission, VAT, TNCN rates), and system-wide audit logs. |
+| 2 | Platform Manager (`MANAGER`) | Platform-scoped operations manager (`ActorZone.PLATFORM`) who manages the partner Inspector and drone registry, handles customer service requests and order chat, issues versioned VND/USD quotations, uploads signed paper service contracts, assigns partner Inspectors and drones with cross-organization conflict checks, dispatches rescheduled/reassigned missions after field aborts, independently reviews and publishes official PDF inspection reports, and records partner payouts. |
+| 3 | Customer (`CUSTOMER`) | Customer organization owner/manager (`ActorZone.CUSTOMER_ORGANIZATION`) who completes airspace-gated onboarding with an initial asset, manages organization assets and checkpoints, provisions Maintenance Engineer accounts, submits one-time or recurring inspection service requests, negotiates and accepts quotations, tracks 5-stage inspection progress, accepts published inspection reports, pays via PayOS (VietQR), creates maintenance work orders, approves repair budgets and Change Orders, requests re-inspection verification flights, and performs independent maintenance acceptance and cost closure. |
+| 4 | Inspector (`INSPECTOR`) | Independent licensed drone partner (`ActorZone.INSPECTOR_PARTNER`) who applies with a remote pilot license (drone optional at onboarding), registers owned drones with registration/ownership/inspection documents, uploads mission flight permits, logs field flight sessions (`Start`, `Complete`, `Abort`) on Web or Mobile, uploads inspection photos and MP4 videos, verifies AI defect candidates, submits auto-compiled inspection reports, and executes 3-way defect verification on re-inspection missions. |
+| 5 | Maintenance Engineer (`MAINTENANCE_ENGINEER`) | Customer-scoped engineering technician (`ActorZone.CUSTOMER_ORGANIZATION`) who plans repair tasks using the RAG Scope Advisor, prepares norm-assisted cost estimates, executes field repairs, records before-and-after repair proof, batch-verifies work logs as `Team Lead`, and submits auto-drafted maintenance completion reports as `Report Author`. |
+| 6 | Automated System (AI, RAG & Schedulers) | Internal services that evaluate Vietnam airspace zones, check cross-organization scheduling conflicts, dispatch transactional outbox notifications, detect candidate defects on photos (`YOLO11` with Vision LLM fallback), compile report drafts and AI executive summaries, and retrieve `pgvector` civil engineering standards for repair scope, cost norms, and acceptance compliance audits. |
+| 7 | External Payment & Identity Providers (PayOS & Google OAuth2) | External integrations providing VietQR online payment links and HMAC-verified payment webhooks (`PayOS`) for accepted inspection occurrences, and OAuth 2.0 federated sign-in (`Google OAuth2`) across Web and Mobile deep links. |
 
 ### 2.2 Use Cases
 
 #### 2.2.1 Diagram(s)
 
 ```mermaid
+%% title: Use Case Diagram
 flowchart LR
-  PA["Platform Admin"] --> UC_GOV["Manage Platform Users & Asset Categories"]
-  PM["Platform Manager"] --> UC_SUB["Manage Subscriptions & Drone Leases"]
-  PP["Online Payment Gateway"] --> UC_SUB
-  OM["Organization Manager"] --> UC_SUB
-  OM --> UC_ASSET["Manage Assets & Drone Fleet"]
-  OM --> UC_SCHED["Schedule One-Off & Recurring Inspections"]
-  OM --> UC_REV["Review & Publish Inspection Reports"]
-  OM --> UC_MAINT_GOV["Approve Maintenance Budgets & Accept Repairs"]
+  PA["Platform Admin (ADMIN)"] --> UC_GOV["Manage Platform Users, Asset Categories & Finance Settings"]
+  PA --> UC_ONBOARD_REV["Review Customer Airspace, Partner Inspector & Drone Applications"]
+  PM["Platform Manager (MANAGER)"] --> UC_ONBOARD_REV
+  PM --> UC_QUOTE["Manage Service Requests, Order Chat, Quotes & Signed Contracts"]
+  PM --> UC_DISPATCH["Assign Partner Inspector/Drone & Dispatch Aborted Missions"]
+  PM --> UC_REV["Review & Publish Official PDF Inspection Reports"]
 
-  IN["Inspector"] --> UC_PERMIT["Upload Flight Permit & Check Airspace"]
-  IN --> UC_EXEC["Log Field Sessions & Upload Photos"]
-  IN --> UC_DEFECT["Review AI Defects & Confirm Findings"]
-  IN --> UC_REP_AUTH["Draft & Submit Inspection Reports"]
+  CU["Customer (CUSTOMER)"] --> UC_REG["Register Organization with Initial Asset & Airspace Gate"]
+  CU --> UC_ASSET["Manage Assets, Checkpoints & Maintenance Workforce"]
+  CU --> UC_QUOTE
+  CU --> UC_PAY["Accept Published Report & Pay via PayOS VietQR"]
+  CU --> UC_MAINT_GOV["Create Work Orders, Approve Budgets, Request Re-inspection & Accept Repairs"]
 
-  ME["Maintenance Engineer"] --> UC_TASK["Execute Repair Tasks & Verify Work Logs"]
-  ME --> UC_EST["Prepare Cost Estimates & Change Orders"]
-  ME --> UC_COMP_AUTH["Prepare Maintenance Completion Reports"]
+  IN["Partner Inspector (INSPECTOR)"] --> UC_PARTNER["Apply as Partner Pilot & Register Owned Drones (3 Docs)"]
+  IN --> UC_PERMIT["Upload Flight Permit & Execute Field Sessions (Start/Complete/Abort)"]
+  IN --> UC_DEFECT["Upload Photo/MP4 Evidence, Run YOLO11 & Confirm Findings"]
+  IN --> UC_REP_AUTH["Auto-Compile Report & Perform 3-Way Re-inspection Verification"]
 
-  SYS["Automated System / AI"] --> UC_AI["Detect Candidate Defects (YOLO11)"]
-  SYS --> UC_LLM["Generate Report & Repair Scope Suggestions"]
+  ME["Maintenance Engineer (MAINTENANCE_ENGINEER)"] --> UC_TASK["Plan Tasks with RAG Scope Advisor & Batch-Verify Work Logs"]
+  ME --> UC_EST["Prepare RAG Norm-Assisted Cost Estimates & Change Orders"]
+  ME --> UC_COMP_AUTH["Auto-Draft & Submit Maintenance Completion Reports"]
+
+  PAYOS["PayOS Gateway"] --> UC_PAY
+  SYS["Automated System / AI & RAG"] --> UC_DEFECT
+  SYS --> UC_REP_AUTH
+  SYS --> UC_TASK
 ```
 
 #### 2.2.2 Descriptions
 
 | ID | Use Case | Actors | Use Case Description |
 | --- | --- | --- | --- |
-| UC-01 | Sign In & Manage Session | All Roles | Sign in with email and password, set up a new password on first login, and sign out across web and mobile devices. |
-| UC-02 | Manage Platform Accounts & Asset Categories | Platform Admin | Create and manage platform accounts, initial customer manager accounts, and standard infrastructure asset categories. |
-| UC-03 | Request Subscription & Confirm Payment | Organization Manager, Platform Manager, Payment Gateway | Request a 1- to 120-month enterprise subscription and activate it via bank transfer confirmation or online PayPal payment. |
-| UC-04 | Register Infrastructure Asset & Documents | Organization Manager | Register infrastructure assets with map coordinates, standard inspection checkpoints, and reference engineering documents, or archive completed assets. |
-| UC-05 | Manage Workforce & Pilot License Profile | Organization Manager, Inspector | Create Inspector and Maintenance Engineer accounts and allow Inspectors to record their remote pilot license details. |
-| UC-06 | Manage Drone Fleet & Drone Equipment Leasing | Organization Manager, Platform Manager, Payment Gateway | Register owned drones, lease drones from the platform catalog, and return leased drones when a contract ends. |
-| UC-07 | Schedule One-Off or Recurring Inspection | Organization Manager, System | Schedule a one-off inspection or set up a weekly, monthly, or yearly recurring inspection schedule with automatic conflict checking. |
-| UC-08 | Reassign Inspection Resources | Organization Manager | Change the assigned Inspector or Drone for a scheduled inspection after checking availability. |
-| UC-09 | Upload Flight Permit | Inspector, Organization Manager | Upload the aviation flight permit for an assigned inspection to mark the mission `Ready for Flight`. |
-| UC-10 | Log Field Flight Session | Inspector | Record pre-flight safety notes and log the start, postponement, abort, or completion of an on-site drone flight session. |
-| UC-11 | Start Additional Field Session | Inspector | Start an additional flight session when extra aerial photos are needed before finalizing the findings. |
-| UC-12 | Check Airspace & No-Fly Zones | Organization Manager, Inspector | View the interactive Vietnam airspace map to check whether asset or mission coordinates fall inside a No-Fly Zone or Restricted Zone. |
-| UC-13 | Upload & Manage Inspection Photos | Inspector, Organization Manager | Upload inspection photos, view capture time and GPS location, tag structural locations, and retire unusable photos. |
-| UC-14 | Run AI Defect Detection | Inspector, System | Run `YOLO11` visual detection on selected inspection photos to highlight candidate structural defects. |
-| UC-15 | Verify & Confirm Defect Findings | Inspector | Confirm, edit, or remove AI-suggested defects, add manual findings, and lock the final findings list for reporting. |
-| UC-16 | Generate AI or Manual Report Draft | Inspector, System | Create a structured inspection report draft using AI assistance or a manual template based on the confirmed findings. |
-| UC-17 | Verify & Submit Inspection Report | Inspector | Edit report sections, preview the formatted PDF, verify accuracy, and submit the report to an Organization Manager. |
-| UC-18 | Review Inspection Report | Organization Manager | Review a submitted inspection report and either approve it for publication or return it to the author with comments. |
-| UC-19 | Publish Official PDF Report | Organization Manager, System | Generate and lock the final A4 PDF inspection report for viewing and download. |
-| UC-20 | Forward Defects to Maintenance | Organization Manager | Select confirmed defects from a published report that require physical repair and hand them off to maintenance. |
-| UC-21 | Publish Amended Inspection Report | Inspector, Organization Manager | Create and publish a new report version when corrections are needed while keeping previous published versions in history. |
-| UC-22 | View Dashboard, Calendar & Notifications | All Roles | View role-specific dashboards, check the Inspector Schedule Calendar, and read in-app notifications. |
-| UC-23 | Create Maintenance Work Order | Organization Manager | Create a maintenance work order from a forwarded defect with priority, due date, repair scope, and acceptance criteria. |
-| UC-24 | Use AI Repair Scope Advisor & Plan Tasks | Maintenance Engineer, Organization Manager, System | Generate suggested repair steps from civil engineering standards and break the work order down into repair tasks. |
-| UC-25 | Prepare Repair Cost Estimate | Maintenance Engineer | Create an itemized cost estimate covering labor, materials, equipment, and services for a work order. |
-| UC-26 | Assign Maintenance Team & Approve Budget | Organization Manager | Assign the Team Lead, Report Author, Team Members, and independent Accepting Reviewer, and approve or reject the cost estimate. |
-| UC-27 | Log & Verify Field Repair Work | Maintenance Engineer, Team Lead | Release and start repair work, log task hours and test readings, verify work logs as Team Lead, and mark repair work complete. |
-| UC-28 | Upload Repair Evidence | Maintenance Engineer | Record before-and-after repair conditions and field test measurements for completed tasks. |
-| UC-29 | Request & Approve Change Order | Maintenance Engineer, Organization Manager | Submit and review a Change Order when unexpected site conditions require budget or scope adjustments. |
-| UC-30 | Submit Maintenance Completion Report | Maintenance Engineer (Report Author) | Prepare, verify, and submit the maintenance completion report once physical repair tasks are finished. |
-| UC-31 | Accept Maintenance Work & Close Work Order | Organization Manager | Perform independent technical acceptance (accept, request rework, or request re-inspection), record actual costs, and close the work order. |
-| UC-32 | View Activity & Audit History | Authorized Roles | Review the history of account actions, approvals, published reports, and closed work orders. |
+| UC-01 | Sign In, Google OAuth2 & Manage Session | All Roles | Sign in with email/password or Google OAuth2 (Web callback and Mobile `smartdrone://auth` deep link), rotate refresh tokens, and manage active device sessions and `/users/me` profile details. |
+| UC-02 | Manage Platform Accounts, Asset Categories & Finance Settings | Platform Admin, Platform Manager | Create and manage platform accounts, standard infrastructure asset categories, and platform financial settlement rates (commission, VAT, and PIT/TNCN withholding). |
+| UC-03 | Register Customer Organization with Airspace Gate | Customer, Platform Admin, System | Register a new customer organization together with its first infrastructure asset; automatically block locations in a No-Fly Zone, queue Restricted Zone locations for Admin review, and activate Clear Zone accounts immediately. |
+| UC-04 | Register Infrastructure Asset & Documents | Customer | Register additional infrastructure assets with Nominatim/landmark address search, GPS coordinates, no-fly zone validation, standard inspection checkpoints, and reference engineering documents, or retire completed assets. |
+| UC-05 | Onboard Partner Inspector & Manage Maintenance Workforce | Inspector, Platform Admin, Platform Manager, Customer | Review partner Inspector applications with remote pilot licenses and executed partner contracts (without requiring a drone at signup), and allow Customers to provision organization Maintenance Engineer accounts. |
+| UC-06 | Register & Review Inspector-Owned Drones | Inspector, Platform Admin, Platform Manager | Submit inspector-owned drone registration applications with three mandatory evidence files (`REGISTRATION`, `OWNERSHIP`, `INSPECTION`) and approve serviceable drones into the partner assignment pool. |
+| UC-07 | Submit Service Request, Negotiate via Chat & Accept Quote | Customer, Platform Manager | Submit a one-time or recurring inspection service request, exchange contextual messages in order chat, issue versioned VND or USD quotations with a selected partner Inspector and owned drone, and accept the agreed quote version. |
+| UC-08 | Upload Signed Service Contract & Assign Partner Occurrences | Platform Manager, Customer, System | Upload the executed offline paper service contract scan (`PDF`, `DOCX`, `JPEG`, `PNG` with SHA-256 checksum), inherit the contract across recurring occurrences, and assign a partner Inspector and drone with cross-organization conflict checking to create a `SCHEDULED` inspection. |
+| UC-09 | Reschedule, Reassign or Cancel Mission Dispatch | Platform Manager, System | Reschedule planned dates, reassign the partner Inspector and drone, or cancel a scheduled inspection after an on-site field session abort notification. |
+| UC-10 | Upload Mission Flight Permit | Inspector, Platform Manager, Customer | Upload the aviation flight permit document for an assigned inspection to satisfy the flight readiness guard prior to starting an on-site field session. |
+| UC-11 | Log Field Flight Session (Start, Complete, Abort) | Inspector, System | Record pre-flight safety checklist notes and log the start, normal completion (`FIELD_COMPLETED`), or emergency abort (`ABORTED`) of a field session on Web or Mobile; aborting reverts the mission to `SCHEDULED` and alerts the Platform Manager. |
+| UC-12 | Start Additional Field Session | Inspector | Open an additional field flight session from `FIELD_COMPLETED` when supplementary aerial captures are required before confirming the findings baseline. |
+| UC-13 | Check Interactive Vietnam Airspace & No-Fly Zones | All Roles | View the interactive OpenStreetMap airspace radar on Web and Mobile to inspect prohibited No-Fly Zones and Restricted Zones around asset and mission coordinates. |
+| UC-14 | Upload & Stream Photo and MP4 Video Evidence | Inspector, Platform Manager, Customer | Upload geotagged inspection photos and `video/mp4` captures (including Mobile `file_picker` streaming upload), preview media via authenticated streaming, tag structural locations, and retire unusable captures. |
+| UC-15 | Run AI Defect Detection & Confirm Findings Baseline | Inspector, System | Run `YOLO11` visual detection (with automatic Vision LLM fallback when empty) on inspection photos, review findings preview chips on the evidence register, confirm/edit/reject AI candidates, add manual findings, and confirm the official findings baseline. |
+| UC-16 | Auto-Compile Inspection Report & Generate AI Summary | Inspector, Platform Manager, Customer, System | Automatically compile and submit the structured inspection report (`SUBMITTED`, moving the mission to `UNDER_REVIEW`) upon visiting the Report tab with confirmed findings, and generate an LLM Executive Summary card highlighting overall risk and key recommendations. |
+| UC-17 | Review & Publish Immutable PDF Inspection Report | Platform Manager, System | Independently review a submitted inspection report (`APPROVED` or `RETURNED` with mandatory reason) and publish the final immutable A4 PDF report with SHA-256 verification (`PUBLISHED`, moving the mission to `COMPLETED`). |
+| UC-18 | Track Progress, Accept Report & Settle via PayOS VietQR | Customer, Platform Manager, PayOS Gateway | Monitor mission execution via the 5-stage Customer Progress Tracker, formally accept the published inspection report (`PAYMENT_DUE`), complete online VietQR checkout via PayOS (`PAID`), download the official PDF deliverable, and record partner Inspector net payouts. |
+| UC-19 | Forward Confirmed Defects to Maintenance | Customer, Platform Manager | Select confirmed defects from a published inspection report that require physical remediation and hand them off to the maintenance workflow. |
+| UC-20 | View Role Dashboard, Calendar & Notification Inbox | All Roles | View role-scoped operational analytics dashboards across `/admin`, `/client`, and `/operations`, inspect the Inspector Schedule Calendar, and manage deduplicated in-app outbox notifications. |
+| UC-21 | Create Work Order with 1-Click RAG Tasks & Assign Team | Customer, Maintenance Engineer, System | Create a maintenance work order from a forwarded defect, query the `pgvector` RAG Scope Advisor for civil engineering standards (`TCVN`/`EN`/`ISO`), auto-provision suggested tasks in 1 click, and assign the `Team Lead`, `Report Author`, `Team Member`, and independent reviewer roles. |
+| UC-22 | Prepare RAG Norm-Assisted Cost Estimate & Approve Budget | Maintenance Engineer, Customer, System | Generate standard Vietnamese engineering cost norms (`LABOR`, `MATERIAL`, `EQUIPMENT`, `CONTINGENCY`) via RAG (`suggest-estimate`), submit versioned cost estimates, and independently approve or reject the repair budget as Customer. |
+| UC-23 | Execute Field Repairs, Upload Proof & Batch-Verify Logs | Maintenance Engineer, Team Lead | Release and start repair execution, record task hours, quantitative test readings, and before-and-after repair proof on Web or Mobile, batch-verify all submitted work logs in 1 click as `Team Lead` (`batch-verify`), and mark repair work complete. |
+| UC-24 | Request & Approve Maintenance Change Order | Maintenance Engineer, Customer | Submit and independently review a Change Order when unexpected field conditions require scope, schedule, or budget ceiling adjustments. |
+| UC-25 | Auto-Draft Completion Report & Run RAG Compliance Audit | Maintenance Engineer (Report Author), Customer, System | Auto-synthesize the structured 5-part Maintenance Completion Report from completed tasks and verified work logs (`auto-draft`), submit it to the Customer, and run the automated RAG Acceptance Compliance Audit (`acceptance-compliance`) comparing field test readings against TCVN thresholds. |
+| UC-26 | Execute 3-Step / 3-Way Re-inspection Verification Loop | Customer, Platform Manager, Inspector, System | Request a verification re-inspection (`REINSPECTION_REQUIRED`) to automatically spawn a linked `RE_INSPECTION` mission, perform 3-way defect verification (Prior Defect vs Engineer Repair Proof vs Drone Re-capture as `RESOLVED`, `UNRESOLVED`, or `INCONCLUSIVE`), publish the Re-inspection Report, and reinstate the Work Order for final Customer acceptance. |
+| UC-27 | Accept Maintenance Work, Reconcile Costs & Close Work Order | Customer | Record independent technical acceptance (`ACCEPTED`), inherit and reconcile actual expenditures against the approved baseline and Change Orders (`COST_RECONCILED`), and close the completed work order (`CLOSED`). |
+| UC-28 | View Activity & Cryptographic Audit History | Authorized Roles | Inspect the immutable audit trail of onboarding decisions, contract uploads, mission dispatch, report publications, PayOS settlements, budget approvals, and closed work orders. |

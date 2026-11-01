@@ -1,0 +1,36 @@
+%% title: YOLO11 Defect Detection and Finding Verification Class Diagram
+classDiagram
+  class InspectionController {
+    +uploadEvidence(Jwt, UUID, MultipartFile, UUID, Instant, BigDecimal, BigDecimal) ApiResponse~EvidenceResponse~
+    +analyzeEvidence(Jwt, UUID, UUID, boolean) ApiResponse~EvidenceAnalysisResponse~
+    +createManualFinding(Jwt, UUID, ManualFindingRequest) ApiResponse~FindingResponse~
+    +updateFinding(Jwt, UUID, UUID, UpdateFindingRequest) ApiResponse~FindingResponse~
+    +confirmFinding(Jwt, UUID, UUID, ReviewFindingRequest) ApiResponse~FindingResponse~
+    +deleteFinding(Jwt, UUID, UUID) ApiResponse~Void~
+    +confirmFindings(Jwt, UUID, ConfirmFindingsRequest) ApiResponse~Void~
+  }
+  class PrimaryWithFallbackInference {
+    +analyze(byte[] imageBytes, String contentType, boolean allowFallback) InferenceResult
+  }
+  class YoloInferenceClient {
+    +predict(byte[] imageBytes, String contentType) List~DetectedBox~
+  }
+  class OpenAiCompatibleInferenceClient {
+    +predict(byte[] imageBytes, String contentType) List~DetectedBox~
+  }
+  class Finding {
+    -UUID id
+    -UUID inspectionId
+    -UUID evidenceId
+    -String findingCode
+    -String defectLabel
+    -FindingSeverity severity
+    -String boundingBox
+    -FindingStatus status
+    -BigDecimal confidence
+    -boolean isDeleted
+  }
+  InspectionController --> PrimaryWithFallbackInference
+  PrimaryWithFallbackInference --> YoloInferenceClient
+  PrimaryWithFallbackInference --> OpenAiCompatibleInferenceClient
+  InspectionController --> Finding

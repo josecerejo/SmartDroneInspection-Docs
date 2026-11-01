@@ -1,4 +1,4 @@
-"""Report 5 must expose one workbook sheet per Report 3 feature (FE-01..FE-12)."""
+"""Report 5 must expose one workbook sheet per Report 3 feature (FE-01..FE-08)."""
 import re
 import tempfile
 import unittest
@@ -8,7 +8,7 @@ from support import OFFICIAL, REPORTS, original
 from export_report5 import FEATURE_SHEETS, TEMPLATE_NAME, export
 from report_ooxml import Spreadsheet, descendants, find_table, plain
 
-SHEET_COUNT = 12
+SHEET_COUNT = 8
 
 
 def generated_workbook():
@@ -49,13 +49,13 @@ class FeatureSheetTests(unittest.TestCase):
             self.assertNotIn("<", values["B2"], source.name)
             self.assertNotIn("<", values["B3"], source.name)
 
-    def test_all_twelve_sheets_are_populated(self):
+    def test_all_eight_sheets_are_populated(self):
         book, temp = generated_workbook()
         with temp:
             for sheet in FEATURE_SHEETS:
-                self.assertIn(book.value(sheet, "B4"), {"5", "6"},
-                              f"{sheet} should report 5 or 6 test cases")
-                self.assertGreaterEqual(int(book.value(sheet, "B6")), 4, sheet)
+                self.assertIn(book.value(sheet, "B4"), {"5", "11", "12"},
+                              f"{sheet} should report 5, 11, or 12 test cases")
+                self.assertGreaterEqual(int(book.value(sheet, "B6")), 5, sheet)
 
     def test_case_ids_land_on_the_sheet_matching_their_feature(self):
         book, temp = generated_workbook()
@@ -74,22 +74,23 @@ class FeatureSheetTests(unittest.TestCase):
                             if re.fullmatch(r"WF\d-\d{3}", value or ""):
                                 ids.append(value)
                 counts[sheet] = ids
-                self.assertIn(len(ids), {5, 6}, sheet)
+                self.assertIn(len(ids), {5, 11, 12}, sheet)
             self.assertIn("WF1-001", counts["Feature 1"])
             self.assertIn("WF1-006", counts["Feature 2"])
-            self.assertIn("WF1-011", counts["Feature 3"])
-            self.assertIn("WF1-017", counts["Feature 4"])
-            self.assertIn("WF2-001", counts["Feature 5"])
-            self.assertIn("WF2-008", counts["Feature 6"])
-            self.assertIn("WF3-009", counts["Feature 7"])
-            self.assertIn("WF3-002", counts["Feature 8"])
-            self.assertIn("WF3-005", counts["Feature 9"])
-            self.assertIn("WF4-001", counts["Feature 10"])
-            self.assertIn("WF4-006", counts["Feature 11"])
-            self.assertIn("WF4-012", counts["Feature 12"])
-            self.assertEqual(sum(len(v) for v in counts.values()), 64)
+            self.assertIn("WF1-011", counts["Feature 2"])
+            self.assertIn("WF1-017", counts["Feature 3"])
+            self.assertIn("WF2-001", counts["Feature 4"])
+            self.assertIn("WF2-008", counts["Feature 5"])
+            self.assertIn("WF3-009", counts["Feature 5"])
+            self.assertIn("WF3-002", counts["Feature 6"])
+            self.assertIn("WF3-005", counts["Feature 6"])
+            self.assertIn("WF3-017", counts["Feature 6"])
+            self.assertIn("WF4-001", counts["Feature 7"])
+            self.assertIn("WF4-006", counts["Feature 7"])
+            self.assertIn("WF4-012", counts["Feature 8"])
+            self.assertEqual(sum(len(v) for v in counts.values()), 65)
 
-    def test_statistics_lists_all_twelve_modules_with_a_correct_subtotal(self):
+    def test_statistics_lists_all_eight_modules_with_a_correct_subtotal(self):
         book, temp = generated_workbook()
         with temp:
             stats = "Test Statistics"
@@ -97,13 +98,13 @@ class FeatureSheetTests(unittest.TestCase):
                 row = 10 + number
                 self.assertEqual(book.value(stats, f"C{row}"), book.value(sheet, "B2"))
                 self.assertEqual(book.value(stats, f"B{row}"), str(number))
-            self.assertEqual(book.value(stats, "H23"), "64")
-            self.assertEqual(book.value(stats, "D23"), "60")
-            self.assertEqual(book.value(stats, "F23"), "4")
-            self.assertEqual(book.value(stats, "C23"), "Sub total")
-            self.assertEqual(book.value(stats, "C25"), "Test coverage")
-            self.assertEqual(book.value(stats, "E25"), "93.75")
-            self.assertEqual(book.value(stats, "E26"), "93.75")
+            self.assertEqual(book.value(stats, "H19"), "65")
+            self.assertEqual(book.value(stats, "D19"), "60")
+            self.assertEqual(book.value(stats, "F19"), "5")
+            self.assertEqual(book.value(stats, "C19"), "Sub total")
+            self.assertEqual(book.value(stats, "C21"), "Test coverage")
+            self.assertAlmostEqual(float(book.value(stats, "E21")), 92.31, places=2)
+            self.assertAlmostEqual(float(book.value(stats, "E22")), 92.31, places=2)
 
 
 if __name__ == "__main__":

@@ -1,175 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mxfile host="app.diagrams.net" modified="2026-10-20T00:00:00.000Z" agent="SmartDroneInspection" version="24.0.0" type="device">
+<mxfile host="app.diagrams.net" modified="2026-11-01T00:00:00.000Z" agent="SmartDroneInspection" version="24.0.0" type="device">
   <diagram id="system-context-diagram" name="System Context Diagram (DFD Level 0)">
-    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1350" pageHeight="900" math="0" shadow="0">
+    <mxGraphModel dx="1450" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1450" pageHeight="950" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
         <!-- Title -->
-        <mxCell id="title" value="&lt;b&gt;SmartDroneInspection System — Context Diagram (DFD Level 0)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 11px; color: #64748b;&quot;&gt;Enterprise Multi-Tenant SaaS Lifecycle (MF1–MF4 Target Specification)&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=16;fontColor=#0f172a;" vertex="1" parent="1">
-          <mxGeometry x="400" y="15" width="550" height="40" as="geometry" />
+        <mxCell id="title" value="&lt;b&gt;SmartDroneInspection System — Context Diagram (DFD Level 0)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 11px; color: #64748b;&quot;&gt;5-Role Platform Inspection &amp;amp; Corrective Maintenance Service Lifecycle (MF1–MF4, FE-01 to FE-08)&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=16;fontColor=#0f172a;" vertex="1" parent="1">
+          <mxGeometry x="380" y="15" width="680" height="40" as="geometry" />
         </mxCell>
 
         <!-- Central Process (Process 0) -->
-        <mxCell id="system" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;SmartDroneInspection&lt;br&gt;System&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 11px; color: #4338ca;&quot;&gt;[ Process 0 ]&lt;br&gt;Enterprise SaaS Platform&lt;/span&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#e0e7ff;strokeColor=#4338ca;strokeWidth=3;fontColor=#1e1b4b;shadow=1;align=center;" vertex="1" parent="1">
-          <mxGeometry x="545" y="320" width="260" height="260" as="geometry" />
+        <mxCell id="system" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;SmartDroneInspection&lt;br&gt;Platform&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 11px; color: #4338ca;&quot;&gt;[ Process 0 ]&lt;br&gt;Web Portals &amp;amp; Flutter Mobile App&lt;/span&gt;" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#e0e7ff;strokeColor=#4338ca;strokeWidth=3;fontColor=#1e1b4b;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="580" y="340" width="270" height="270" as="geometry" />
         </mxCell>
 
-        <!-- External Entities: Human Actors -->
-        <!-- 1. Platform Admin -->
-        <mxCell id="platform_admin" value="&lt;b&gt;Platform Admin&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;SaaS Governance &amp; Configuration&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
-          <mxGeometry x="40" y="80" width="220" height="80" as="geometry" />
+        <!-- External Entities: 5 Human Login Roles -->
+        <!-- 1. Platform Admin (ADMIN) -->
+        <mxCell id="platform_admin" value="&lt;b&gt;Platform Admin (ADMIN)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;Platform Accounts, Categories, Airspace/Partner Reviews &amp;amp; Finance Settings&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="240" height="80" as="geometry" />
         </mxCell>
 
-        <!-- 2. Organization Admin -->
-        <mxCell id="org_admin" value="&lt;b&gt;Organization Admin&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;Enterprise Fleet, Review &amp; Budget&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
-          <mxGeometry x="40" y="410" width="220" height="80" as="geometry" />
+        <!-- 2. Platform Manager (MANAGER) -->
+        <mxCell id="platform_manager" value="&lt;b&gt;Platform Manager (MANAGER)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;Partner/Drone 3-Doc Review, VND/USD Quotes, Signed Contracts, Dispatch &amp;amp; PDF Publish&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="250" width="240" height="85" as="geometry" />
         </mxCell>
 
-        <!-- 3. Inspector -->
-        <mxCell id="inspector" value="&lt;b&gt;Inspector&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;Field Operations &amp; Verification&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
-          <mxGeometry x="40" y="730" width="220" height="80" as="geometry" />
+        <!-- 3. Customer (CUSTOMER) -->
+        <mxCell id="customer" value="&lt;b&gt;Customer (CUSTOMER)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;Assets, Service Requests, Quote Acceptance, PayOS Settlement, Work Orders &amp;amp; Acceptance&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="450" width="240" height="85" as="geometry" />
         </mxCell>
 
-        <!-- 4. Maintenance Engineer -->
-        <mxCell id="maint_engineer" value="&lt;b&gt;Maintenance Engineer&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;Repair Execution &amp; Actuals&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
-          <mxGeometry x="565" y="740" width="220" height="80" as="geometry" />
+        <!-- 4. Partner Inspector (INSPECTOR) -->
+        <mxCell id="inspector" value="&lt;b&gt;Partner Inspector (INSPECTOR)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;Pilot License, Owned Drones (3 Docs), Permits, Field Sessions, Photo/MP4 &amp;amp; 3-Way Verification&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="660" width="240" height="85" as="geometry" />
         </mxCell>
 
-        <!-- External Entities: Automated Services & Storage -->
-        <!-- 5. AI Vision Service -->
-        <mxCell id="ai_vision" value="&lt;b&gt;AI Vision Service&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #0f766e;&quot;&gt;YOLO11s Inference Engine&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fdfa;strokeColor=#0d9488;strokeWidth=2;fontColor=#134e4a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
-          <mxGeometry x="1090" y="80" width="220" height="80" as="geometry" />
+        <!-- 5. Maintenance Engineer (MAINTENANCE_ENGINEER) -->
+        <mxCell id="maint_engineer" value="&lt;b&gt;Maintenance Engineer (MAINTENANCE_ENGINEER)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;RAG Tasks &amp;amp; Cost Norms, Field Repairs, 1-Click Batch Log Verify &amp;amp; Auto-Draft Report&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="585" y="770" width="260" height="85" as="geometry" />
         </mxCell>
 
-        <!-- 6. LLM Service -->
-        <mxCell id="llm_service" value="&lt;b&gt;LLM Service&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #0f766e;&quot;&gt;Report Drafter (MF3 / MF4)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fdfa;strokeColor=#0d9488;strokeWidth=2;fontColor=#134e4a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
-          <mxGeometry x="1090" y="410" width="220" height="80" as="geometry" />
+        <!-- External Entities: Automated Services & Gateways -->
+        <!-- 6. Google OAuth2 & PayOS VietQR -->
+        <mxCell id="payos_oauth" value="&lt;b&gt;PayOS (VietQR) &amp;amp; Google OAuth2&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #1d4ed8;&quot;&gt;OAuth2 Sign-In &amp;amp; VietQR Payment Webhooks (HMAC-SHA256)&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#2563eb;strokeWidth=2;fontColor=#1e3a8a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="80" width="240" height="80" as="geometry" />
         </mxCell>
 
-        <!-- 7. Object Storage -->
-        <mxCell id="storage" value="&lt;b&gt;Object Storage&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #b45309;&quot;&gt;MinIO / S3 Compatible&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#d97706;strokeWidth=2;fontColor=#78350f;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
-          <mxGeometry x="1090" y="730" width="220" height="80" as="geometry" />
+        <!-- 7. AI Vision Service -->
+        <mxCell id="ai_vision" value="&lt;b&gt;AI Vision Service (YOLO11)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #0f766e;&quot;&gt;MBDD2025 Defect Inference + Vision Fallback&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fdfa;strokeColor=#0d9488;strokeWidth=2;fontColor=#134e4a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="290" width="240" height="80" as="geometry" />
         </mxCell>
 
-        <!-- Data Flows: Platform Admin <-> System -->
-        <mxCell id="flow_pa_in" value="Tenant registrations &amp;amp; subscription configurations" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.9;exitY=0.2;exitDx=0;exitDy=0;entryX=0.15;entryY=0.08;entryDx=0;entryDy=0;" edge="1" source="platform_admin" target="system" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="430" y="130" />
-            </Array>
-          </mxGeometry>
+        <!-- 8. LLM & pgvector RAG Service -->
+        <mxCell id="llm_service" value="&lt;b&gt;LLM &amp;amp; pgvector RAG Service&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #0f766e;&quot;&gt;AI Executive Summary, Repair Scope, Cost Norms &amp;amp; Compliance Audit&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fdfa;strokeColor=#0d9488;strokeWidth=2;fontColor=#134e4a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="500" width="240" height="80" as="geometry" />
         </mxCell>
 
-        <mxCell id="flow_pa_out" value="Audit logs &amp;amp; workspace health metrics" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.05;exitY=0.25;exitDx=0;exitDy=0;entryX=0.9;entryY=0.8;entryDx=0;entryDy=0;" edge="1" source="system" target="platform_admin" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="380" y="240" />
-            </Array>
-          </mxGeometry>
+        <!-- 9. Object Storage -->
+        <mxCell id="storage" value="&lt;b&gt;Object Storage (MinIO / S3)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #b45309;&quot;&gt;Contracts, 3-Doc Drones, Permits, Photo/MP4 Evidence &amp;amp; SHA-256 PDFs&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#d97706;strokeWidth=2;fontColor=#78350f;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="710" width="240" height="80" as="geometry" />
         </mxCell>
 
-        <!-- Data Flows: Organization Admin <-> System -->
-        <mxCell id="flow_oa_in" value="Workforce &amp;amp; fleet data, pair assignments,&lt;br&gt;readiness, report, budget &amp;amp; acceptance approvals" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.45;entryDx=0;entryDy=0;" edge="1" source="org_admin" target="system" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="390" y="410" />
-            </Array>
-          </mxGeometry>
+        <!-- Edges -->
+        <mxCell id="flow_pa" value="Platform accounts, asset categories, airspace reviews &amp;amp; finance rates" style="curved=1;endArrow=classic;startArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;" edge="1" source="platform_admin" target="system" parent="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <mxCell id="flow_oa_out" value="Operational dashboards, expiry alerts,&lt;br&gt;report drafts &amp;amp; review items" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0;exitY=0.65;exitDx=0;exitDy=0;entryX=1;entryY=0.8;entryDx=0;entryDy=0;" edge="1" source="system" target="org_admin" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="390" y="520" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="flow_pm" value="Partner/drone approvals, VND/USD quotes, signed contracts, dispatch &amp;amp; PDF publish" style="curved=1;endArrow=classic;startArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;" edge="1" source="platform_manager" target="system" parent="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- Data Flows: Inspector <-> System -->
-        <mxCell id="flow_ins_in" value="Field session records, evidence media,&lt;br&gt;observations &amp;amp; verified draft reports" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.9;exitY=0.2;exitDx=0;exitDy=0;entryX=0.08;entryY=0.8;entryDx=0;entryDy=0;" edge="1" source="inspector" target="system" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="370" y="650" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="flow_cu" value="Service requests, quote acceptance, 5-stage tracking, PayOS payment &amp;amp; WO acceptance" style="curved=1;endArrow=classic;startArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;" edge="1" source="customer" target="system" parent="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <mxCell id="flow_ins_out" value="Assigned inspection missions, flight readiness status&lt;br&gt;&amp;amp; AI candidate detections" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.18;exitY=0.92;exitDx=0;exitDy=0;entryX=0.9;entryY=0.8;entryDx=0;entryDy=0;" edge="1" source="system" target="inspector" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="420" y="770" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="flow_ins" value="Owned drones (3 docs), flight permits, field sessions, photo/MP4 &amp;amp; 3-way verification" style="curved=1;endArrow=classic;startArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;" edge="1" source="inspector" target="system" parent="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- Data Flows: Maintenance Engineer <-> System -->
-        <mxCell id="flow_me_in" value="Repair work logs, actual costs, before/after evidence&lt;br&gt;&amp;amp; draft completion reports" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.35;exitY=0;exitDx=0;exitDy=0;entryX=0.45;entryY=1;entryDx=0;entryDy=0;" edge="1" source="maint_engineer" target="system" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="620" y="660" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="flow_me" value="1-click RAG tasks, cost norms, repair proof, batch log verify &amp;amp; auto-draft reports" style="curved=1;endArrow=classic;startArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;" edge="1" source="maint_engineer" target="system" parent="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <mxCell id="flow_me_out" value="Approved work orders, assigned repair tasks&lt;br&gt;&amp;amp; baseline repair budgets" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.65;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" edge="1" source="system" target="maint_engineer" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="730" y="660" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="flow_payos" value="Google OAuth2 tokens, VietQR checkout links &amp;amp; PayOS HMAC webhooks" style="curved=1;endArrow=classic;startArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;" edge="1" source="system" target="payos_oauth" parent="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- Data Flows: System <-> AI Vision Service -->
-        <mxCell id="flow_ai_in" value="Accepted evidence images for defect inference" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.85;exitY=0.08;exitDx=0;exitDy=0;entryX=0.1;entryY=0.2;entryDx=0;entryDy=0;" edge="1" source="system" target="ai_vision" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="920" y="130" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="flow_ai" value="Evidence images &lt;-&gt; YOLO11 bounding boxes &amp;amp; confidence" style="curved=1;endArrow=classic;startArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;" edge="1" source="system" target="ai_vision" parent="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <mxCell id="flow_ai_out" value="Advisory defect candidate detections&lt;br&gt;(bounding boxes, classes, confidence)" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.1;entryX=0.95;exitY=0.8;entryY=0.25;exitDx=0;exitDy=0;entryDx=0;entryDy=0;" edge="1" source="ai_vision" target="system" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="960" y="240" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="flow_llm" value="AI Executive Summary, TCVN/EN/ISO RAG scope, cost norms &amp;amp; compliance audits" style="curved=1;endArrow=classic;startArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;" edge="1" source="system" target="llm_service" parent="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
-        <!-- Data Flows: System <-> LLM Service -->
-        <mxCell id="flow_llm_in" value="Grounded finding facts &amp;amp; report drafting prompts" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=1;exitY=0.45;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" edge="1" source="system" target="llm_service" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="950" y="410" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-
-        <mxCell id="flow_llm_out" value="Draft narrative report sections&lt;br&gt;(inspection &amp;amp; maintenance completion)" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=1;entryY=0.65;entryDx=0;entryDy=0;" edge="1" source="llm_service" target="system" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="950" y="520" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-
-        <!-- Data Flows: System <-> Object Storage -->
-        <mxCell id="flow_store_in" value="Raw evidence media &amp;amp; rendered report PDFs" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.92;exitY=0.8;exitDx=0;exitDy=0;entryX=0.1;entryY=0.2;entryDx=0;entryDy=0;" edge="1" source="system" target="storage" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="980" y="650" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-
-        <mxCell id="flow_store_out" value="Object storage keys, URIs &amp;amp; upload confirmations" style="curved=1;endArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;exitX=0.1;exitY=0.8;exitDx=0;exitDy=0;entryX=0.82;entryY=0.92;entryDx=0;entryDy=0;" edge="1" source="storage" target="system" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="930" y="770" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="flow_store" value="Signed contracts, drone docs, permits, photo/MP4 streams &amp;amp; immutable PDFs" style="curved=1;endArrow=classic;startArrow=classic;html=1;strokeColor=#334155;strokeWidth=1.5;fontSize=10;fontColor=#1e293b;labelBackgroundColor=#ffffff;" edge="1" source="system" target="storage" parent="1">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
       </root>

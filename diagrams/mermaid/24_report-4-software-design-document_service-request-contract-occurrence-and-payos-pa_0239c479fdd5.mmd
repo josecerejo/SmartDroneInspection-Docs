@@ -1,0 +1,24 @@
+%% title: Service Request, Contract Occurrence and PayOS Payment State Machines
+stateDiagram-v2
+  direction LR
+  state "Service Request (service_requests.status)" as ReqSM {
+    [*] --> REQ_OPEN : createRequest() [FE-04]
+    REQ_OPEN --> REQ_QUOTED : issueQuote(VND/USD) [FE-04]
+    REQ_QUOTED --> REQ_QUOTED : issueQuote(versionNo + 1) [FE-04]
+    REQ_QUOTED --> REQ_ACCEPTED : acceptQuote(versionNo) [FE-04]
+    REQ_ACCEPTED --> REQ_CONTRACT_SIGNED : uploadSignedContract(SHA-256) [FE-04]
+    REQ_CONTRACT_SIGNED --> REQ_ASSIGNED : assignOccurrences() [FE-04]
+    REQ_OPEN --> REQ_CANCELLED : cancel() [FE-04]
+    REQ_QUOTED --> REQ_CANCELLED : cancel() [FE-04]
+    REQ_ASSIGNED --> [*]
+    REQ_CANCELLED --> [*]
+  }
+
+  state "Occurrence Payment & Payout (service_request_occurrences)" as PaySM {
+    [*] --> PAY_PENDING : occurrenceCreated() [FE-03, FE-04]
+    PAY_PENDING --> PAYMENT_DUE : customerAcceptsReport() [FE-06]
+    PAYMENT_DUE --> PAID : payOSWebhookVerified() / confirmPayment() [FE-06]
+    PAID --> PAYOUT_ELIGIBLE : unlockPartnerPayout() [FE-06]
+    PAYOUT_ELIGIBLE --> PAYOUT_PAID : recordPayout() [FE-06]
+    PAYOUT_PAID --> [*]
+  }

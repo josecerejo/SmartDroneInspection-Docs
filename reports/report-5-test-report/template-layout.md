@@ -142,36 +142,32 @@ the `Feature sheet summary` table in each matching `fe-0N-…md` file. Populate
 
 | FE source | Workbook destination | Stable case IDs |
 | --- | --- | --- |
-| FE-01 identity/access governance (§3.2) | Supporting evidence, outside case sheets | No WFx IDs |
-| FE-02 asset/drone/workforce/compliance catalog (§3.3) | Coverage gap; MF1 unimplemented | None assigned |
-| FE-03 mission preparation and readiness (§3.4) | `Feature 3` | WF2-008, WF2-009 (MF2-07 readiness approval/return), WF2-010 (scoped preparation history) |
-| FE-04 field records and evidence (§3.5) | `Feature 4` | WF3-002, WF3-009 |
-| FE-05 AI vision candidates (§3.6) | `Feature 5` | WF3-003 (Passed), WF3-010 (Pending) |
-| FE-06 report drafting/review/publication (§3.7) | `Feature 6` | WF3-005, WF3-006, WF3-011 (Pending), WF3-012 (Pending) |
-| FE-07 team maintenance and cost control (§3.8) | Coverage gap; MF4 unimplemented | None assigned |
-| FE-08 dashboard/analytics/notifications (§3.9) | Coverage gap; no assigned case | None assigned |
+| FE-01 Authentication, Google OAuth2 & 5-Role Access Control (§3.2) | `Feature 1` | WF1-001 to WF1-005 (5 cases) |
+| FE-02 Partner Onboarding, Workforce, Asset & Inspector Drone Registry (§3.3) | `Feature 2` | WF1-006 to WF1-016 (11 cases) |
+| FE-03 Recurring Schedules, Contract Occurrences & Outbox Notifications (§3.4) | `Feature 3` | WF1-017 to WF1-021 (5 cases) |
+| FE-04 Service Requests, Quotations, Contracts, Dispatch & Airspace Map (§3.5) | `Feature 4` | WF2-001 to WF2-005 (5 cases) |
+| FE-05 Flight Permit Gate, Field Execution, Dashboard & Calendar (§3.6) | `Feature 5` | WF2-008, WF2-009, WF2-011, WF2-012, WF2-015 to WF2-020, WF3-009 (11 cases) |
+| FE-06 Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS (§3.7) | `Feature 6` | WF3-001 to WF3-008, WF3-010, WF3-012, WF3-016, WF3-017 (12 cases) |
+| FE-07 Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution (§3.8) | `Feature 7` | WF4-001 to WF4-011 (11 cases) |
+| FE-08 Completion Report, 3-Way Re-inspection Verification & Cost Closure (§3.9) | `Feature 8` | WF4-012 to WF4-016 (5 cases) |
 
 The FE-xx codes are Report 3's own, one per section 3.2–3.9. Report 5 does not
 invent them. See `README.md` for the full code-to-section table.
 
 The sheet names are generated presentation labels; the exported mapping is
-explicit: sheet `Feature N` corresponds to SRS `FE-0N`. `Feature 3` (FE-03)
-contains `WF2-008` and `WF2-009` for MF2-07 readiness approval/return, plus
-`WF2-010` for scoped preparation history. The eight MF3 cases remain on
-`Feature 4`, `Feature 5`, and `Feature 6`. The other sheets stay present with
-zero cases. FE codes identify SRS capabilities and WFx IDs retain stable case
-identity:
+explicit: sheet `Feature N` corresponds to SRS `FE-0N`. All 65 cases are
+distributed across `Feature 1` through `Feature 8` (`5 + 11 + 5 + 5 + 11 + 12 + 11 + 5 = 65`):
 
 | Workbook sheet | Included SRS feature | Included WF IDs |
 | --- | --- | --- |
-| `Feature 1` | FE-01 — supporting evidence only; no case | None |
-| `Feature 2` | FE-02 — MF1 unimplemented | None |
-| `Feature 3` | FE-03 — MF2 readiness approval/return and scoped preparation history | WF2-008, WF2-009, WF2-010 |
-| `Feature 4` | FE-04 — field records and evidence | WF3-002, WF3-009 |
-| `Feature 5` | FE-05 — AI vision candidates and human finding decisions | WF3-003, WF3-010 (Pending) |
-| `Feature 6` | FE-06 — report drafting/review/publication | WF3-005, WF3-006, WF3-011 (Pending), WF3-012 (Pending) |
-| `Feature 7` | FE-07 — MF4 unimplemented | None |
-| `Feature 8` | FE-08 — no assigned case | None |
+| `Feature 1` | FE-01 — Authentication, Google OAuth2 & 5-Role Access Control | WF1-001 to WF1-005 |
+| `Feature 2` | FE-02 — Partner Onboarding, Workforce, Asset & Inspector Drone Registry | WF1-006 to WF1-016 |
+| `Feature 3` | FE-03 — Recurring Schedules, Contract Occurrences & Outbox Notifications | WF1-017 to WF1-021 |
+| `Feature 4` | FE-04 — Service Requests, Quotations, Contracts, Dispatch & Airspace Map | WF2-001 to WF2-005 |
+| `Feature 5` | FE-05 — Flight Permit Gate, Field Execution, Dashboard & Calendar | WF2-008, WF2-009, WF2-011, WF2-012, WF2-015 to WF2-020, WF3-009 |
+| `Feature 6` | FE-06 — Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS | WF3-001 to WF3-008, WF3-010, WF3-012, WF3-016, WF3-017 |
+| `Feature 7` | FE-07 — Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution | WF4-001 to WF4-011 |
+| `Feature 8` | FE-08 — Completion Report, 3-Way Re-inspection Verification & Cost Closure | WF4-012 to WF4-016 |
 
 There are exactly eight FE-specific Markdown source files. The supplied
 workbook has two feature sheets; generated workbooks have eight output sheets,

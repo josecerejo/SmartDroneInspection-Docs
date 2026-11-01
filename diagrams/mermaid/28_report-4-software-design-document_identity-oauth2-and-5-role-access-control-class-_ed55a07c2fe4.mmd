@@ -1,0 +1,55 @@
+%% title: Identity, OAuth2 and 5-Role Access Control Class Diagram
+classDiagram
+  class BrowserAuthController {
+    +csrf(CsrfToken) Map
+    +register(OrganizationRegistrationRequest) ResponseEntity~ApiResponse~
+    +login(LoginRequest, HttpServletRequest, HttpServletResponse) ResponseEntity~ApiResponse~
+    +setupInitialPassword(InitialPasswordSetupRequest) ResponseEntity~ApiResponse~
+    +refresh(HttpServletRequest, HttpServletResponse) ResponseEntity~ApiResponse~
+  }
+  class OAuth2Controller {
+    +authorizeGoogle(String, HttpServletResponse) void
+    +googleCallback(String, String, String, HttpServletRequest, HttpServletResponse) void
+  }
+  class UserProfileController {
+    +getMe(Jwt) ApiResponse~CurrentUserResponse~
+    +updateProfile(Jwt, UpdateUserProfileRequest) ApiResponse~CurrentUserResponse~
+    +updatePilotLicense(Jwt, UpdatePilotLicenseRequest) ApiResponse~CurrentUserResponse~
+  }
+  class PlatformUserController {
+    +listUsers(int, int, String) ApiResponse~PagedResponse~
+    +createUser(Jwt, CreatePlatformUserRequest) ResponseEntity~ApiResponse~
+    +updateRoles(Jwt, UUID, UpdatePlatformUserRolesRequest) ApiResponse
+    +updateStatus(Jwt, UUID, UpdateUserStatusRequest) ApiResponse
+  }
+  class AuthService {
+    +registerCustomerWithFirstAsset(OrganizationRegistrationRequest) RegistrationResult
+    +login(String, String, String, String) LoginResult
+    +loginWithGoogle(GoogleUserProfile, ClientType, String, String) LoginResult
+  }
+  class User {
+    -UUID id
+    -UUID organizationId
+    -String normalizedEmail
+    -UserStatus status
+    -ActorZone actorZone
+    -String roles
+    -String pilotLicenseNumber
+    -Instant pilotLicenseExpiresAt
+  }
+  class ProspectiveCustomerRegistration {
+    -UUID id
+    -UUID userId
+    -String organizationCode
+    -String assetCode
+    -BigDecimal latitude
+    -BigDecimal longitude
+    -String airspaceClassification
+    -String status
+  }
+  BrowserAuthController --> AuthService
+  OAuth2Controller --> AuthService
+  UserProfileController --> User
+  PlatformUserController --> User
+  AuthService --> User
+  AuthService --> ProspectiveCustomerRegistration

@@ -4,210 +4,93 @@ This folder separates the contents of the supplied `Report5_Test Report.xlsx`
 template so the team can update test cases without repeatedly rebuilding the
 whole workbook.
 
-**Scope (updated 2026-10-27):** The Review 2 baseline tracks 64 cases across
-12 features (60 `Passed`, 0 `Failed`, and 4 `Pending`). This folder
-also indexes twelve implementation-specific cases for the five current roles
-(`Platform Admin`, `Platform Manager`, `Organization Manager`, `Inspector`,
-`Maintenance Engineer`); three MF2 cases and eight MF3 cases are historical
-coverage. `WF3-017` is a new implementation-specific pending case outside the
-baseline totals. Existing Passed outcomes remain historical and do not by
-themselves verify the current simplified
-no-quality-gate, Inspector-invoked-analysis or per-finding-forwarding contract.
-The earlier content mixed a retired five-role WF1–WF4 baseline with
-unimplemented MF1–MF4 target cases; obsolete and unsupported cases were removed
-during the 2026-10-09 reset. The two MF2-07 decision cases were restored after
-backend/frontend/mobile PR integration; scoped preparation-history case
-`WF2-010` was added separately.
+**Scope (updated 2026-11-01):** The synchronized test suite tracks **65 cases** across
+**8 product features (`FE-01` to `FE-08`, 2 features per team member)** mapped 1-to-1 to
+8 feature sheets (`Feature 1` to `Feature 8`): **60 `Passed`**, **0 `Failed`**, and **5 `Pending`**
+(`92.31%` overall / `93.75%` baseline pass rate). All cases are aligned with the
+5-Role Platform Inspection Service model (`ADMIN`, `MANAGER`, `CUSTOMER`,
+`INSPECTOR`, `MAINTENANCE_ENGINEER`).
 
-This does not claim complete MF2 coverage. MF2-08 generic source-change invalidation remains
-partial (the additional-session return now appends INVALIDATED and session start checks the latest
-approval/preparation binding); MF2-12 normal session completion is implemented with focused tests, but a
-complete MF3-to-MF2 repeated-session case has not been executed. MF1, MF4 (including MF4
-work-order creation, which the MF3-13 handoff does not perform) and FE-08 remain
-gaps, and the MF3-12/13 corrective-outcome path is backed by executed green
-runs (81 targeted WF3 tests and the 650-test full `verify` gate on 2026-10-16)
-while its end-to-end case `WF3-012` remains Pending.
 The original workbook template remains unchanged; generated copies contain eight
-feature sheets as requested.
+feature sheets (`Feature 1`–`Feature 8`).
 
 ## Naming layers and mapping
 
 The supplied template has two feature sheets (`Feature 1`, `Feature 2`). Generated
 workbooks extend it to eight feature sheets (`Feature 1`–`Feature 8`), one per
-Report 3 feature. The original template remains unchanged. Sheet `Feature N`
-contains SRS feature `FE-0N`; these are separate naming layers, not synonyms.
-Feature 1/2/7/8 have no cases. Feature 3 (FE-03) contains `WF2-008`–`WF2-010`;
-Features 4–6 contain eight historical MF3 cases, including pending `WF3-010`,
-`WF3-011` and `WF3-012`; pending `WF3-017` also maps to Feature 8 (FE-08).
-All eight sheets remain so the workbook mirrors the eight SRS features.
+Report 3 feature (`FE-01`–`FE-08`). Sheet `Feature N` contains SRS feature `FE-0N`.
 
 | Layer | Meaning | Example |
 | --- | --- | --- |
 | Workbook sheet | Generated Report 5 grouping; one sheet per FE | `Feature 6` |
-| SRS feature | Product capability from Report 3 | `FE-06 — Inspection Report and Approval` |
+| SRS feature | Product capability from Report 3 | `FE-06 — Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS` |
 | WF test ID | Business-flow traceability ID | `WF3-005` |
-
-Do not rename the files or IDs to make the sheet number look like an SRS
-feature code. In the generated workbook, `WF2-008`–`WF2-010` sit on `Feature 3` (FE-03),
-and MF3 cases sit on `Feature 4`, `Feature 5`, and `Feature 6` (FE-04–FE-06).
-The remaining four sheets have zero cases, preserving the one-sheet-per-SRS-
-feature mapping.
 
 ## Source of truth and template rule
 
 - `template/Report5_Test Report.xlsx` is an unchanged copy of the supplied
   workbook. Do not edit this copy to add new sections or rename sheets.
 - Exactly eight FE-specific Markdown files in `03-features/` are the editable
-  feature sources. There are no aggregate `feature-1.md` or `feature-2.md`
-  sources. Keep test case IDs stable when a case is reworded or re-tested.
+  feature sources (`fe-01` through `fe-08`). Keep test case IDs stable when a
+  case is reworded or re-tested.
 - When the report is ready for submission, use the exporter to produce a copy
-  of the official template with eight generated feature sheets. The supplied
-  template remains unchanged; generated copies preserve its cell layout,
-  status vocabulary, and formatting. Read
+  of the official template with eight generated feature sheets. Read
   [template-layout.md](template-layout.md) first: it carries the exact cell
-  addresses, the per-sheet summary block that the Markdown has no equivalent
-  for, and the template defects that will otherwise corrupt an export.
-- The source template is intentionally not “corrected” here. Its existing
-  formula/name issues, including `#REF!` values in the project metadata area
-  and a stray count in `Feature 2!A18`, are recorded in
-  [template-layout.md](template-layout.md) and should be handled only with the
-  report owner’s approval.
-- The workbook's `Sheet Name` column placeholder reads `Feature1`/`Feature2`
-  without a space, but the real tabs are `Feature 1`/`Feature 2`. The Markdown
-  uses the tab names; do not copy the placeholder spelling into the cell.
+  addresses, the per-sheet summary block, and the template defects that will
+  otherwise corrupt an export.
 
 ## Folder map
 
 | Folder/file | Workbook area | Purpose |
 | --- | --- | --- |
 | `00-cover/` | `Cover` | Project metadata and record of changes. |
-| `01-test-cases/` | `Test Cases` | The index of all cases and their preconditions. |
-| `02-test-statistics/` | `Test Statistics` | Module totals, coverage, and execution summary. |
-| `03-features/fe-01-identity-access-governance.md` | Support evidence | FE-01 gates; not a workbook case. |
-| `03-features/fe-02-asset-registry-inspection-schedule.md` | Coverage gap | No current case; MF1 catalog workflow unimplemented. |
-| `03-features/fe-03-inspection-request-work-assignment.md` | `Feature 3` sheet | `WF2-008`, `WF2-009` (MF2-07 readiness approval/return), `WF2-010` (scoped preparation-history listing); other MF2 steps remain gaps or partial. |
-| `03-features/fe-04-inspection-execution-evidence-management.md` | `Feature 4` sheet | `WF3-002`, `WF3-009`. |
-| `03-features/fe-05-yolo-defect-detection-verification.md` | `Feature 5` sheet | `WF3-003`, `WF3-010` (Pending). |
-| `03-features/fe-06-inspection-report-approval.md` | `Feature 6` sheet | `WF3-005`, `WF3-006`, `WF3-011` (Pending), `WF3-012` (Pending). |
-| `03-features/fe-07-maintenance-defect-resolution.md` | Coverage gap | No current case; MF4 unimplemented. |
-| `03-features/fe-08-dashboard-analytics-notifications.md` | Coverage gap | No assigned case; do not infer execution. |
+| `01-test-cases/` | `Test Cases` | The index of all 65 cases and their preconditions. |
+| `02-test-statistics/` | `Test Statistics` | Module totals, coverage, and execution summary across `Feature 1`–`Feature 8`. |
+| `03-features/fe-01-authentication-access-control.md` | `Feature 1` sheet | `FE-01` (`WF1-001`–`WF1-005`: 5 cases, Owner: Trần Tùng Bách). |
+| `03-features/fe-02-workforce-subscription-management.md` | `Feature 2` sheet | `FE-02` (`WF1-006`–`WF1-016`: 11 cases, Owner: Trần Hoàng Trung Hiếu). |
+| `03-features/fe-03-asset-drone-fleet-management.md` | `Feature 3` sheet | `FE-03` (`WF1-017`–`WF1-021`: 5 cases, Owner: Trần Hoàng Trung Hiếu). |
+| `03-features/fe-04-recurring-schedule-notifications.md` | `Feature 4` sheet | `FE-04` (`WF2-001`–`WF2-005`: 5 cases, Owner: Phùng Trung Quốc). |
+| `03-features/fe-05-mission-dispatch-airspace-advisory.md` | `Feature 5` sheet | `FE-05` (`WF2-008`–`009`, `011`–`012`, `015`–`020`, `WF3-009`: 11 cases, Owner: Phùng Trung Quốc). |
+| `03-features/fe-06-flight-readiness-field-execution.md` | `Feature 6` sheet | `FE-06` (`WF3-001`–`008`, `WF3-010`, `012`, `016`, `017`: 12 cases, Owner: Trần Tùng Bách). |
+| `03-features/fe-07-operational-dashboard-schedule-calendar.md` | `Feature 7` sheet | `FE-07` (`WF4-001`–`WF4-011`: 11 cases, Owner: Trương Thái Như). |
+| `03-features/fe-08-evidence-ai-defect-detection.md` | `Feature 8` sheet | `FE-08` (`WF4-012`–`WF4-016`: 5 cases, Owner: Trương Thái Như). |
 | `template-layout.md` | All sheets | Exact sheet, column, and section reference. |
 | `template/Report5_Test Report.xlsx` | All sheets | Original-format workbook copy. |
 
-The FE-xx codes and their Report 3 sections are:
+The `FE-01`–`FE-08` codes and their Report 3 sections are:
 
-| FE | Report 3 § | Report 3 feature title |
-| --- | --- | --- |
-| FE-01 | 3.2 | Identity, Enterprise Subscription and Workforce Governance |
-| FE-02 | 3.3 | Asset, Drone, Workforce and Compliance Catalog — MF1 |
-| FE-03 | 3.4 | Mission Preparation, Assignment Response and Readiness — MF2 |
-| FE-04 | 3.5 | Field Records and Evidence |
-| FE-05 | 3.6 | AI Vision Candidates and Human Finding Decisions |
-| FE-06 | 3.7 | Inspection Report Drafting, Review and Publication — MF3 |
-| FE-07 | 3.8 | Team Maintenance, Cost Control and Completion Reporting — MF4 |
-| FE-08 | 3.9 | Dashboard, Analytics and Notifications |
+| FE | Report 3 § | Report 3 feature title | Owner |
+| --- | --- | --- | --- |
+| `FE-01` | `3.2` | Authentication, Google OAuth2 & 5-Role Access Control | Trần Tùng Bách (`SE180220`) |
+| `FE-02` | `3.3` | Partner Onboarding, Workforce, Asset & Inspector Drone Registry | Trần Hoàng Trung Hiếu (`SE184212`) |
+| `FE-03` | `3.4` | Recurring Schedules, Contract Occurrences & Outbox Notifications | Trần Hoàng Trung Hiếu (`SE184212`) |
+| `FE-04` | `3.5` | Service Requests, Quotations, Contracts, Dispatch & Airspace Map | Phùng Trung Quốc (`SE170027`) |
+| `FE-05` | `3.6` | Flight Permit Gate, Field Execution, Dashboard & Calendar | Phùng Trung Quốc (`SE170027`) |
+| `FE-06` | `3.7` | Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS | Trần Tùng Bách (`SE180220`) |
+| `FE-07` | `3.8` | Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution | Trương Thái Như (`SE180082`) |
+| `FE-08` | `3.9` | Completion Report, 3-Way Re-inspection Verification & Cost Closure | Trương Thái Như (`SE180082`) |
 
-Each FE file's H1 now carries the Report 3 title. The filenames keep their
-original wording and are left alone: renaming them would break every link and
-reviewer's bookmark for no reporting benefit.
-
-## Current test scope
-
-Recorded statuses and execution notes below preserve the historical MF2/MF3 results. The 22 October MF3 target update changes requirements and active case definitions but does not create fresh test evidence; Passed cases may describe superseded behavior.
-
-1. FE-01 — identity/access supporting gates. Recorded separately in the FE-01
-   file; not a workbook case.
-2. FE-02 — asset registry and schedule. No case (see coverage gap).
-3. FE-03 — MF2-07 readiness approval/return (`WF2-008`, `WF2-009`) and the
-   scoped preparation-history read (`WF2-010`); other MF2 implementation and
-   case-coverage gaps remain documented.
-4. FE-04 — inspection evidence intake without a separate quality-decision gate (`WF3-002`), and the scoped inspection/report collections (`WF3-009`).
-5. FE-05 — Inspector-invoked advisory detection and human finding verification (`WF3-003`); reviewed-candidate correction/rejection (`WF3-010`) is Pending.
-6. FE-06 — report review/publication (`WF3-005`, `WF3-006`), explicit findings
-   confirmation/draft choice (`WF3-011`, Pending) and post-publication per-finding
-   forwarding (`WF3-012`, Pending). `WF3-010` (Pending) covers editable pre-submission
-   evidence/findings, stale drafts, submission lock, withdrawal/return unlock and final immutability.
-7. FE-07 — maintenance and defect resolution. No case; MF4 unimplemented.
-8. FE-08 — dashboard, analytics, and notifications. No assigned case; explicit
-   coverage gap. The pending `WF3-017` is the separate MF3 vision fallback case
-   filed in Feature 8 (FE-08), rather than a dashboard case.
-
-The implementation-specific index contains twelve cases: seven `Passed`, zero
-`Failed`, and five `Pending`, including new `WF3-017`. The Review 2 baseline
-remains separate at **64 cases, 60 `Passed`, 0 `Failed`, 4 `Pending`** (93.75%
-coverage); `WF3-017` is not included in official baseline statistics. These
-figures describe recorded cases only, not the SRS or complete MF2/MF3 workflows.
-Removed case IDs stay reserved; subsequent MF3 cases continue from
-`WF3-013`.
-
-MinIO/evidence storage is tracked under FE-04. Integration suites run against a
-real MinIO container through the same `MinioEvidenceObjectStore` adapter
-production uses, so bucket creation, streaming put, streamed get, and delete are
-exercised rather than assumed. `MinioEvidenceObjectStoreIntegrationTest`
-additionally covers the S3 API subset against S3Mock. A role check never replaces
-organization ownership, assignment, or separation-of-duties checks.
+Each FE file's H1 carries the Report 3 title. The filenames keep their
+original wording and are left alone so existing links remain stable.
 
 ## Editing workflow
 
-1. Add or update the case in its owning FE-specific file first. FE-01 support
-   evidence stays in FE-01; do not create aggregate sources by workbook sheet.
-2. Keep the existing ID format (`WF3-002`, `WF3-009`) stable. Add the mapped FE
-   code in the function name or mapping note; do not interpret the workbook
-   sheet number as the FE code.
+1. Add or update the case in its owning FE-specific file first (`fe-01`–`fe-08`).
+2. Keep the existing ID format (`WF1-001`–`WF4-016`) stable.
 3. Mirror every case in `01-test-cases/test-case-list.md`.
 4. Record execution only in the matching Round 1, Round 2, or Round 3 cell.
    Use only `Passed`, `Failed`, `Pending`, or `N/A`.
 5. Update the corresponding module row and totals in
    `02-test-statistics/test-statistics.md`. `Module code` must match the
-   feature sheet's `Feature` name (`B2`), not the sheet name — in the workbook
-   that column is a formula reading `B2`, so the two must not drift apart.
+   feature sheet's `Feature` name (`B2`).
 6. Before exporting, check that the number of cases, IDs, statuses, dates, and
    testers agree across all Markdown files and the workbook.
 
-### Feature-sheet summary block
-
-Each feature sheet carries a summary block at `A2:E8` (`Feature`,
-`Test requirement`, `Number of TCs`, and per-round `Passed`/`Failed`/
-`Pending`/`N/A` counts), and `Test Statistics` reads its values back out by
-formula. `Number of TCs` and the round counts are formulas and need no Markdown
-source; the `Feature` name and `Test requirement` line are typed values, and
-the `Feature sheet summary` table in each `fe-0N-…md` file is the recorded
-source for its matching sheet. Populate all eight summary blocks, including the
-five sheets with no current cases, because the statistics formulas read every
-sheet's `B2` value.
-
 ## Generate and verify a workbook copy
 
-Report 5 has its own exporter; it does not depend on Report 1–3 export logic.
 Run from the docs repository root:
 
 ```powershell
 python -I tools/export_report5.py
-python -I -m unittest discover -s tools/tests -p test_report5.py -v
+python -I -m unittest discover -s tools/tests -p "test_*.py" -v
 ```
-
-Use `python -I tools/export_all.py` for all source-backed reports and weekly
-reports. Outputs and their verification manifests go into a fresh
-`reports/generated/<run>/` folder. Original templates are never overwritten.
-See [export tools](../../tools/README.md) for the independent commands and
-Office verification procedure.
-
-The generated copy preserves sheet order, columns and source round evidence.
-It keeps FE function bars and repairs only the output's count/round formulas:
-case totals count WFx IDs, not function-bar text, and Round 2/3 count their own
-status columns. The stale calculation chain is removed from output copies so
-Excel can rebuild it. No product case status changes during export.
-
-## Execution status convention
-
-- `Pending`: the case is defined but has not completed that round.
-- `Passed`: expected result was observed and evidence is available.
-- `Failed`: the result differs from the expected result; link the defect in
-  the `Note` column.
-- `N/A`: the round is intentionally not applicable and has an explanation in
-  `Note`.
-
-Dates use `YYYY-MM-DD`; leave the date and tester blank until the round is
-actually executed. Do not record a case for a workflow that has no
-implementation, and do not put passwords, tokens, private keys, or customer
-secrets in test evidence or notes.

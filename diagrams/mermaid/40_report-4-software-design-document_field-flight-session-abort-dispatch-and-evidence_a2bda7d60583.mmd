@@ -1,0 +1,35 @@
+%% title: Field Flight Session, Abort Dispatch and Evidence Upload Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Inspector as Assigned Partner Inspector
+  actor Manager as Platform Manager (MANAGER)
+  participant Mobile as Flutter Mobile / Web Client
+  participant InspCtrl as InspectionController
+  participant SessCtrl as InspectionFieldSessionController
+  participant MinIO as MinIO Object Storage
+  participant DB as PostgreSQL (inspections, field_sessions, evidence)
+
+  Inspector->>Mobile: Upload Flight Permit (PDF/PNG/JPG)
+  Mobile->>InspCtrl: POST /api/v1/inspections/{id}/flight-permit
+  InspCtrl->>MinIO: putObject(permitObjectKey, bytes)
+  InspCtrl->>DB: saveFlightPermitKey(hasFlightPermit() == true, status remains SCHEDULED)
+
+  Inspector->>Mobile: Enter Pre-Flight Checklist Note & Start Field Session
+  Mobile->>SessCtrl: POST /api/v1/inspections/{id}/field-sessions
+  SessCtrl->>DB: verifyPermitAndLicense & insertSession(IN_PROGRESS) & updateInspection(IN_PROGRESS)
+
+  alt Adverse Weather / Equipment Issue (Session Aborted)
+    Inspector->>Mobile: Click Abort Session (abortReason)
+    Mobile->>SessCtrl: POST /api/v1/inspections/{id}/field-sessions/{sId}/abort
+    SessCtrl->>DB: markSessionAborted(ABORTED) & revertInspectionStatus(SCHEDULED)
+    SessCtrl->>Manager: emit FieldSessionAbortedEvent (Urgent Notification)
+    Manager->>InspCtrl: PUT /api/v1/inspections/{id}/schedule (or PUT /assignment / POST /cancellation)
+  else Survey Completed Normally
+    Inspector->>Mobile: Click Complete Session (outcomeNotes)
+    Mobile->>SessCtrl: POST /api/v1/inspections/{id}/field-sessions/{sId}/completion
+    SessCtrl->>DB: completeSession(FIELD_COMPLETED) & updateInspection(FIELD_COMPLETED)
+    Inspector->>Mobile: Upload Photo / Streaming MP4 Video (file_picker)
+    Mobile->>InspCtrl: POST /api/v1/inspections/{id}/evidence (MultipartFile)
+    InspCtrl->>MinIO: putObject(objectKey, mediaStream)
+    InspCtrl->>DB: insertEvidence(contentType, captureTime, latitude, longitude)
+  end
