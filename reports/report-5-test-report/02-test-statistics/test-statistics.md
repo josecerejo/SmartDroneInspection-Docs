@@ -10,7 +10,7 @@ round.
 | --- | --- |
 | Project Name | SmartDroneInspection |
 | Project Code | GFA26SE139 |
-| Test round | 2026-11-01 Synchronized 65-Case Test Suite across 8 Features FE-01 to FE-08 (2 features per team member, mapped 1-to-1 to Feature 1 to Feature 8). Backed by automated backend JUnit/Testcontainers tests (migrations V1–V17), frontend Vitest suites, and Flutter mobile tests. |
+| Test round | 2026-11-01 Synchronized 65-Case Test Suite across 8 Features FE-01 to FE-08 (2 features per team member, mapped 1-to-1 to Feature 1 to Feature 8). Round 1 summary formulas reflect historical executions; V25 migration/Testcontainers execution is pending because Docker was unavailable during this run. |
 | Last updated | 2026-11-01 (Report 5 version 2.0; 65 cases across 8 feature sheets: 60 Passed, 0 Failed, 5 Pending, 92.31% overall / 93.75% baseline coverage) |
 
 ## Module summary

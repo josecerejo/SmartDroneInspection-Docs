@@ -6,10 +6,10 @@ whole workbook.
 
 **Scope (updated 2026-11-01):** The synchronized test suite tracks **65 cases** across
 **8 product features (`FE-01` to `FE-08`, 2 features per team member)** mapped 1-to-1 to
-8 feature sheets (`Feature 1` to `Feature 8`): **60 `Passed`**, **0 `Failed`**, and **5 `Pending`**
+8 feature sheets (`Feature 1` to `Feature 8`): Round 1 historical totals remain **60 `Passed`**, **0 `Failed`**, and **5 `Pending`**
 (`92.31%` overall / `93.75%` baseline pass rate). All cases are aligned with the
 5-Role Platform Inspection Service model (`ADMIN`, `MANAGER`, `CUSTOMER`,
-`INSPECTOR`, `MAINTENANCE_ENGINEER`).
+`INSPECTOR`, `MAINTENANCE_ENGINEER`). For the V25 cleanup, focused unit/frontend checks ran, while Testcontainers/PostgreSQL V25 migration verification remains pending until Docker is available; the full frontend suite currently has 14 failing tests (`WorkforcePage.test.tsx` and `RegisterPage.test.tsx`).
 
 The original workbook template remains unchanged; generated copies contain eight
 feature sheets (`Feature 1`–`Feature 8`).

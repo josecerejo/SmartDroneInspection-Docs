@@ -33,7 +33,7 @@ flowchart TD
   end
 
   subgraph DataAndStorage["Persistence & Object Storage Layer"]
-    DB_PG[("PostgreSQL 17 + pgvector\n(Domain Tables + event_publication, Migrations V1-V17)")]
+    DB_PG[("PostgreSQL 17 + pgvector\n(Domain Tables + event_publication, Migrations V1-V25)")]
     STORE_MINIO[("MinIO Object Storage\n(inspection-evidence Bucket)")]
   end
 
@@ -60,7 +60,7 @@ flowchart TD
   MOD_MAINT --> MOD_INFRA
   MOD_NOTIF --> MOD_INFRA
 
-  MOD_INFRA -->|"JDBC / JPA / Flyway V1-V17"| DB_PG
+  MOD_INFRA -->|"JDBC / JPA / Flyway V1-V25"| DB_PG
   MOD_INFRA -->|"S3 API (Contracts, Permits, Photo/MP4 Evidence, PDFs)"| STORE_MINIO
   MOD_INFRA -->|"POST /predict (Multipart Image)"| AI_SERVICE
   MOD_INFRA -->|"POST /v1/chat/completions"| LLM_GATEWAY
@@ -78,7 +78,7 @@ flowchart TD
    - **Vision Fallback** (`OpenAiCompatibleInferenceClient`): Secondary multimodal defect detector invoked automatically when `YOLO11` returns zero detections or is unreachable (`FE-06`).
    - **LLM Executive Summary Synthesis** (`ReportDraftClient`): Generates structured executive summaries (`ReportAiSummaryResponse`: `summary`, `keyHighlights`, `recommendedActions`, `overallRisk`) for auto-compiled inspection reports, with deterministic fallback when offline (`FE-06`).
    - **pgvector RAG Maintenance Scope, Cost Norms & Compliance Engine** (`MaintenanceScopeAdvisorService` + `DeterministicScopeFallback`): Queries 1536-dimensional `repair_knowledge_chunks` (`TCVN 9343:2012`, `ACI 224.1R`, `EN 1504-9`, `ISO 12944-5`, `ASTM C1583`, `TCVN 9361:2012`) to recommend corrective scope and 1-click initial tasks (`suggest-scope`), standard Vietnamese construction cost norms (`suggest-estimate`, `FE-07`), and quantitative acceptance compliance scores (`acceptance-compliance`, `FE-08`).
-6. **Relational & Vector Database (PostgreSQL 17 with `pgvector` and `pgcrypto`)**: Persists the relational schema and `event_publication` outbox managed by Flyway migrations (`V1`–`V17`), enforcing `ActorZone` constraints, composite tenant foreign keys `(id, organization_id)`, optimistic locking (`row_version`), and `hnsw` cosine vector indexing.
+6. **Relational & Vector Database (PostgreSQL 17 with `pgvector` and `pgcrypto`)**: Persists the relational schema and `event_publication` outbox managed by Flyway migrations (`V1`–`V25`), enforcing `ActorZone` constraints, composite tenant foreign keys `(id, organization_id)`, optimistic locking (`row_version`), and `hnsw` cosine vector indexing.
 7. **Distributed Object Storage (MinIO S3-Compatible Storage)**: Stores binary objects in the `inspection-evidence` bucket, including signed paper contracts (`PDF`, `DOCX`, `JPEG`, `PNG`), partner pilot licenses, 3-document drone registrations, asset engineering documents, mission flight permits, field photo and `video/mp4` captures, and immutable published Inspection and Maintenance Completion PDF reports with `SHA-256` verification.
 8. **Online Payment Gateway Adapter (`PayOSPaymentGateway` & `PayOSWebhookController` — PayOS VietQR)**: Generates unique 64-bit `payos_order_code` VietQR payment links (`/payos/create-payment-link`) when a `CUSTOMER` accepts a published inspection report, verifies HMAC-SHA256 webhook signatures (`POST /api/v1/webhooks/payos`), marks the occurrence `PAID`, unlocks official PDF downloads, and transitions partner payouts to `ELIGIBLE` according to `inspection_finance_settings` (`FE-06`).
 
@@ -164,7 +164,7 @@ flowchart TD
 | Layer | Technology / Library | Exact Version | Role in System |
 | --- | --- | --- | --- |
 | **Backend Runtime & Framework** | Java (Eclipse Temurin) / Spring Boot | `Java 21` / `Spring Boot 4.1.0` | Core REST API server with Java 21 virtual threads enabled. |
-| **Backend Modularity & Persistence** | Spring Modulith / Spring Data JPA / Flyway | `2.1.1` / `4.1.0` / `PostgreSQL Driver` | Module boundary verification, transactional event outbox (`event_publication`), and schema migrations (`V1`–`V17`). |
+| **Backend Modularity & Persistence** | Spring Modulith / Spring Data JPA / Flyway | `2.1.1` / `4.1.0` / `PostgreSQL Driver` | Module boundary verification, transactional event outbox (`event_publication`), and schema migrations (`V1`–`V25`). |
 | **Backend Security & Crypto** | Spring Security OAuth2 JWT / Argon2 / BouncyCastle | `Spring Security 7.x` / `bcprov 1.84` | `Argon2id` password hashing, `HS256` JWT access tokens, `HmacSHA256` refresh cookies, Google OAuth2, CSRF & IP rate limiting. |
 | **Backend PDF & Storage SDKs** | OpenHTMLtoPDF / Apache PDFBox / MinIO SDK | `1.0.10` / `3.0.5` / `9.0.3` | Server-side A4 PDF rendering and S3 object storage streaming. |
 | **AI Inference Service** | Python / FastAPI / Uvicorn / Ultralytics / PyTorch | `3.11` / `0.115.6` / `0.34.0` / `8.3.55` / `2.5.1` | Containerized `YOLO11` (`mbdd2025-v1`) defect detection microservice. |
@@ -186,7 +186,7 @@ flowchart TD
 
 | Environment | Host / Infrastructure | Deployment Mechanism | Verification & Rollback Strategy |
 | --- | --- | --- | --- |
-| **Local Development** | Developer Workstation (Docker Desktop) | `docker compose up -d` starting `postgres:17`, `minio`, `ai-inference`, `backend:8080`, and Vite dev server (`:3000` / `:5173`). | Flyway `V1`–`V17` validation on startup; healthcheck verified via `/actuator/health`. |
+| **Local Development** | Developer Workstation (Docker Desktop) | `docker compose up -d` starting `postgres:17`, `minio`, `ai-inference`, `backend:8080`, and Vite dev server (`:3000` / `:5173`). | Flyway `V1`–`V25` validation on startup; healthcheck verified via `/actuator/health`. |
 | **Isolated E2E Test Environment** | Ephemeral Docker Compose project (`sdi-e2e-<runId>`) | Binds dynamic loopback ports and seeds disposable organizations, partner inspectors, drones, and contracts. | Automatically torn down after E2E verification without touching local development volumes. |
 | **Staging / Production** | Cloud VPS (`smartdroneinspection.duckdns.org`) | Automated GitHub Actions CD (`deploy.yml`) deploying Nginx, Spring Boot, FastAPI `YOLO11`, PostgreSQL 17, and MinIO. | Pre-deploy `pg_dump` backup, `/actuator/health` smoke check, and automated rollback on failure. |
 

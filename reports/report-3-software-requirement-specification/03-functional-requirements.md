@@ -20,9 +20,9 @@ flowchart TD
 
   DASH --> ONBOARD["FE-02: Partner Inspector Review, Customer Workforce & Onboarding Queues"]
   DASH --> ASSETS["FE-02: Infrastructure Assets, Airspace Guard & Inspector-Owned Drones (3 Docs)"]
-  DASH --> SCHED["FE-03: Recurring Schedules, Contract Occurrences & Outbox Notification Inbox"]
+  DASH --> SCHED["FE-03: Recurring Service Requests, Contract Occurrences & Outbox Notification Inbox"]
 
-  DASH --> CONTRACTS["FE-04: Service Requests, VND/USD Quotes, Order Chat & Signed Paper Contracts"]
+  DASH --> CONTRACTS["FE-04: Service Requests, VND Quotes, Order Chat & Signed Paper Contracts"]
   CONTRACTS --> DISPATCH["FE-04: Cross-Org Partner Dispatch, Abort Re-Dispatch & Vietnam Airspace Map"]
   DISPATCH --> PERMIT["FE-05: Flight Permit Upload Gate & Readiness Guard"]
   PERMIT -->|"Permit & License Valid"| FIELD["FE-05: On-Site Field Flight Session (Start / Complete / Abort)"]
@@ -48,11 +48,11 @@ flowchart TD
 | --- | --- | --- | --- |
 | 1 | FE-01 | Customer Airspace Registration, Sign In & OAuth2 | Allows a prospective customer organization to register with its first infrastructure asset (evaluated against Vietnam No-Fly Zones) and allows users to sign in via email/password or Google OAuth2 on Web and Mobile. |
 | 2 | FE-01 | Account Security, Profile (`/users/me`) & Sessions | Allows users to update personal profile and pilot license details, change passwords, revoke active device sessions, and navigate within their authorized portal (`/admin`, `/client`, `/operations`). |
-| 3 | FE-02 | Partner Onboarding, Review Queues & Workforce | Allows partner Inspectors to submit license applications (without requiring a drone at signup), allows Platform Admins/Managers to review airspace, partner, and drone queues (`/admin/onboarding-reviews`), and allows Customers to provision Maintenance Engineers. |
+| 3 | FE-02 | Inspector Provisioning, Profile, Review Queues & Workforce | Allows Platform Admins/Managers to provision Partner Inspector accounts and maintain their pilot-license profiles, review prospective Customer airspace and drone-registration applications, and lets Customers provision Maintenance Engineers. Inspector-owned drone registration remains optional and separate from account provisioning. |
 | 4 | FE-02 | Asset Registry & Inspector-Owned Drone Registration | Allows Customers to register infrastructure assets with Nominatim address search, no-fly zone blocking, checkpoints, and engineering documents, and allows partner Inspectors to register owned drones with 3 mandatory documents (`REGISTRATION`, `OWNERSHIP`, `INSPECTION`). |
-| 5 | FE-03 | Recurring Schedules & Contract Occurrences | Allows Customers and Platform Managers to manage repeating inspection schedules and multi-occurrence service contract cycles that inherit the parent signed contract. |
+| 5 | FE-03 | Recurring Service Requests & Contract Occurrences | Allows Customers and Platform Managers to manage recurring service requests that materialize contract occurrences under the parent request; the separate internal schedule-rule engine is retired. |
 | 6 | FE-03 | In-App Notification Inbox | Displays deduplicated transactional outbox alerts and reminders in a notification bell and inbox with unread counts and deep links to target records. |
-| 7 | FE-04 | Service Requests, Quotations, Chat & Signed Contracts | Allows Customers to submit one-time or recurring service requests, negotiate with Platform Managers via in-context Order Chat, review and accept versioned VND/USD quotes, and upload/download executed paper service contracts. |
+| 7 | FE-04 | Service Requests, Quotations, Chat & Signed Contracts | Allows Customers to submit one-time or recurring service requests, negotiate with Platform Managers via in-context Order Chat, review and accept versioned VND quotes, and upload/download executed paper service contracts. |
 | 8 | FE-04 | Partner Mission Dispatch & Airspace Advisory Map | Allows Platform Managers to assign partner Inspectors and their owned drones to contract occurrences with cross-organization conflict checking, reschedule/reassign/cancel aborted missions, and inspect the interactive Vietnam Airspace & No-Fly Zone map. |
 | 9 | FE-05 | Flight Permit Gate & Field Flight Session Workspace | Allows the assigned Inspector on Web or Mobile to upload the mission flight permit, record pre-flight safety notes, and log the start, normal completion (`FIELD_COMPLETED`), or emergency abort (`ABORTED`) of an on-site flight session. |
 | 10 | FE-05 | Operational Dashboard, Calendar & Progress Tracker | Displays role-scoped analytics dashboards, the Inspector Schedule Calendar (`Month`, `Week`, `Agenda`), and the 5-stage Customer Inspection Progress Tracker (`InspectionProgressPage`). |
@@ -72,17 +72,17 @@ flowchart TD
 | - Manage Active Sessions, Password & `/users/me` Profile | X | X | X | X | X |
 | - Manage Internal Platform User Accounts & Finance Settings | X | X |  |  |  |
 | **Partner Onboarding, Workforce, Asset & Inspector Drone Registry (FE-02)** | X | X | X | X | X |
-| - Review Customer Airspace, Partner Inspector & Drone Applications | X | X |  |  |  |
-| - Submit Partner Application, Pilot License & Owned Drone (3 Docs) |  |  |  | X |  |
+| - Review Customer Airspace & Drone Registration Applications; provision Partner Inspector accounts | X | X |  |  |  |
+| - Maintain Inspector Pilot-License Profile & Register Owned Drone (3 Docs) |  |  |  | X |  |
 | - Provision & Manage Customer Maintenance Engineer Workforce |  |  | X |  |  |
 | - Manage Standard Asset Categories | X |  |  |  |  |
 | - Register, Edit, Attach Documents & Retire Customer Assets | X | X | X |  |  |
 | **Recurring Schedules, Contract Occurrences & Outbox Notifications (FE-03)** | X | X | X | X | X |
-| - Manage Recurring Schedules & Multi-Occurrence Contract Cycles |  | X | X |  |  |
+| - Manage Recurring Service Requests & Multi-Occurrence Contract Cycles |  | X | X |  |  |
 | - View Own Notification Inbox & Mark Notifications as Read | X | X | X | X | X |
 | **Service Requests, Quotations, Contracts, Dispatch & Airspace Map (FE-04)** | X | X | X | X |  |
 | - Create Service Request, Negotiate in Order Chat & Accept Quote |  | X | X |  |  |
-| - Issue VND/USD Quote, Upload Signed Contract & Assign Occurrences |  | X |  |  |  |
+| - Issue VND Quote, Upload Signed Contract & Assign Occurrences |  | X |  |  |  |
 | - Reschedule, Reassign or Cancel Aborted Inspections | X | X |  |  |  |
 | - View Interactive Vietnam Airspace & No-Fly Zone Map | X | X | X | X |  |
 | **Flight Permit Gate, Field Execution, Dashboard & Calendar (FE-05)** | X | X | X | X | X |
@@ -124,14 +124,16 @@ flowchart TD
 erDiagram
   organizations ||--o{ users : employs
   users ||--o| prospective_customer_registrations : submits
-  users ||--o{ inspector_partner_applications : reviews
-  users ||--o| contract_partner_inspectors : partner_profile
+  users ||--o| inspector_profiles : has_profile
+  users |o--o{ otp_challenges : stores_login_challenges
+  users ||--o{ inspector_flight_logs : owns_flight_log
+  users |o--o{ inspector_flight_logs : records_flight_log
   users ||--o{ drones : inspector_owns
   organizations ||--o{ drones : org_owns
   users ||--o{ drone_registration_applications : submits
   drones |o--o{ drone_registration_applications : provisions
-  drones ||--o| contract_partner_drones : partner_drone
   users ||--o{ inspection_finance_settings : configures
+  users ||--o{ audit_events : performs
   organizations ||--o{ assets : owns
   asset_categories ||--o{ assets : categorizes
   assets ||--o{ asset_documents : attaches
@@ -149,9 +151,6 @@ erDiagram
   assets ||--o{ inspections : undergoes
   users ||--o{ inspections : assigned_inspector
   drones ||--o{ inspections : assigned_drone
-  organizations ||--o{ recurring_inspection_schedules : schedules
-  assets ||--o{ recurring_inspection_schedules : recurs_for
-  recurring_inspection_schedules ||--o{ schedule_occurrences : generates
   inspections ||--o{ field_sessions : executes
   inspections ||--o{ evidence : contains
   field_sessions ||--o{ evidence : captures
@@ -182,32 +181,33 @@ erDiagram
 | # | Entity | Description |
 | --- | --- | --- |
 | 1 | Organization | Customer enterprise organization (`ActorZone.CUSTOMER_ORGANIZATION`) that owns infrastructure assets, submits service requests, and governs maintenance work orders. |
-| 2 | User | Authenticated account carrying one of the five canonical roles (`ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`), `actor_zone`, and remote pilot license attributes. |
+| 2 | User | Authenticated account carrying one of the five canonical roles (`ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`) and `actor_zone`; Inspector-specific pilot license attributes are stored separately in `inspector_profiles`. |
 | 3 | Authentication Session | Active web or mobile refresh/access session (`auth_sessions`) supporting token rotation and immediate revocation. |
 | 4 | Prospective Customer Registration | Onboarding record (`prospective_customer_registrations`) holding a prospective Customer's organization and initial asset details when airspace evaluation requires Admin review (`RESTRICTED_ZONE`). |
-| 5 | Inspector Partner Application | Partner onboarding application (`inspector_partner_applications`) storing pilot license credentials, uploaded license file, and executed offline partner contract key (`partner_contract_file_key`). |
+| 5 | Inspector Profile | Inspector-specific pilot-license, identity, qualification, and experience fields stored in `inspector_profiles`; partner accounts are provisioned by Platform Admin/Manager rather than through an Inspector application table. |
 | 6 | Drone Registration Application | Application (`drone_registration_applications`) submitted by a partner Inspector to register an owned drone with three mandatory documents (`registration_file_key`, `ownership_file_key`, `inspection_file_key`). |
 | 7 | Drone | Aircraft record (`drones`) scoped either to a partner Inspector (`inspector_owner_id`) or an organization (`organization_id`), tracking serial number, model, registration expiry, and serviceability (`ACTIVE`, `MAINTENANCE`, `SUSPENDED`, `RETIRED`). |
 | 8 | Asset Category | Standard infrastructure classification (Bridge, Building, Power Tower, Wind Turbine, Solar Facility) managed by Platform Admin. |
 | 9 | Asset | Physical infrastructure asset (`assets`) owned by a Customer organization with GPS coordinates, airspace classification, and standard inspection checkpoints. |
 | 10 | Asset Document | Reference engineering drawing or specification (`asset_documents`) stored in MinIO with SHA-256 integrity. |
-| 11 | Service Request | Commercial inspection order (`service_requests` — `ONE_TIME` or `RECURRING`) tracking lifecycle status (`OPEN`, `QUOTED`, `ACCEPTED`, `CONTRACT_SIGNED`, `ASSIGNED`, `CANCELLED`), accepted quote version, and uploaded signed paper contract (`PDF`, `DOCX`, `JPEG`, `PNG`). |
-| 12 | Service Request Message | Contextual chat message (`service_request_messages`) exchanged between Customer and Platform Manager during scope and quote negotiation. |
-| 13 | Service Request Quote | Versioned commercial quotation (`service_request_quotes`) specifying scope snapshot, proposed schedule, partner Inspector, inspector-owned Drone, currency (`VND` or `USD`), and price per occurrence. |
-| 14 | Service Request Occurrence | Individual inspection delivery cycle (`service_request_occurrences`) tracking assignment (`PENDING_ASSIGNMENT`, `ASSIGNED`, `CANCELLED`), inherited/attached contract, PayOS order code (`payos_order_code`), payment status (`PENDING`, `PAYMENT_DUE`, `PAID`), and partner payout status (`PENDING`, `ELIGIBLE`, `PAID`). |
-| 15 | Inspection Finance Settings | Platform financial configuration (`inspection_finance_settings`) storing platform commission rate, VAT rate, and PIT/TNCN withholding rate for VND/USD settlement calculations. |
-| 16 | Inspection | Core inspection mission (`inspections`) with 6 canonical states (`SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED`), mission type (`INITIAL`, `RE_INSPECTION`), flight permit metadata, and source Work Order linkage. |
-| 17 | Recurring Inspection Schedule | Timezone-anchored repeating schedule rule (`recurring_inspection_schedules`) and generated occurrences (`schedule_occurrences`). |
-| 18 | Field Session | On-site flight execution record (`field_sessions`) with states `PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, and `ABORTED` (historical `POSTPONED` read-only), storing pre-flight checklist notes, outcome notes, and abort reasons. |
-| 19 | Evidence | Uploaded inspection photo or `video/mp4` file (`evidence`) stored in MinIO with capture timestamp, EXIF GPS coordinates, structural location tags, and active/retired state. |
-| 20 | Finding | Defect record (`findings`) linked to an evidence capture, tracking `YOLO11` / Vision fallback candidates (`PENDING`) and Inspector-confirmed defects (`CONFIRMED`) with severity, bounding box, and maintenance handoff timestamp. |
-| 21 | Inspection Report | Versioned inspection deliverable (`inspection_reports`) with 5 canonical states (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`), auto-compiled from confirmed findings and rendered to an immutable SHA-256 PDF in MinIO. |
-| 22 | Re-inspection Defect Verification | Three-way comparative verification record (`reinspection_defect_verifications`) linking a `RE_INSPECTION` mission to each target `source_finding_id`, engineer `repair_proof_url` and `repair_engineer_notes`, drone `new_evidence_id`, and resolution status (`RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`). |
-| 23 | Maintenance Work Order | Corrective repair project (`maintenance_work_orders`) with 12 lifecycle states (`DRAFT` to `CLOSED`), linking the source published report, target defect, repair team roles, and optional `reinspection_id` / `reinspection_report_version_id`. |
-| 24 | Maintenance Team Member & Task | Assigned engineering personnel (`maintenance_team_members`: `TEAM_LEAD`, `REPORT_AUTHOR`, `TEAM_MEMBER`) and decomposed repair tasks (`maintenance_tasks`). |
-| 25 | Maintenance Estimate, Cost Line & Change Order | Versioned repair budgets (`maintenance_estimate_versions`), itemized estimate/actual cost lines (`maintenance_cost_lines`: `LABOR`, `MATERIAL`, `EQUIPMENT`, `SERVICE`, `CONTINGENCY`), and scope/budget adjustment requests (`maintenance_change_orders`). |
-| 26 | Maintenance Work Log, Report & Acceptance Decision | Field execution logs (`maintenance_work_logs`) verified in batch by the Team Lead, versioned completion reports (`maintenance_reports`), and independent Customer acceptance decisions (`maintenance_acceptance_decisions`: `ACCEPTED`, `REWORK_REQUIRED`, `REINSPECTION_REQUIRED`). |
-| 27 | Repair Knowledge Chunk, Notification & Audit Event | `pgvector` HNSW civil engineering standard chunks (`repair_knowledge_chunks`), deduplicated outbox notifications (`notifications`, `event_publication`), and immutable security/workflow audit logs (`audit_events`). |
+| 11 | Service Request | Commercial inspection order (`service_requests` — `ONE_TIME` or `RECURRING`) tracking lifecycle status (`OPEN`, `QUOTED`, `ACCEPTED`, `CONTRACT_SIGNED`, `ASSIGNED`, `CANCELLED`), accepted quote version, and signed-contract object key/upload timestamp. |
+| 12 | OTP Challenge | Purpose-specific (`LOGIN`, `REGISTRATION`, `PASSWORD_RESET`) one-time verification challenge stored in the consolidated `otp_challenges` table. |
+| 13 | Inspector Flight Log | Inspector flight-history entry (`inspector_flight_logs`) with mission, aircraft, duration, location, safety-incident, and recorder metadata. |
+| 14 | Service Request Message | Contextual chat message (`service_request_messages`) exchanged between Customer and Platform Manager during scope and quote negotiation. |
+| 15 | Service Request Quote | Versioned commercial quotation (`service_request_quotes`) specifying scope snapshot, proposed schedule, partner Inspector, inspector-owned Drone, and VND price per occurrence. |
+| 16 | Service Request Occurrence | Individual inspection delivery cycle (`service_request_occurrences`) tracking assignment (`PENDING_ASSIGNMENT`, `ASSIGNED`, `CANCELLED`), partner/Drone assignment snapshots, PayOS order code, payment status (`PENDING`, `PAYMENT_DUE`, `PAID`), and payout status (`PENDING`, `ELIGIBLE`, `PAID`). Signed contract metadata is held on the parent Service Request. |
+| 17 | Inspection Finance Settings | Platform financial configuration (`inspection_finance_settings`) storing platform commission rate, VAT rate, and PIT/TNCN withholding rate for VND occurrence settlement calculations. |
+| 18 | Inspection | Core inspection mission (`inspections`) with 6 canonical states (`SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED`), mission type (`INITIAL`, `RE_INSPECTION`), flight permit metadata, and source Work Order linkage. |
+| 19 | Field Session | On-site flight execution record (`field_sessions`) with states `PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, and `ABORTED` (historical `POSTPONED` read-only), storing pre-flight checklist notes, outcome notes, and abort reasons. |
+| 20 | Evidence | Uploaded inspection photo or `video/mp4` file (`evidence`) stored in MinIO with capture timestamp, EXIF GPS coordinates, structural location tags, and active/retired state. |
+| 21 | Finding | Defect record (`findings`) linked to an evidence capture, tracking `YOLO11` / Vision fallback candidates (`PENDING`) and Inspector-confirmed defects (`CONFIRMED`) with severity, bounding box, and maintenance handoff timestamp. |
+| 22 | Inspection Report | Versioned inspection deliverable (`inspection_reports`) with 5 canonical states (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`), auto-compiled from confirmed findings and rendered to an immutable SHA-256 PDF in MinIO. |
+| 23 | Re-inspection Defect Verification | Three-way comparative verification record (`reinspection_defect_verifications`) linking a `RE_INSPECTION` mission to each target `source_finding_id`, Inspector repair-proof notes/evidence, drone `new_evidence_id`, and resolution status (`RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`). |
+| 24 | Maintenance Work Order | Corrective repair project (`maintenance_work_orders`) with 12 lifecycle states (`DRAFT` to `CLOSED`), linking the source published report, target defect, repair team roles, and optional `reinspection_id` / `reinspection_report_version_id`. |
+| 25 | Maintenance Team Member & Task | Assigned engineering personnel (`maintenance_team_members`: `TEAM_LEAD`, `REPORT_AUTHOR`, `TEAM_MEMBER`) and decomposed repair tasks (`maintenance_tasks`). |
+| 26 | Maintenance Estimate, Cost Line & Change Order | Versioned repair budgets (`maintenance_estimate_versions`), itemized estimate/actual cost lines (`maintenance_cost_lines`: `LABOR`, `MATERIAL`, `EQUIPMENT`, `EXTERNAL_SERVICE`, `OTHER`, `CONTINGENCY`), and scope/budget adjustment requests (`maintenance_change_orders`). |
+| 27 | Maintenance Work Log, Report & Acceptance Decision | Field execution logs (`maintenance_work_logs`) verified in batch by the Team Lead, versioned completion reports (`maintenance_reports`), and independent Customer acceptance decisions (`maintenance_acceptance_decisions`: `ACCEPTED`, `REWORK_REQUIRED`, `REINSPECTION_REQUIRED`). |
+| 28 | Repair Knowledge Chunk, Notification & Audit Event | `pgvector` HNSW civil engineering standard chunks (`repair_knowledge_chunks`), deduplicated outbox notifications (`notifications`, `event_publication`), and immutable security/workflow audit logs (`audit_events`). |
 
 ---
 
@@ -247,9 +247,9 @@ erDiagram
 
 ### 3.3 FE-02 Partner Onboarding, Workforce, Asset & Inspector Drone Registry
 
-#### 3.3.1 Partner Inspector Onboarding & Customer Maintenance Workforce Provisioning
-- **Function trigger**: A `Platform Admin` or `Platform Manager` reviews pending applications in **Onboarding Reviews** (`/admin/onboarding-reviews`), or a `Customer` opens **Workforce** (`/client/workforce`) to provision a `MAINTENANCE_ENGINEER` account.
-- **Function description**: Actors: `Platform Admin`, `Platform Manager`, `Customer`, `Inspector`. Verifies partner Inspector pilot licenses and offline partner contract keys (`partner_contract_file_key`) without requiring drone ownership at signup, reviews restricted-airspace customer registrations, and allows Customers to create and manage internal Maintenance Engineer accounts.
+#### 3.3.1 Platform Inspector Provisioning, Profile & Customer Maintenance Workforce
+- **Function trigger**: A `Platform Admin` or `Platform Manager` provisions an Inspector account and manages its pilot-license profile, reviews pending customer-airspace/drone-registration items in the platform queues, or a `Customer` opens **Workforce** (`/client/workforce`) to provision a `MAINTENANCE_ENGINEER` account.
+- **Function description**: Actors: `Platform Admin`, `Platform Manager`, `Customer`, `Inspector`. Provisions partner Inspector accounts under Platform administration and stores Inspector-specific license/profile data separately from core user identity, reviews restricted-airspace customer registrations and drone applications, and allows Customers to create and manage internal Maintenance Engineer accounts. Partner Inspector signup applications/contracts are not persisted in the current V25 schema.
 - **Screen layout**: Mock-up prototype of the `Partner Inspector Onboarding & Customer Maintenance Workforce` screen:
 
 ```mermaid
@@ -257,10 +257,10 @@ erDiagram
 ```
 
 - **Function Details**:
-  - *Data & Validation*: Partner Inspector approval requires verified **Pilot License Number**, **License Class**, **Expiration Date**, **License Document File**, and **Partner Contract File Key** (`POST /api/v1/inspector-partner-applications/{id}/approve`). Customer workforce provisioning requires **Full Name**, **Email**, and **Role** (`MAINTENANCE_ENGINEER`).
-  - *Business Rules*: Enforces `BR-01`, `BR-02`, `BR-03`, `BR-05`, and `BR-41`. An Inspector partner can be approved and hold an active account with `0` drones, but cannot be assigned to a flight mission until at least one owned drone is registered and approved.
-  - *Normal Cases*: Approving a partner application provisions an active `INSPECTOR` account in `ActorZone.INSPECTOR_PARTNER` (`MSG05`). Customer workforce creation provisions a `MAINTENANCE_ENGINEER` scoped to the Customer's organization.
-  - *Abnormal Cases*: Rejecting an application requires a mandatory review note (`MSG15`). Expired pilot licenses block mission readiness.
+  - *Data & Validation*: Platform Inspector provisioning assigns the `INSPECTOR` role and `INSPECTOR_PARTNER` actor zone through the platform-user administration API. License number, class, issue/expiry dates, authority, and license-scan key are maintained in the Inspector profile; Customer workforce provisioning requires **Full Name**, **Email**, and the `MAINTENANCE_ENGINEER` role.
+  - *Business Rules*: Enforces `BR-01`, `BR-02`, `BR-03`, `BR-05`, and `BR-41`. A platform-provisioned Inspector partner may have an active account with `0` drones, but cannot be assigned to a flight mission until at least one owned drone is registered and approved. Profile separation is a persistence choice; it does not waive qualification or flight-permit checks.
+  - *Normal Cases*: Platform Admin/Manager provisions an active `INSPECTOR` account in `ActorZone.INSPECTOR_PARTNER` and updates its `inspector_profiles` record. Customer workforce creation provisions a `MAINTENANCE_ENGINEER` scoped to the Customer's organization.
+  - *Abnormal Cases*: Invalid or expired license data prevents mission readiness; cross-zone or unauthorized account provisioning is denied.
 
 #### 3.3.2 Infrastructure Asset Registry, Airspace Guard & Inspector-Owned Drone 3-Document Review
 - **Function trigger**: A `Customer` opens **Assets** to register an asset (with Nominatim/Vietnam landmark search and No-Fly Zone check), attach documents, or retire an asset; or an `Inspector` opens **My Drones** (`/operations/inspector-drones`) to submit a drone registration application with 3 documents for Admin/Manager review.
@@ -279,20 +279,20 @@ erDiagram
 
 ---
 
-### 3.4 FE-03 Recurring Schedules, Contract Occurrences & Outbox Notifications
+### 3.4 FE-03 Recurring Service Requests, Contract Occurrences & Outbox Notifications
 
-#### 3.4.1 Timezone-Anchored Recurring Schedules & Multi-Occurrence Contract Inheritance
-- **Function trigger**: A `Customer` submits a `RECURRING` service request (`DAY`, `WEEK`, or `MONTH` cadence), or a `Platform Manager` / `Customer` manages recurring schedules and generated occurrences (`OccurrencesPanel`).
-- **Function description**: Actors: `Customer`, `Platform Manager`, `Automated System`. Materializes individual inspection occurrences from accepted recurring service requests or schedules, automatically inherits the parent executed service contract across all occurrences in the agreed term (Decision D2), and tracks per-occurrence assignment and settlement states.
-- **Screen layout**: Mock-up prototype of the `Timezone-Anchored Recurring Schedules & Contract Occurrences` screen:
+#### 3.4.1 Recurring Service-Request Occurrences & Contract Inheritance
+- **Function trigger**: A `Customer` submits a `RECURRING` service request (`DAY`, `WEEK`, or `MONTH` cadence), or a `Platform Manager` dispatches a generated contract occurrence.
+- **Function description**: Actors: `Customer`, `Platform Manager`, `Automated System`. Materializes inspection occurrences from accepted recurring service requests and tracks each occurrence's planned window, assignment, payment, and payout lifecycle. The executed contract is stored on the parent service request; the separate organization-owned recurring-schedule engine (`recurring_inspection_schedules` / `schedule_occurrences`) is retired in the current V25 target schema. Database migration execution against PostgreSQL/Testcontainers remains pending.
+- **Screen layout**: Mock-up prototype of the `Recurring Service-Request Occurrences & Contract Inheritance` screen:
 
 ```mermaid
-%% title: Screen Layout Placeholder - 3.4.1 Timezone-Anchored Recurring Schedules & Contract Occurrences
+%% title: Screen Layout Placeholder - 3.4.1 Recurring Service-Request Occurrences & Contract Inheritance
 ```
 
 - **Function Details**:
   - *Data & Validation*: Recurring requests specify **Requested Date Range**, **Timezone**, **Window Start / End**, **Recurrence Unit** (`DAY`, `WEEK`, `MONTH`), **Interval (`1..52`)**, and either **Occurrence Count (`1..100`)** or **Recurrence End Date**.
-  - *Business Rules*: Enforces `BR-09`, `BR-11`, and `BR-13`. A single signed contract on the parent `ServiceRequest` covers all generated occurrences without requiring a new paper contract upload per cycle, while each occurrence still requires individual partner Inspector/Drone assignment, conflict checking, flight permit upload, and report publication.
+  - *Business Rules*: A single signed contract on the parent `ServiceRequest` covers the generated occurrences without a new paper contract per occurrence. Each occurrence persists its planned window and assignment snapshots and still requires conflict checks, flight-permit upload, report publication, and settlement.
   - *Normal Cases*: Accepting a recurring quote and uploading the signed contract generates the planned `service_request_occurrences` rows (`PENDING_ASSIGNMENT`) ready for Manager dispatch.
   - *Abnormal Cases*: If a partner Inspector's license expires or a drone conflict arises on a future occurrence, assignment is blocked until the Manager selects an available valid partner pair.
 
@@ -315,17 +315,17 @@ erDiagram
 
 ### 3.5 FE-04 Service Requests, Quotations, Contracts, Dispatch & Airspace Map
 
-#### 3.5.1 Service Request Intake, VND/USD Quotations, Order Chat & Signed Paper Contract
-- **Function trigger**: A `Customer` opens **Service Contracts** (`/client/contracts`) to create a service request, chat with a manager, or click **Accept Latest Quote**; or a `Platform Manager` opens `/admin/contracts` to reply in chat, issue a versioned VND/USD quote, or upload the signed paper contract scan.
-- **Function description**: Actors: `Customer`, `Platform Manager`. Orchestrates the commercial MF2 workflow (`OPEN` $\rightarrow$ `QUOTED` $\rightarrow$ `ACCEPTED` $\rightarrow$ `CONTRACT_SIGNED` $\rightarrow$ `ASSIGNED`) with in-context negotiation chat, versioned VND/USD quotations bound to a specific partner Inspector and their owned drone, and cryptographic storage of the executed offline paper contract.
-- **Screen layout**: Mock-up prototype of the `Service Request Intake, VND/USD Quotations, Order Chat & Signed Paper Contract` screen:
+#### 3.5.1 Service Request Intake, VND Quotations, Order Chat & Signed Paper Contract
+- **Function trigger**: A `Customer` opens **Service Contracts** (`/client/contracts`) to create a service request, chat with a manager, or click **Accept Latest Quote**; or a `Platform Manager` opens `/admin/contracts` to reply in chat, issue a versioned VND quote, or upload the signed paper contract scan.
+- **Function description**: Actors: `Customer`, `Platform Manager`. Orchestrates the commercial MF2 workflow (`OPEN` $\rightarrow$ `QUOTED` $\rightarrow$ `ACCEPTED` $\rightarrow$ `CONTRACT_SIGNED` $\rightarrow$ `ASSIGNED`) with in-context negotiation chat, versioned VND quotations bound to a specific partner Inspector and their owned drone, and cryptographic storage of the executed offline paper contract.
+- **Screen layout**: Mock-up prototype of the `Service Request Intake, VND Quotes, Order Chat & Signed Paper Contract` screen:
 
 ```mermaid
-%% title: Screen Layout Placeholder - 3.5.1 Service Request Intake, VND/USD Quotations, Order Chat & Signed Paper Contract
+%% title: Screen Layout Placeholder - 3.5.1 Service Request Intake, VND Quotes, Order Chat & Signed Paper Contract
 ```
 
 - **Function Details**:
-  - *Data & Validation*: Service request (`POST /api/v1/contracts/requests`) requires **Asset**, **Description**, **Date Window**, **Timezone**, and **Request Type** (`ONE_TIME` or `RECURRING`). Quote issuance (`POST /{id}/quotes`) requires **Scope Snapshot**, **First Occurrence Start/End**, **Partner Inspector**, **Inspector-Owned Drone** (`drone.inspectorOwnerId === inspectorId`), **Currency** (`VND` or `USD`), and **Price per Occurrence (`> 0`)**. Signed contract upload (`POST /{id}/signed-contract`) accepts `PDF`, `DOCX`, `JPEG`, or `PNG` up to `10 MB`.
+  - *Data & Validation*: Service request (`POST /api/v1/contracts/requests`) requires **Asset**, **Description**, **Date Window**, **Timezone**, and **Request Type** (`ONE_TIME` or `RECURRING`). Quote issuance (`POST /{id}/quotes`) requires **Scope Snapshot**, **First Occurrence Start/End**, **Partner Inspector**, **Inspector-Owned Drone** (`drone.inspectorOwnerId === inspectorId`), **Price per Occurrence in VND (`> 0`)**. Signed contract upload (`POST /{id}/signed-contract`) accepts `PDF`, `DOCX`, `JPEG`, or `PNG` up to `10 MB`.
   - *Business Rules*: Enforces `BR-01`, `BR-09`, `BR-10`, `BR-11`, `BR-12`, and `BR-27`. Chat messages (`service_request_messages`) never auto-modify quote terms; any commercial change requires issuing a new quote version (`version_no + 1`). Customers can accept only the latest quote version. Field execution cannot start until the signed contract scan is uploaded (`CONTRACT_SIGNED`).
   - *Normal Cases*: Customer creates request (`OPEN`) $\rightarrow$ Manager issues quote (`QUOTED`) $\rightarrow$ Customer and Manager negotiate via `RequestChatPanel` $\rightarrow$ Customer clicks **Accept Quote** (`ACCEPTED`) $\rightarrow$ both parties sign the paper contract offline and Manager uploads the scan (`CONTRACT_SIGNED`), enabling authenticated streaming download for both parties.
   - *Abnormal Cases*: Selecting a drone not owned by the chosen Inspector, uploading an unsupported contract file format, or attempting to accept a superseded quote version (`MSG13`) is rejected.
