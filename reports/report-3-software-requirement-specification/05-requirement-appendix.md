@@ -9,160 +9,153 @@ source: "report3-software-requirement-specification.docx"
 
 ### 5.1 Business Rules
 
-The system enforces 49 normative business rules across multi-zone/tenant isolation, partner onboarding, commercial service contracts, aviation compliance, advisory AI/RAG oversight, report immutability, PayOS settlement, and maintenance cost control:
+The following normative business rules govern role and organization boundaries, partner onboarding, commercial agreements, aviation readiness, evidence and reporting, payment, and corrective maintenance. They state required business outcomes and do not assert that a capability is already implemented.
 
 | ID | Rule Definition |
 | --- | --- |
-| BR-01 | `ADMIN` and `MANAGER` accounts belong to `ActorZone.PLATFORM` (`organization_id = NULL`) and enforce role separation of duties; `CUSTOMER` and `MAINTENANCE_ENGINEER` accounts belong to `ActorZone.CUSTOMER_ORGANIZATION` (`organization_id IS NOT NULL`); partner `INSPECTOR` accounts belong to `ActorZone.INSPECTOR_PARTNER` (`organization_id = NULL`). |
-| BR-02 | A `CUSTOMER` can access and manage only the assets, maintenance workforce, service requests, published inspection reports, and maintenance work orders belonging to their own customer organization. |
-| BR-03 | Customer `MAINTENANCE_ENGINEER` accounts belong strictly to a single customer organization, whereas partner `INSPECTOR` accounts are platform-coordinated partners who may be assigned to missions across different customer organizations only through explicit `MANAGER` occurrence dispatch. |
-| BR-04 | Partner `INSPECTOR`s and `MAINTENANCE_ENGINEER`s can access and act only upon inspection missions, work orders, or repair tasks explicitly assigned to them. |
-| BR-05 | Active user accounts and unexpired remote pilot licenses are mandatory for partner onboarding and flight readiness; expired pilot licenses block occurrence assignment and field session start. |
-| BR-06 | Customer onboarding (`POST /api/v1/auth/register`) evaluates the initial infrastructure asset against Vietnam airspace zones: `NO_FLY_ZONE` locations are immediately rejected (`403`), `RESTRICTED_ZONE` locations are held in `prospective_customer_registrations` (`PENDING`) for `ADMIN` review, and `CLEAR_ZONE` locations activate the organization and first asset immediately. |
-| BR-07 | Starting an on-site field session (`startFieldSession`) requires an uploaded flight permit (`hasFlightPermit()`), an unexpired pilot license, and a mandatory pre-flight safety checklist note confirming aircraft, battery, and environmental suitability. |
-| BR-08 | Software flight permit uploads and airspace Haversine radar checks verify internal readiness compliance only and do not grant governmental aviation exemptions under Decision 18/2020/QĐ-TTg or Decree 288/2025/NĐ-CP. |
-| BR-09 | Occurrence dispatch (`assignOccurrence`) and mission reassignment check cross-organization scheduling conflicts (`hasPlatformPartnerScheduleConflict`) so a partner `INSPECTOR` or inspector-owned `Drone` is never double-booked across any customer organization during an overlapping time window. |
-| BR-10 | Service request quotations (`service_request_quotes`) support explicit `VND` or `USD` pricing per occurrence, bind to a vetted partner `INSPECTOR` and their approved owned `Drone`, and require configured platform finance rates (`inspection_finance_settings`: commission, VAT, and PIT/TNCN withholding) when quoting in `VND`. |
-| BR-11 | Commercial service orders follow a strict state machine (`OPEN` $\rightarrow$ `QUOTED` $\rightarrow$ `ACCEPTED` $\rightarrow$ `CONTRACT_SIGNED` $\rightarrow$ `ASSIGNED`); order chat messages (`service_request_messages`) never auto-mutate quote terms, and mission dispatch is blocked until the executed offline paper contract scan (`PDF`, `DOCX`, `JPEG`, `PNG` with `SHA-256`) is uploaded. |
-| BR-12 | Service request quotes, inspection report versions, cost estimate baselines, Change Orders, and acceptance decisions preserve complete version histories; published records cannot be modified in place. |
-| BR-13 | For a `RECURRING` service request, a single executed paper contract on the parent request covers all generated `service_request_occurrences` in the agreed term (Decision D2), while each occurrence still requires individual partner assignment, flight permit verification, and report publication. |
-| BR-14 | Field flight sessions (`FieldSession`) support two active completion outcomes from `IN_PROGRESS`: `FIELD_COMPLETED` or `ABORTED` (postponement is removed). Aborting a session records the mandatory abort reason, automatically reverts the parent `Inspection` to `SCHEDULED`, and emits `FieldSessionAbortedEvent` to alert the `MANAGER` for rescheduling, reassignment, or cancellation. |
-| BR-15 | Inspections follow 6 canonical lifecycle states (`SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED`); flight readiness is enforced as a domain guard on `startFieldSession` rather than a separate status enum. |
-| BR-16 | Aircraft flight operation and physical structural repair are real-world technical actions; system `Start`, `Complete`, and `Abort` commands represent software session logging, not hardware flight actuation. |
-| BR-17 | Uploaded digital evidence (`image/jpeg`, `image/png`, `image/webp`, `image/tiff`, `video/mp4`, `application/pdf` up to `10 MB`) retains an upload timestamp, file identity, and original capture metadata; missing telemetry is explicitly disclosed. |
-| BR-18 | Duplicate evidence files within the same inspection scope are rejected based on sanitized filename matching. |
-| BR-19 | Absence of EXIF GPS coordinates or camera telemetry is recorded as missing metadata and does not automatically invalidate otherwise suitable visual or video evidence. |
-| BR-20 | `YOLO11` vision detections (and Vision LLM fallback detections when `YOLO11` returns zero candidates) remain unconfirmed `PENDING` candidates until reviewed by the assigned `INSPECTOR`; only human-confirmed (`CONFIRMED`) findings enter the official inspection record. |
-| BR-21 | Rejected or unconfirmed AI defect suggestions are excluded from official defect metrics, auto-compiled inspection reports, and maintenance repair scopes. |
-| BR-22 | Inspectors may record manual defect findings backed by photo or MP4 video evidence; unavailability of AI services does not prevent manual finding confirmation or deterministic report compilation. |
-| BR-23 | Once the assigned `INSPECTOR` confirms the findings baseline in `FIELD_COMPLETED`, visiting the Report workspace auto-compiles and submits the inspection report (`SUBMITTED`), transitioning the inspection to `UNDER_REVIEW` without requiring manual free-text report notes (`content_snapshot` dropped). |
-| BR-24 | A `MANAGER` (or `ADMIN`) distinct from the report author reviews the submitted report (`APPROVED` or `RETURNED`) and publishes the official PDF (`PUBLISHED`); an `INSPECTOR` can never review or publish their own report. |
-| BR-25 | Unapproved (`SUBMITTED`, `RETURNED`, `APPROVED`) inspection reports and internal field logs are restricted from `CUSTOMER` access (`403 REPORT_NOT_PUBLISHED`); customers track in-flight missions via the 5-stage Customer Progress Tracker until official publication. |
-| BR-26 | Published inspection reports (`PUBLISHED`) are rendered to immutable `SHA-256` A4 PDF artefacts in MinIO and transition the mission to `COMPLETED`; subsequent amendments require publishing a new version that marks the prior version `SUPERSEDED`. |
-| BR-27 | All commercial, reporting, and engineering gates require explicit, attributable human decisions; no automated timer-based or silence-based approval is permitted. |
-| BR-28 | Returning an inspection report (`RETURNED`) or maintenance report requires mandatory review comments, preserves prior version history, and reverts an inspection from `UNDER_REVIEW` back to `FIELD_COMPLETED` so the author can revise findings and re-compile. |
-| BR-29 | `ADMIN` and `MANAGER` govern platform operations, partner onboarding, commercial contracts, and report publication; neither holds authority to approve a `CUSTOMER`'s internal maintenance repair budgets or Change Orders. |
-| BR-30 | Application workflow approvals represent auditable software authorizations and do not constitute statutory engineering seals or governmental aviation clearances. |
-| BR-31 | Maintenance work orders must reference a confirmed defect (`CONFIRMED`) forwarded from a `PUBLISHED` inspection report belonging to the same customer organization. |
-| BR-32 | The `pgvector` RAG Cost & Norms Estimator (`suggest-estimate`) proposes standard Vietnamese construction cost norms (`LABOR`, `MATERIAL`, `EQUIPMENT`, `CONTINGENCY`) as advisory inputs; the submitting `MAINTENANCE_ENGINEER` and approving `CUSTOMER` remain accountable for the final budget. |
-| BR-33 | When a `CUSTOMER` accepts a published inspection report (`accept-report`), the occurrence `payment_status` transitions to `PAYMENT_DUE`; downloading the official PDF artefact requires `payment_status = PAID` (via **PayOS VietQR** checkout/webhook or manager confirmation), which simultaneously unlocks `payout_status = ELIGIBLE` for partner settlement. |
-| BR-34 | Any increase in repair scope, cost, or schedule during maintenance execution requires a `CUSTOMER`-approved Change Order prior to executing additional work; the initial approved estimate baseline remains immutable, and work cannot be declared complete while a Change Order is pending. |
-| BR-35 | Maintenance execution logs require before-and-after repair proof (`repair_proof_url`, `repair_engineer_notes`) and quantitative test readings (`testReadings`), and smart completion reports (`auto-draft`) synthesize these verified records into a 5-part deliverable. |
-| BR-36 | Commercial inspection fees are settled per service request occurrence via PayOS VietQR (with platform commission, VAT, and PIT/TNCN withholding), whereas maintenance repair estimates and actuals are tracked as the Customer organization's internal capital/operational expenditure register. |
-| BR-37 | Selecting `REINSPECTION_REQUIRED` during maintenance acceptance automatically emits `ReinspectionRequestedEvent` to create a linked `RE_INSPECTION` mission (`work_order_id`, `source_inspection_id`, `source_report_version_id`) and pre-populated `reinspection_defect_verifications` rows; supplementary flights within the same initial inspection use an additional `FieldSession` in `FE-05`. |
-| BR-38 | All onboarding reviews, quote acceptances, signed contract uploads, partner assignments, field aborts, finding confirmations, report publications, PayOS settlements, budget approvals, 3-way re-inspection verifications, and work order closures are recorded in `audit_events`. |
-| BR-39 | Direct URL navigation, notification deep links, and media object keys confer no authority; backend `ActorZone`, organization, assignment, and payment-gate checks are enforced on every request. |
-| BR-40 | Password changes, role updates, and session revocations increment `auth_version` and immediately invalidate active tokens without altering historical audit attribution. |
-| BR-41 | Partner `INSPECTOR`s may onboard without owning a drone and register one or more owned drones (`drones.inspector_owner_id`) afterward by uploading three distinct documents (`REGISTRATION`, `OWNERSHIP`, `INSPECTION`) for `ADMIN`/`MANAGER` approval before the drone can be used in quotes or missions. |
-| BR-42 | Infrastructure asset registration enforces the Vietnam No-Fly Zone creation guard and defines standardized structural inspection checkpoints inherited by missions on that asset. |
-| BR-43 | In a `RE_INSPECTION` mission, the assigned `INSPECTOR` performs 3-way comparative defect verification (`reinspection_defect_verifications`: Prior Defect vs Engineer Repair Proof vs Drone Re-capture) and records `RESOLVED`, `UNRESOLVED`, or `INCONCLUSIVE` for each target defect. |
-| BR-44 | The inspection reporting lifecycle enforces 5 canonical report states (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`); publishing a Re-inspection Report emits `ReinspectionReportPublishedEvent` to attach `reinspection_report_version_id` to the Work Order and reinstate its completion report for final `CUSTOMER` acceptance. |
-| BR-45 | Each maintenance work order designates one `TEAM_LEAD`, one `REPORT_AUTHOR`, and an independent `CUSTOMER` Budget Approver and Accepting Reviewer; no member of the executing repair team may approve budgets or accept their own work. |
-| BR-46 | Every repair task is assigned to an approved team member, and all submitted work logs must be `VERIFIED` by the `TEAM_LEAD` (individually or via 1-click `batch-verify`) before the work order can transition to `WORK_COMPLETED`. |
-| BR-47 | All quote amounts, tax/commission splits, repair estimates, Change Orders, and actual expenditures use exact decimal arithmetic with explicit currency codes (`VND` or `USD`). |
-| BR-48 | The LLM Executive Summary (`/ai-summary`) and RAG Acceptance Compliance Audit (`/acceptance-compliance`) synthesize exclusively from verified findings, field test readings, and seeded `TCVN`/`EN`/`ISO` standards, with deterministic fallbacks when external AI endpoints are offline. |
-| BR-49 | A Maintenance Work Order can transition to `CLOSED` only after an independent `CUSTOMER` reviewer records `ACCEPTED` (following Re-inspection Report publication when re-inspection was requested) and reconciles actual costs (`COST_RECONCILED`). |
+| BR-01 | `ADMIN` and `MANAGER` perform platform responsibilities. `CUSTOMER` and `MAINTENANCE_ENGINEER` act within a customer organization. `INSPECTOR` acts as a partner and may be assigned across customer organizations only through an authorized dispatch. |
+| BR-02 | A `CUSTOMER` accesses and manages only their own organization's assets, workforce, service requests, published inspection reports, and maintenance work orders. |
+| BR-03 | A `MAINTENANCE_ENGINEER` belongs to one customer organization. A partner `INSPECTOR` may serve different customer organizations only through an explicit `MANAGER` assignment. |
+| BR-04 | An `INSPECTOR` or `MAINTENANCE_ENGINEER` may act only on inspection or maintenance work assigned to them. |
+| BR-05 | Partner Inspectors must have current pilot credentials for flight assignment and field work. An expired credential prevents the Inspector from being assigned or starting field work. |
+| BR-06 | Customer onboarding screens the initial asset location against applicable Vietnam airspace information. A prohibited No-Fly Zone location is not accepted; a location requiring review remains pending for an `ADMIN` decision; a location that passes screening may proceed. Screening does not grant governmental flight clearance. |
+| BR-07 | Before starting an on-site field session, the assigned Inspector must provide the required flight permit, have current pilot credentials, and record a pre-flight safety note addressing aircraft, battery, and environmental suitability. |
+| BR-08 | Airspace checks and flight permit records support internal readiness review only; they do not grant a government aviation exemption or clearance under applicable regulations. |
+| BR-09 | Inspection assignment and reassignment must consider overlapping commitments across all customer organizations so that a partner Inspector or drone is not double-booked. |
+| BR-10 | Service quotations are stated in VND per occurrence, identify the agreed scope and timing, and are associated with an eligible partner Inspector and a drone owned by that Inspector. |
+| BR-11 | Commercial service requests proceed through request, quotation, customer acceptance, signed agreement, and occurrence assignment. Negotiation messages do not change quotation terms. Dispatch is not ready until the parties have signed the offline agreement and `MANAGER` has recorded it. |
+| BR-12 | Service quotations, inspection reports, maintenance estimate baselines, change requests, and acceptance decisions preserve attributable versions. Published records cannot be silently modified in place. |
+| BR-13 | For a recurring service request, one signed agreement may cover the occurrences within the agreed term. Each occurrence still requires its own partner assignment, flight readiness review, report, and settlement. |
+| BR-14 | Field sessions record normal completion or abort. An abort requires a reason and alerts `MANAGER` to reschedule, reassign, or cancel the inspection. The software record does not control or reverse a physical flight. |
+| BR-15 | Inspection progress must distinguish scheduled, active field work, field completion, report review, completion, and cancellation. Flight readiness is an eligibility decision, not evidence of governmental clearance. |
+| BR-16 | Aircraft operation and physical structural repair are real-world actions performed by qualified people. The service's session and workflow records do not actuate aircraft or perform repairs. |
+| BR-17 | Inspection evidence retains its identity, upload time, and available capture information. Missing location or camera metadata is identified rather than invented. |
+| BR-18 | Duplicate evidence within the same inspection is identified and prevented from being treated as a separate independent capture without review. |
+| BR-19 | Missing GPS or camera metadata does not automatically invalidate otherwise suitable visual or video evidence; the missing information must remain apparent to reviewers. |
+| BR-20 | AI-generated defect suggestions remain advisory until the assigned `INSPECTOR` reviews them. Only human-confirmed findings become official inspection findings. |
+| BR-21 | Rejected and unconfirmed AI suggestions are excluded from official defect reporting, inspection reports, and maintenance scope. |
+| BR-22 | Inspectors may record manual findings supported by inspection evidence. If automated analysis is unavailable, manual evidence review and findings confirmation remain possible. |
+| BR-23 | After confirming the findings baseline, the report author prepares and explicitly submits the inspection report for review. Visiting a report screen alone does not submit it. |
+| BR-24 | A `MANAGER` or `ADMIN` distinct from the report author independently reviews the submitted report, approves or returns it with reasons, and publishes the official report. An `INSPECTOR` cannot review or publish their own report. |
+| BR-25 | Customers may follow in-progress inspection status but cannot access internal field records, unconfirmed findings, or unpublished reports as official deliverables. |
+| BR-26 | Published inspection reports are preserved. Any correction is issued as a new version, with prior versions retained for reference. Publication does not imply governmental or professional certification. |
+| BR-27 | Commercial, reporting, and engineering approvals require explicit, attributable human decisions. Silence or passage of time is not approval. |
+| BR-28 | Returning an inspection or maintenance report requires review reasons, preserves the prior version, and returns the work to the responsible author for revision. |
+| BR-29 | `ADMIN` and `MANAGER` govern platform operations, partner onboarding, commercial agreements, and inspection report publication. They do not approve a Customer's internal maintenance budget or change request. |
+| BR-30 | Service workflow approvals are auditable business decisions; they do not constitute statutory engineering seals or governmental aviation authorizations. |
+| BR-31 | A maintenance work order must refer to a confirmed defect from a published inspection report belonging to the same customer organization. |
+| BR-32 | Cost guidance is advisory. The `MAINTENANCE_ENGINEER` preparing an estimate and the `CUSTOMER` approving it remain accountable for the final budget. |
+| BR-33 | When a Customer accepts a published inspection report, the applicable service fee becomes due. The official deliverable is made available according to the agreed payment rule after payment is confirmed. Partner settlement is separately tracked. |
+| BR-34 | Any increase in repair scope, cost, or schedule requires prior Customer approval through a change request. The approved estimate baseline remains available for comparison, and work cannot be declared complete while a change request is pending. |
+| BR-35 | Maintenance work records include relevant task outcomes, before-and-after repair evidence, and test readings. The completion report is prepared from these records and reviewed by its author before submission. |
+| BR-36 | Inspection service fees are settled per occurrence under the agreed commercial terms. Maintenance estimates and actual expenditures are recorded as the Customer organization's maintenance costs. |
+| BR-37 | When a Customer requests re-inspection, the resulting verification is linked to the relevant work order, source inspection, report, and target findings. An additional session within the original inspection is distinguished from a separate maintenance re-inspection. |
+| BR-38 | Important onboarding, quote acceptance, agreement recording, partner assignment, field abort, findings confirmation, report publication, payment, budget, re-inspection, and work-order decisions are recorded with the responsible actor. |
+| BR-39 | A direct link, notification, or document reference does not grant access. Role, organization, assignment, and payment conditions apply to every attempt to view or act on a record. |
+| BR-40 | Password changes, role updates, account changes, and session revocations take effect for active access without removing historical attribution. |
+| BR-41 | Partner admission does not require drone ownership. After partner account provisioning, an Inspector may register an owned drone by providing `REGISTRATION`, `OWNERSHIP`, and `INSPECTION` documents. `ADMIN` or `MANAGER` reviews the drone registration before the drone is used for a quotation or mission. In the current service, platform staff provision Inspector accounts; self-service Inspector applications are not available. |
+| BR-42 | Infrastructure asset registration is subject to the No-Fly Zone screening rule and identifies relevant inspection checkpoints for future work on that asset. |
+| BR-43 | For each target defect in a re-inspection, the Inspector compares the prior defect, repair evidence, and new inspection evidence, and records `RESOLVED`, `UNRESOLVED`, or `INCONCLUSIVE`. |
+| BR-44 | Inspection reports follow submission, return, approval, publication, and supersession outcomes. Publishing a re-inspection report links it to the related work order so the Customer can complete acceptance review. |
+| BR-45 | Each maintenance work order designates a Team Lead, a Report Author, an independent Customer Budget Approver, and an independent Customer Accepting Reviewer. An executing repair team member cannot approve the budget or accept the work. |
+| BR-46 | Repair tasks are assigned to approved team members. A designated Team Lead verifies submitted work records before the work order can be declared complete. |
+| BR-47 | Quotations, taxes or fees, maintenance estimates, change requests, and actual costs state their currency and are calculated consistently without avoidable rounding error. Current service quotations are stated in VND. |
+| BR-48 | AI report summaries and maintenance guidance use verified findings, field readings, or relevant reference material as applicable. They remain advisory and require human review; any fallback must not fabricate verification or approval. |
+| BR-49 | A maintenance work order may be closed only after an independent `CUSTOMER` reviewer records acceptance, including review of the re-inspection report where required, and actual costs have been reconciled against the approved baseline and changes. |
 
 ### 5.2 Common Requirements
 
-- **Form Validation**: All input forms validate required fields, character limits, numeric bounds, valid date windows, airspace coordinates, and current workflow state before persisting changes.
-- **ActorZone, Organization & Assignment Checks**: Every API endpoint verifies the caller's role, `ActorZone`, organization membership, and partner mission or work-order assignment on the server.
-- **Date, Time & Timezone Display**: Timestamps are stored in UTC (`TIMESTAMPTZ`) and rendered in the organization's or schedule's configured timezone (`Asia/Ho_Chi_Minh`).
-- **Currency & Financial Precision**: All service quotations (`VND`/`USD`), platform commission/VAT/TNCN splits, repair estimates, Change Orders, and actual costs are computed to two decimal places without floating-point drift.
-- **Media Upload & Streaming Limits**: Uploaded photos, `video/mp4` captures, signed contracts (`PDF`/`DOCX`/`JPEG`/`PNG`), and drone/license certificates are validated for MIME type and size (up to `10 MB` per file) and delivered via authenticated HTTP/Blob streaming.
-- **Idempotency & Deduplication**: Repeated clicks or webhook retries on schedule generation, evidence upload, PayOS webhook capture, batch work-log verification, or outbox notification delivery are safely deduplicated.
-- **Cryptographic Document Integrity**: Signed service contracts, published PDF inspection reports, and accepted maintenance completion reports are hashed with `SHA-256` and locked against in-place mutation.
+- **Form Validation**: Forms explain required information and reject incomplete, invalid, out-of-range, or inconsistent information before a business decision is recorded.
+- **Role, Organization, and Assignment Checks**: Every business action is limited by the user's role, organization, partnership, and explicit assignment. Access to a screen does not imply authority to act.
+- **Date, Time, and Timezone Display**: Dates and times are displayed clearly in the relevant organization's or service schedule's timezone. The time of each important decision remains attributable.
+- **Currency and Financial Precision**: Service quotations use VND. Applicable service fees, taxes, platform charges, maintenance estimates, changes, and actual costs state their currency and are calculated consistently.
+- **Evidence and Document Handling**: Inspection media, agreements, qualification records, and reports are checked for suitability before acceptance and shown only to authorized users. File limits and supported formats are communicated to users.
+- **Idempotent User Actions**: Repeated submissions or external notifications must not create duplicate occurrences, evidence records, payments, work verifications, or lifecycle notices.
+- **Document Integrity and Version History**: Signed service agreements, published inspection reports, and accepted maintenance completion records are protected against unauthorized alteration. A change to an issued record must be attributable, preserve its history, and be available as a distinct version; no particular checksum method is prescribed.
 
 ### 5.3 Application Messages List
 
-The system defines standard user-facing messages, validation alerts, and toast notifications across web and mobile clients.
+The service provides clear user-facing messages for common results, validation needs, and workflow decisions. These examples describe intended service communication and do not claim current implementation.
 
 | # | Message code | Message Type | Context | Content |
 | --- | --- | --- | --- | --- |
-| 1 | MSG01 | In line | Search has no authorized records | No results found. |
+| 1 | MSG01 | Inline | Search has no authorized records | No results found. |
 | 2 | MSG02 | Under field | Required field empty | This field is required. |
 | 3 | MSG03 | Under field | Configured length exceeded | Must not exceed {maxLength} characters. |
 | 4 | MSG04 | Under field | Invalid email | Enter a valid email address. |
 | 5 | MSG05 | Toast | Record created | Created successfully. |
 | 6 | MSG06 | Toast | Record updated | Updated successfully. |
-| 7 | MSG07 | Dialog | Irreversible/versioned action | Confirm this action and the version you are acting on. |
-| 8 | MSG08 | In line | Authentication failed | Email or password is incorrect. |
-| 9 | MSG09 | In line | Disabled/suspended account | Unable to sign in. Contact your administrator. |
-| 10 | MSG10 | In line | Expired/revoked session | Your session has expired. Sign in again. |
+| 7 | MSG07 | Dialog | Irreversible or versioned action | Confirm this action and the version you are acting on. |
+| 8 | MSG08 | Inline | Sign-in failed | Email or password is incorrect. |
+| 9 | MSG09 | Inline | Disabled or suspended account | Unable to sign in. Contact your administrator. |
+| 10 | MSG10 | Inline | Expired or revoked access | Your session has expired. Sign in again. |
 | 11 | MSG11 | Under field | Password policy failure | Password does not meet the security requirements. |
-| 12 | MSG12 | Toast | Inspection mission dispatched | Inspection scheduled with its asset and assigned partner Inspector/Drone snapshot. |
-| 13 | MSG13 | In line | Stale quote, report or estimate version | A newer version is available. Refresh and review it before continuing. |
+| 12 | MSG12 | Toast | Inspection dispatched | Inspection scheduled with its asset and assigned partner. |
+| 13 | MSG13 | Inline | Newer quotation or report version available | A newer version is available. Refresh and review it before continuing. |
 | 14 | MSG14 | Toast | Quote or assignment accepted | Accepted successfully. |
-| 15 | MSG15 | Under field | Rejection/abort lacks reason | Enter a mandatory reason before submitting. |
-| 16 | MSG16 | In line | Unsupported/corrupt/large file | This file cannot be uploaded. Check its type, integrity and 10 MB size limit. |
-| 17 | MSG17 | In line | Duplicate evidence | This evidence file has already been uploaded in this inspection scope. |
-| 18 | MSG18 | Toast | Upload saved | Media uploaded and available for review. |
-| 19 | MSG19 | In line | AI unavailable | External AI service is unavailable. Deterministic fallback or manual entry is active. |
-| 20 | MSG20 | Toast | Report auto-compiled & submitted | Inspection report auto-compiled from confirmed findings and submitted to Platform Manager for review. |
-| 21 | MSG21 | In line | Unreviewed findings remaining | Confirm or remove all pending AI defect candidates before confirming the findings baseline. |
-| 22 | MSG22 | Toast | Inspection report published | Approved inspection report published as an immutable PDF and delivered to the Customer. |
-| 23 | MSG23 | Toast | Repair Change Order submitted | Scope/cost/schedule Change Order submitted to Customer for approval. |
-| 24 | MSG24 | In line | Unapproved additional work | Additional work requires a Customer-approved Change Order before completion. |
-| 25 | MSG25 | Toast | Work order closed | Accepted and cost-reconciled work order closed; source inspection and re-inspection history is preserved. |
-| 26 | MSG26 | In line | Required credential/document missing | Provide all required license, registration, ownership, and inspection documents. |
-| 27 | MSG27 | Toast | Compliance document recorded | Document verification recorded. Internal review does not replace statutory aviation authorization. |
-| 28 | MSG28 | In line | Airspace No-Fly / Restricted Zone alert | Location falls inside a prohibited No-Fly Zone (blocked) or Restricted Zone (requires review under Decision 18/2020/QĐ-TTg & Decree 288/2025/NĐ-CP). |
-| 29 | MSG29 | Toast | Service request & quote recorded | Commercial service request or quotation version saved. |
-| 30 | MSG30 | Toast | Report or estimate returned | Returned to the author with mandatory review comments. |
-| 31 | MSG31 | In line | Independent reviewer missing | Assign a reviewer who is not the author or a member of the executing team. |
-| 32 | MSG32 | Under field | Pre-flight checklist incomplete | Enter the mandatory pre-flight safety checklist note before starting the field session. |
-| 33 | MSG33 | In line | Source findings changed | Confirmed findings changed after compilation; the report version has been refreshed. |
-| 34 | MSG34 | Toast | Budget baseline approved | Repair scope and cost estimate approved by Customer. The original baseline is preserved. |
-| 35 | MSG35 | Toast | Signed service contract uploaded | Executed paper service contract scan uploaded with SHA-256 verification (`CONTRACT_SIGNED`). |
-| 36 | MSG36 | In line | Invalid partner Inspector/Drone pair | Select an approved partner Inspector and an active Drone owned by that Inspector with no schedule conflict. |
-| 37 | MSG37 | In line | Missing flight permit or expired license | Cannot start field session. Ensure the mission flight permit is uploaded and the pilot license is unexpired. |
-| 38 | MSG38 | Toast | Findings baseline confirmed | Findings baseline locked; navigating to the Report tab will auto-compile and submit the report. |
-| 39 | MSG39 | In line | AI summary fallback | Using deterministic executive summary synthesis from confirmed findings. |
-| 40 | MSG40 | In line | Missing maintenance lead/author | Assign one Team Lead and one Report Author before releasing the work order. |
-| 41 | MSG41 | In line | Invalid cost line | Quantity and unit rate must be non-negative with an explicit currency code. |
-| 42 | MSG42 | Toast | Work logs batch-verified & work completed | All submitted work logs verified by Team Lead and repair work declared complete (`WORK_COMPLETED`). |
-| 43 | MSG43 | In line | Unverified logs or pending Change Order | Verify all submitted work logs and resolve any pending Change Orders before declaring work complete. |
-| 44 | MSG44 | In line | Self-approval or self-acceptance blocked | Authors and executing repair team members cannot approve their own budgets or accept their own work. |
-| 45 | MSG45 | In line | Cost reconciliation required | Reconcile actual costs against the approved budget and Change Orders before closing the work order. |
-| 46 | MSG46 | Toast | Auto-drafted completion report submitted | Maintenance completion report synthesized and submitted to Customer for acceptance review. |
-| 47 | MSG47 | Toast | PayOS VietQR payment confirmed | Service occurrence payment verified (`PAID`); official PDF download and partner payout eligibility unlocked. |
-| 48 | MSG48 | In line | Payment required for PDF download | Accept the published report and complete VietQR payment via PayOS (or manager confirmation) to download the official PDF. |
+| 15 | MSG15 | Under field | Rejection or abort lacks reason | Enter a reason before submitting. |
+| 16 | MSG16 | Inline | Unsupported, damaged, or oversized file | This file cannot be uploaded. Check its type and size. |
+| 17 | MSG17 | Inline | Duplicate evidence | This evidence file has already been provided for this inspection. |
+| 18 | MSG18 | Toast | Evidence received | Evidence is available for review. |
+| 19 | MSG19 | Inline | Automated advisory unavailable | Automated guidance is unavailable. Continue with the applicable human review process. |
+| 20 | MSG20 | Toast | Inspection report submitted | Inspection report submitted for independent review. |
+| 21 | MSG21 | Inline | Candidate findings remain unreviewed | Review all suggested findings before confirming the findings baseline. |
+| 22 | MSG22 | Toast | Inspection report published | Approved inspection report published and available to the Customer. |
+| 23 | MSG23 | Toast | Repair change request submitted | Scope, cost, or schedule change submitted to the Customer for approval. |
+| 24 | MSG24 | Inline | Additional work not approved | Additional work requires Customer approval before it proceeds. |
+| 25 | MSG25 | Toast | Work order closed | Accepted and cost-reconciled work order closed; its history is preserved. |
+| 26 | MSG26 | Inline | Required qualification or document missing | Provide all required qualification and supporting documents. |
+| 27 | MSG27 | Toast | Compliance document recorded | Document review recorded. Internal review does not replace statutory authorization. |
+| 28 | MSG28 | Inline | Airspace alert | Location is within a prohibited area or requires review before proceeding. |
+| 29 | MSG29 | Toast | Request or quotation recorded | Service request or quotation saved. |
+| 30 | MSG30 | Toast | Report or estimate returned | Returned to the author with review reasons. |
+| 31 | MSG31 | Inline | Independent reviewer missing | Assign a reviewer who is not the author or a member of the executing team. |
+| 32 | MSG32 | Under field | Pre-flight safety note incomplete | Enter the required safety note before starting the field session. |
+| 33 | MSG33 | Inline | Findings changed after report preparation | Confirm the findings and review the report before submitting it. |
+| 34 | MSG34 | Toast | Budget approved | Repair scope and estimate approved by the Customer. The original baseline is preserved. |
+| 35 | MSG35 | Toast | Signed agreement recorded | Signed service agreement recorded. |
+| 36 | MSG36 | Inline | Partner or drone cannot be assigned | Select an eligible Inspector and an owned, approved, available drone. |
+| 37 | MSG37 | Inline | Permit or current qualification missing | Cannot start field work. Provide the mission permit and current pilot credentials. |
+| 38 | MSG38 | Toast | Findings baseline confirmed | Findings baseline confirmed. Prepare and submit the report for review. |
+| 39 | MSG39 | Inline | Advisory summary unavailable | Automated summary is unavailable. Review the confirmed findings directly. |
+| 40 | MSG40 | Inline | Maintenance responsibility missing | Assign a Team Lead and Report Author before repair work begins. |
+| 41 | MSG41 | Inline | Invalid cost information | Enter valid quantities, rates, and currency. |
+| 42 | MSG42 | Toast | Work records verified and repair completed | Submitted work records were verified and repair work was declared complete. |
+| 43 | MSG43 | Inline | Unverified work or pending change request | Verify submitted work records and resolve pending changes before declaring work complete. |
+| 44 | MSG44 | Inline | Self-approval or self-acceptance blocked | Authors and executing repair team members cannot approve their own budgets or accept their own work. |
+| 45 | MSG45 | Inline | Cost reconciliation required | Reconcile actual costs against the approved budget and changes before closing the work order. |
+| 46 | MSG46 | Toast | Completion report submitted | Maintenance completion report submitted to the Customer for acceptance review. |
+| 47 | MSG47 | Toast | Payment confirmed | Inspection service payment confirmed. |
+| 48 | MSG48 | Inline | Payment required for deliverable | Accept the published report and complete the required service payment to access the official deliverable. |
 
 ### 5.4 Other Requirements
 
 #### 5.4.1 Scope and Operational Constraints
-- **Multi-Zone & Tenant Isolation**: Platform operations (`ADMIN`, `MANAGER`), customer organizations (`CUSTOMER`, `MAINTENANCE_ENGINEER`), and independent partner pilots (`INSPECTOR`) are strictly segregated by `ActorZone`, organization ownership, and explicit mission assignment.
-- **No Direct Drone Flight Control**: The platform governs commercial contracts, aviation compliance documents, field session logs, aerial photo/video evidence, AI/RAG analysis, reporting, and maintenance work orders; physical aircraft piloting is performed by licensed partner pilots using their own flight controllers.
-- **Human-in-the-Loop AI & RAG Governance**: `YOLO11` defect detections, Vision LLM fallbacks, AI Executive Summaries, and `pgvector` RAG scope/norm/compliance outputs are advisory decision-support tools. Every official finding, published report, and maintenance budget or acceptance decision requires explicit human confirmation.
+
+- **Role and Organization Separation**: Platform responsibilities (`ADMIN`, `MANAGER`), customer organization responsibilities (`CUSTOMER`, `MAINTENANCE_ENGINEER`), and partner Inspector responsibilities (`INSPECTOR`) are separated by role, organization ownership, and explicit assignment.
+- **No Direct Drone Flight Control**: The service governs agreements, compliance documents, field-session records, evidence, analysis, inspection reports, and maintenance work orders. Licensed partner pilots perform physical aircraft operation using their own flight equipment.
+- **Human Review of AI and Guidance**: Automated defect suggestions, report summaries, repair-scope and cost recommendations, and compliance guidance are advisory. Official findings, published reports, budgets, and acceptance decisions require explicit human confirmation.
+- **Qualification and Legal Authority**: A service status or recorded document does not prove professional qualification or government flight clearance. Users and organizations remain responsible for obtaining any required external authorization.
 
 #### 5.4.2 Feature and Flow Traceability
 
-This traceability matrix maps the **eight core product features (`FE-01` to `FE-08`, two features per team member)** to system use cases and main workflows (`MF1` to `MF4`).
+This traceability matrix maps the eight product features (`FE-01` to `FE-08`) to business responsibilities and use cases.
 
-| Product Feature | Feature Name | Operational Responsibility & Owner | Supported Use Cases |
+| Product Feature | Feature Name | Operational Responsibility | Supported Use Cases |
 | :---: | --- | --- | --- |
-| `FE-01` | Authentication, Google OAuth2 & 5-Role Access Control | Customer registration with initial asset & airspace gate, Argon2id & Google OAuth2 sign-in (Web & Mobile deep-link), `/users/me` profile, and 5-role `ActorZone` RBAC *(Trần Tùng Bách)* | UC-01, UC-02, UC-03, UC-28 |
-| `FE-02` | Partner Onboarding, Workforce, Asset & Inspector Drone Registry | Partner Inspector license/contract review (drone optional at signup), Customer Maintenance Engineer provisioning, Asset catalog with No-Fly Zone guard, and Inspector-owned Drone 3-document review *(Trần Hoàng Trung Hiếu)* | UC-02, UC-04, UC-05, UC-06 |
-| `FE-03` | Recurring Schedules, Contract Occurrences & Outbox Notifications | Timezone-anchored recurring inspection schedules, multi-occurrence contract inheritance (Decision D2), and deduplicated Spring Modulith outbox notifications *(Trần Hoàng Trung Hiếu)* | UC-07, UC-08, UC-20 |
-| `FE-04` | Service Requests, Quotations & Order Chat | One-time/recurring Service Requests, versioned VND/USD quotes, commercial Order Chat, and Quote Acceptance *(Phùng Trung Quốc)* | UC-07, UC-08 |
-| `FE-05` | Signed Contract Evidence & Partner Occurrence Dispatch | Offline signed paper contract scan upload, materialization of occurrences, cross-org partner dispatch, and mission ASSIGNED handoff *(Phùng Trung Quốc)* | UC-09, UC-13 |
-| `FE-06` | Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS | Photo & MP4 video streaming (`file_picker`, `AuthenticatedMedia`), `YOLO11` + Vision fallback, findings preview, tab-visit auto-compiled report (`SUBMITTED`), AI Executive Summary, Manager PDF publish (`PUBLISHED`), and PayOS VietQR settlement *(Trần Tùng Bách)* | UC-14, UC-15, UC-16, UC-17, UC-18, UC-19 |
-| `FE-07` | Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution | Defect handoff to Work Order, `pgvector` RAG Scope Advisor with 1-click initial tasks, team assignment, RAG Cost Norms Estimator (`suggest-estimate`), Customer budget/Change Order approval, and 1-click batch work-log verification *(Trương Thái Như)* | UC-21, UC-22, UC-23, UC-24 |
-| `FE-08` | Completion Report, 3-Way Re-inspection Verification & Cost Closure | Smart auto-drafted Maintenance Completion Report (`auto-draft`), RAG Acceptance Compliance Audit (`acceptance-compliance`), 3-step/3-way Re-inspection defect verification loop, independent Customer acceptance, cost reconciliation, and Work Order closure *(Trương Thái Như)* | UC-25, UC-26, UC-27, UC-28 |
+| `FE-01` | Customer Registration, Sign-in and Account Access | Customer onboarding with initial asset screening; account security and role-appropriate access | UC-01, UC-02, UC-03, UC-28 |
+| `FE-02` | Partner Onboarding, Workforce, Assets and Drone Registration | Inspector applications and qualifications; Customer workforce; asset screening; Inspector-owned drone documentation and review | UC-02, UC-04, UC-05, UC-06 |
+| `FE-03` | Recurring Service Requests, Occurrences and Notifications | One-time and recurring requests, agreed occurrence coordination, and notices | UC-07, UC-08, UC-20 |
+| `FE-04` | Service Requests, VND Quotations, Agreements and Dispatch | Request negotiation, VND quotations, signed agreement, partner assignment, and dispatch changes | UC-07, UC-08, UC-09, UC-13 |
+| `FE-05` | Flight Readiness, Field Sessions and Progress | Permit and qualification checks, field-session records, schedules, and Customer progress | UC-10, UC-11, UC-12, UC-13, UC-20 |
+| `FE-06` | Evidence, Findings, Reporting and Payment | Evidence intake, human-confirmed findings, explicit report preparation, independent publication, Customer acceptance, and service payment | UC-14, UC-15, UC-16, UC-17, UC-18, UC-19 |
+| `FE-07` | Maintenance Work Orders, Estimates and Repair Execution | Corrective work orders, advisory scope and estimates, Customer budget/change approval, assigned repair work and verification | UC-21, UC-22, UC-23, UC-24 |
+| `FE-08` | Completion, Re-inspection and Work-Order Closeout | Completion reporting, re-inspection, independent Customer acceptance, cost reconciliation, and closure | UC-25, UC-26, UC-27, UC-28 |
 
 #### 5.4.3 Research Basis and References
 
-- **Non-Destructive Testing & Inspection Reporting:** Incorporates American Society for Nondestructive Testing (ASNT) guidelines regarding reproducible inspection techniques, explicit equipment and methodology disclosure, and attributable technician accountability. Visual capture annotations follow Pix4D inspection reporting benchmarks.
-- **Maintenance Lifecycle & Work Order Governance:** Maintenance workflows reflect standards from enterprise asset management benchmarks (Oracle PeopleSoft Maintenance Management, IBM Maximo), distinguishing physical task completion from formal administrative and financial closure.
-- **Cost Estimation & Engineering Change Control:** Engineering change orders follow established principles from construction and plant engineering (Primavera Unifier) and Vietnamese construction norms (`TCVN 9343:2012`, `EN 1504-9`, `ISO 12944-5`), enforcing itemized cost baselines, explicit change justification, and independent budget approval.
-- **Artificial Intelligence Governance:** AI defect detection, executive summaries, and RAG advisories comply with National Institute of Standards and Technology (NIST AI 600-1) recommendations on generative artificial intelligence risk management, ensuring source-grounded synthesis and mandatory human oversight.
-- **Civil Aviation Regulations:** Drone compliance references Vietnamese Government Decision No. 18/2020/QĐ-TTg and Decree No. 288/2025/NĐ-CP governing prohibited/restricted airspace zones and unmanned aerial vehicles, enforcing flight permit verification, 3-document drone registration, and remote pilot credential tracking.
-
-- [1] ASNT Pulse. *Nondestructive Testing Report Writing: Back to Basics*. American Society for Nondestructive Testing. https://www.asnt.org/standards-publications/blog/nondestructive-testing-report-writing-back-to-basics
-- [2] Oracle Corporation. *PeopleSoft Maintenance Management Process Flow*. Oracle Help Center. https://docs.oracle.com/en/applications/peoplesoft/financials-and-supply-chain-management/9.2.056/peoplesoft-maintenance-management/peoplesoft-maintenance-management-process-flow.html
-- [3] IBM Corporation. *Maximo Manage: Work Order Statuses*. IBM Documentation. https://www.ibm.com/docs/en/maximo-manage/cd?topic=orders-work-order-statuses
-- [4] Oracle Corporation. *Primavera Unifier: Change Order Business Process*. Oracle Help Center. https://docs.oracle.com/en/industries/construction-engineering/primavera-unifier/26/accelerator-user/changeorderbusinessprocess-10296629a.html
-- [5] National Institute of Standards and Technology. *Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile (NIST AI 600-1)*. U.S. Department of Commerce. https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf
-- [6] Chính phủ nước Cộng hòa Xã hội Chủ nghĩa Việt Nam. *Nghị định số 288/2025/NĐ-CP: Quy định về quản lý tàu bay không người lái và phương tiện bay khác*. Cổng Thông tin điện tử Chính phủ. https://vanban.chinhphu.vn/?docid=215810&pageid=27160
-- [7] Pix4D. *Annotations Report - PIX4Dcloud Pro*. Pix4D Support. https://support.pix4d.com/hc/en-us/articles/13552115283613
-- [8] Oracle Corporation. *Understanding Work Orders in Maintenance Management*. Oracle Documentation. https://docs.oracle.com/cd/G47724_01/fscm92pbr55/eng/fscm/fwkm/UnderstandingWorkOrders-c9f12c.html
+- **Inspection Reporting and Nondestructive Testing**: Requirements reflect established guidance on reproducible inspection methods, disclosure of relevant evidence, and attributable technical reporting.
+- **Maintenance Lifecycle and Work-Order Governance**: Maintenance requirements distinguish physical task completion from formal acceptance and financial closeout.
+- **Cost Estimation and Engineering Change Control**: Repair estimates and changes preserve a reviewable baseline and require independent Customer approval before additional work.
+- **Artificial Intelligence Governance**: AI defect suggestions, summaries, and maintenance guidance remain advisory, grounded in relevant source information, and subject to human review.
+- **Civil Aviation Responsibilities**: Airspace and permit records support planning and readiness review but do not grant flight authorization or replace applicable pilot qualifications and approvals.

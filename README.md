@@ -1,8 +1,8 @@
 # SmartDroneInspection Documentation
 
-Documentation for the SmartDroneInspection platform-managed infrastructure inspection and corrective maintenance service platform.
+Project documentation for the SmartDroneInspection target: a platform-managed infrastructure inspection and corrective maintenance service.
 
-SmartDroneInspection connects customer asset registration (with no-fly zone guards) and partner inspector/drone onboarding (`MF1`), service requests, VND/USD quotations, order chat, offline paper contracts, and cross-organization mission dispatch (`MF2`), flight permits, on-site field sessions, photo/MP4 video evidence, YOLO11 defect detection, auto-compiled reporting with AI executive summaries, manager publication, and PayOS VietQR settlement (`MF3`), and pgvector RAG-assisted maintenance work orders, 3-way re-inspection defect verification, and cost reconciliation (`MF4`).
+The target lifecycle covers Customer and asset onboarding, partner Inspector/Drone registry (`MF1`), one-time/recurring service requests, versioned VND/USD quotation requirements, order chat, signed paper contracts and cross-organization occurrence dispatch (`MF2`), inspection evidence/reports and PayOS VietQR (`MF3`), and corrective maintenance (`MF4`). This is requirements scope, not an implementation-completion statement. Report 5 is the dated source for tested coverage; its 02 Nov 2026 audit records V25 Testcontainers verification as Pending.
 
 ## Start here
 
@@ -24,15 +24,15 @@ Repository-specific setup commands and architecture rules are documented in the 
 | `SmartDroneInspection-mobile/` | Flutter, Dart, Riverpod, GoRouter, Dio | Field workflows for partner inspectors and maintenance engineers (Google OAuth2 deep-link, streaming photo/MP4 evidence upload) |
 | `SmartDroneInspection-docs/` | Markdown, Hugo, Python OOXML tools | Formal project reports (Reports 1–5), Mermaid diagrams, and export verification tooling |
 
-## Current roles (5 canonical login roles)
+## Roles (5 canonical login roles; descriptions summarize target responsibilities)
 
-- **`ADMIN`** (`ActorZone.PLATFORM`) - platform technical administration, internal accounts, standard asset categories, airspace/partner/drone onboarding review queues, finance settings, and audit logs.
-- **`MANAGER`** (`ActorZone.PLATFORM`) - platform service & partner operations: partner inspector and drone review, service request negotiation/chat, VND/USD quote issuance, signed paper contract upload, cross-org partner dispatch, abort reschedule/reassignment, independent inspection report review/publication, and partner payout recording.
+- **`ADMIN`** (`ActorZone.PLATFORM`) - platform-scoped technical administration, internal accounts, configuration, and audit responsibilities.
+- **`MANAGER`** (`ActorZone.PLATFORM`) - platform-scoped service operations, partner coordination, quote/contract workflow, dispatch, report review, and payout responsibilities. Current persisted quote schema is VND-only; VND/USD remains a target requirement.
 - **`CUSTOMER`** (`ActorZone.CUSTOMER_ORGANIZATION`) - customer organization owner/manager: airspace-checked onboarding with initial asset, asset & checkpoint registry, maintenance engineer account provisioning, service requests, quote acceptance, 5-stage inspection progress tracking, published report acceptance, PayOS VietQR payment, maintenance work order creation, budget/Change Order approval, re-inspection requests, and independent maintenance acceptance/closure.
-- **`INSPECTOR`** (`ActorZone.INSPECTOR_PARTNER`) - third-party partner pilot: partner application with pilot license (drone optional at signup), inspector-owned drone registration (registration, ownership, and inspection documents), mission flight permit upload, field session execution (`Start`, `Complete`, `Abort`), photo/MP4 evidence upload, YOLO11/manual finding confirmation, auto-compiled report submission, and 3-way re-inspection defect verification.
+- **`INSPECTOR`** (`ActorZone.INSPECTOR_PARTNER`) - partner Inspector responsibilities in the target, including profile/license, owned-drone records, assigned field sessions, evidence and findings.
 - **`MAINTENANCE_ENGINEER`** (`ActorZone.CUSTOMER_ORGANIZATION`) - customer-side repair engineer (`Team Lead`, `Report Author`, `Team Member`): RAG-assisted repair scope planning, 1-click task creation, RAG norm-based cost estimation, Change Order requests, field repair work logs with before/after proof, batch log verification, and auto-drafted maintenance completion reports.
 
-The platform uses deny-by-default authorization. Resource ownership, `ActorZone`, organization scope, partner assignment scope, and separation-of-duties are enforced in backend application services in addition to role checks.
+The target authorization model combines role checks with `ActorZone`, organization, ownership/assignment and separation-of-duties. Use Report 5 and executable contracts as evidence of current implementation; role/UI visibility alone does not prove authorization or workflow completion.
 
 ## Folder layout
 

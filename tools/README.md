@@ -55,7 +55,7 @@ avoids overwriting an Office workbook already open or edited by someone.
 | Report 2 Project Management Plan | `report-2-project-management-plan/report2-project-management-plan.md` | Generated DOCX |
 | Report 3 SRS (`FE-01`–`FE-08`) | Six ordered sources in `report-3-software-requirement-specification/` | Generated DOCX |
 | Report 3 Project Tracking | `project-tracking/project-tracking.md` | Generated XLSX |
-| Report 4 SDD (`V1`–`V17`) | Four ordered sources in `report-4-software-design-document/` + rendered Mermaid PNGs | Generated DOCX |
+| Report 4 SDD | Detailed-design sources `00-record-of-changes` through `03-detailed-design` (as mapped in `export_report4.py`) + rendered Mermaid PNGs | Generated DOCX |
 | Report 5 Test Documentation | Two ordered sources in `report-5-test-documentation/` | Generated DOCX |
 | Report 5 Test Report (`Feature 1`–`Feature 8`) | Cover/history, case index (`65` cases), statistics and eight FE sources (`fe-01`–`fe-08`) | Generated XLSX |
 | Review 2 Submission Pack (`BM01`–`BM04`) | `review-2-registration/`, `review-2-design-brief/`, `review-2-self-review/` (`export_review2_pack.py`) | Generated DOCX |
@@ -145,9 +145,7 @@ Table header cells keep the template's `HeadingLv1` style. That style has no
 `outlineLvl`, so header text stays out of the table of contents; changing it
 would alter the official formatting.
 
-`apply_role_wording.py` applies the §2.1 role naming to Report 3 prose
-(`Organization Admin`, `Platform Admin`, `Inspector`, `Maintenance Engineer`)
-while leaving the enum inside backticks, the actor table and diagram source.
+`apply_role_wording.py` applies configured human-readable role wording to Report 3 prose while leaving the enum inside backticks, the actor table and diagram source unchanged.
 It is a one-off editorial pass, not part of generation:
 
 ```powershell

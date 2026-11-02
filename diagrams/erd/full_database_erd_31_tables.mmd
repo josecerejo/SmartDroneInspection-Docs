@@ -343,7 +343,6 @@ erDiagram
     varchar flight_permit_file_name
     timestamptz flight_permit_uploaded_at
     timestamptz findings_confirmed_at
-    varchar findings_snapshot_hash
     bigint row_version
   }
   field_sessions {
@@ -519,8 +518,6 @@ erDiagram
     varchar status
     timestamptz author_verified_at
     text content_snapshot
-    varchar rendered_object_key
-    character rendered_checksum_sha256
     timestamptz created_at
   }
   maintenance_acceptance_decisions {

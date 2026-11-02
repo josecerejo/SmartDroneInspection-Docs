@@ -6,9 +6,9 @@ weight: 30
 
 # Hướng dẫn tránh lỗi Capstone cho nhóm SmartDroneInspection
 
-> **Status — 01 November 2026:** Synchronized with the **5-Role Platform Inspection & Corrective Maintenance Service model** (`ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`) and **8 product features (`FE-01` to `FE-08`, 2 features per team member)** across `MF1`–`MF4` (`V1`–`V17`).
+> **Status — 02 November 2026:** This guide describes the five-role and eight-feature (`FE-01`–`FE-08`) target across `MF1`–`MF4`; it does not certify implementation completion.
 >
-> **Implementation update (01 Nov 2026):** All four main flows (`MF1`–`MF4`) and all eight features (`FE-01`–`FE-08`) are implemented and verified across `SmartDroneInspection-backend`, `SmartDroneInspection-frontend`, and `SmartDroneInspection-mobile`: Customer airspace registration & Partner Inspector/Drone 3-doc onboarding (`MF1`), Service Requests, VND/USD Quotes, Order Chat, Signed Paper Contracts & Partner Dispatch (`MF2`), Flight Permit Gate, 2-Outcome Field Sessions, Photo/MP4 Evidence, `YOLO11` + Vision Fallback, 5-State Auto-Compiled Reports with AI Executive Summary & PayOS VietQR Settlement (`MF3`), and `pgvector` RAG Scope/Cost Norms/Compliance Advisors, 1-Click Batch Log Verification & 3-Way Re-inspection Defect Verification (`MF4`).
+> **Implementation evidence:** Report 5 is the source for dated tested coverage. Its 02 Nov 2026 audit records the V25 migration/Testcontainers attempt as Pending because Docker was unavailable before assertions (attempt dated 01 Nov 2026). Historical scheduler and partner-application cases are not current coverage. Do not claim all MF1–MF4 or FE-01–FE-08 are implemented and verified.
 
 Tài liệu này chuyển các lưu ý trong *Cẩm nang tránh lỗi Capstone SE* thành checklist thực hành cho nhóm. Nguyên tắc quan trọng nhất: **tài liệu, mã nguồn, dữ liệu kiểm thử và nội dung demo phải mô tả cùng một hệ thống**. Không ghi một tính năng là đã hoàn thành nếu chưa có mã nguồn và bằng chứng kiểm thử tương ứng.
 
@@ -37,10 +37,10 @@ Tài liệu này chuyển các lưu ý trong *Cẩm nang tránh lỗi Capstone S
 
 ### Actor và quyền (mục tiêu hiện tại)
 
-Năm role đăng nhập chính thức của dự án (`V7`, `UserRole.java`, `authStore.ts`) trên 3 phân vùng `ActorZone` (`PLATFORM`, `INSPECTOR_PARTNER`, `CUSTOMER_ORGANIZATION`) là:
+Năm role đăng nhập target của dự án (code/current state cần đối chiếu riêng) trên 3 phân vùng `ActorZone` (`PLATFORM`, `INSPECTOR_PARTNER`, `CUSTOMER_ORGANIZATION`) là:
 
-1. Platform Admin (`ADMIN` — `ActorZone.PLATFORM`)
-2. Platform Manager (`MANAGER` — `ActorZone.PLATFORM`, legacy alias `PLATFORM_MANAGER`)
+1. `ADMIN` (`ActorZone.PLATFORM`; platform-scope role)
+2. `MANAGER` (`ActorZone.PLATFORM`; legacy alias `PLATFORM_MANAGER`)
 3. Customer (`CUSTOMER` — `ActorZone.CUSTOMER_ORGANIZATION`, legacy alias `ORG_MANAGER`)
 4. Partner Inspector (`INSPECTOR` — `ActorZone.INSPECTOR_PARTNER`)
 5. Maintenance Engineer (`MAINTENANCE_ENGINEER` — `ActorZone.CUSTOMER_ORGANIZATION`)
@@ -71,7 +71,7 @@ Mỗi business rule (`BR-01`–`BR-49`) cần có mã định danh, nội dung r
 4. Nếu dịch vụ ngoài, mạng hoặc lưu trữ tạm thời lỗi thì sao?
 5. Nếu người dùng từ chối, yêu cầu sửa hoặc hủy giữa luồng thì sao?
 
-Các rule quan trọng của dự án (`V1`–`V17`):
+Các rule quan trọng của target; migration source hiện có `V1`–`V25`, nhưng source version không thay thế test evidence:
 
 - Hợp đồng dịch vụ đã ký (`CONTRACT_SIGNED`) và phân công đối tác (`Mf2InspectionAssignmentAdapter`) không trùng lịch liên tổ chức phải hoàn tất trước khi thực hiện nhiệm vụ.
 - Partner Inspector phải được gán đúng inspection, có bằng lái còn hạn và đã upload giấy phép bay (`hasFlightPermit()`) mới bắt đầu phiên thực địa (`IN_PROGRESS`) được.

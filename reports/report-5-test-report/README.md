@@ -4,12 +4,7 @@ This folder separates the contents of the supplied `Report5_Test Report.xlsx`
 template so the team can update test cases without repeatedly rebuilding the
 whole workbook.
 
-**Scope (updated 2026-11-01):** The synchronized test suite tracks **65 cases** across
-**8 product features (`FE-01` to `FE-08`, 2 features per team member)** mapped 1-to-1 to
-8 feature sheets (`Feature 1` to `Feature 8`): Round 1 historical totals remain **60 `Passed`**, **0 `Failed`**, and **5 `Pending`**
-(`92.31%` overall / `93.75%` baseline pass rate). All cases are aligned with the
-5-Role Platform Inspection Service model (`ADMIN`, `MANAGER`, `CUSTOMER`,
-`INSPECTOR`, `MAINTENANCE_ENGINEER`). For the V25 cleanup, focused unit/frontend checks ran, while Testcontainers/PostgreSQL V25 migration verification remains pending until Docker is available; the full frontend suite currently has 14 failing tests (`WorkforcePage.test.tsx` and `RegisterPage.test.tsx`).
+**Scope and status (audit updated 2026-11-02):** The retained Report 5 inventory has **65 case IDs** across 8 product features (`FE-01`–`FE-08`, mapped 1-to-1 to `Feature 1`–`Feature 8`). This is a historical inventory: Round 1 recorded **60 `Passed`**, **0 `Failed`**, and **5 `Pending`** (`92.31%` overall / `93.75%` baseline pass rate). Those totals are preserved as historical results, not current V25 verification. The inventory includes legacy recurrence-scheduler and partner-application test scenarios that are explicitly marked historical-only or superseded; their recorded statuses do not count as V25 target coverage. The V25 target schema is Flyway V1–V25. The latest recorded migration/Testcontainers attempt was blocked before assertions on 2026-11-01 because Docker was unavailable (see WF4-005); current V25 verification is therefore **Pending**. This documentation audit did not run tests. The last recorded frontend test note mentions failures in `WorkforcePage.test.tsx` and `RegisterPage.test.tsx`; its execution date and exact failure count are not recorded here, and no current full-suite result is asserted.
 
 The original workbook template remains unchanged; generated copies contain eight
 feature sheets (`Feature 1`–`Feature 8`).
@@ -44,7 +39,7 @@ Report 3 feature (`FE-01`–`FE-08`). Sheet `Feature N` contains SRS feature `FE
 | Folder/file | Workbook area | Purpose |
 | --- | --- | --- |
 | `00-cover/` | `Cover` | Project metadata and record of changes. |
-| `01-test-cases/` | `Test Cases` | The index of all 65 cases and their preconditions. |
+| `01-test-cases/` | `Test Cases` | The retained historical inventory of 65 IDs, annotated to distinguish legacy-only scenarios from current V25 target coverage. |
 | `02-test-statistics/` | `Test Statistics` | Module totals, coverage, and execution summary across `Feature 1`–`Feature 8`. |
 | `03-features/fe-01-authentication-access-control.md` | `Feature 1` sheet | `FE-01` (`WF1-001`–`WF1-005`: 5 cases, Owner: Trần Tùng Bách). |
 | `03-features/fe-02-workforce-subscription-management.md` | `Feature 2` sheet | `FE-02` (`WF1-006`–`WF1-016`: 11 cases, Owner: Trần Hoàng Trung Hiếu). |

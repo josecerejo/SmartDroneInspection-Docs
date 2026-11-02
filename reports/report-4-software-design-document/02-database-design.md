@@ -7,7 +7,7 @@ source: "report4-software-design-document.docx"
 
 ## 2. Database Design
 
-The relational database architecture is implemented on PostgreSQL 17 (`pgvector`) with strict foreign key constraints, `ActorZone` and composite tenant boundary checks, optimistic concurrency control (`row_version`), and cryptographic `SHA-256` audit fields. The live backend schema is managed through Flyway migrations `V1`–`V25`; this section's table and column inventory is the V25 target schema after legacy subscription/PayPal billing, platform drone leasing, the internal recurring schedule engine, and obsolete partner-application storage were retired. V25 database execution has not yet been verified in this environment because Docker/Testcontainers was unavailable. It covers identity and onboarding (`MF1`), infrastructure assets and inspector-owned drones (`MF1`), commercial service requests, quotations, contracts and PayOS settlement (`MF2`), inspection execution and reporting (`MF3`), and RAG-assisted maintenance work orders and re-inspection verification (`MF4`), alongside cross-cutting notifications, audit logs, and the `event_publication` transactional outbox. `inspector_profiles` now owns Inspector-specific profile/license fields, and `otp_challenges` stores the LOGIN, REGISTRATION, and PASSWORD_RESET challenge purposes.
+The relational database architecture is implemented on PostgreSQL 17 (`pgvector`) with foreign key constraints, `ActorZone` validation, selected composite tenant foreign keys (including inspection-to-asset/drone/Inspector and work-order-to-asset relationships), optimistic concurrency control (`row_version`), and cryptographic `SHA-256` audit fields. The live backend schema is managed through Flyway migrations `V1`–`V25`; this section's table and column inventory is the V25 target schema after legacy subscription/PayPal billing, platform drone leasing, the internal recurring schedule engine, and obsolete partner-application storage were retired. V25 database execution has not yet been verified in this environment because Docker/Testcontainers was unavailable. It covers identity and onboarding (`MF1`), infrastructure assets and inspector-owned drones (`MF1`), commercial service requests, quotations, contracts and PayOS settlement (`MF2`), inspection execution and reporting (`MF3`), and RAG-assisted maintenance work orders and re-inspection verification (`MF4`), alongside cross-cutting notifications, audit logs, and the `event_publication` transactional outbox. `inspector_profiles` now owns Inspector-specific profile/license fields, and `otp_challenges` stores the LOGIN, REGISTRATION, and PASSWORD_RESET challenge purposes.
 
 ```mermaid
 %% title: Database Entity Relationship Diagram (ERD)
@@ -51,7 +51,11 @@ erDiagram
   evidence |o--o{ reinspection_defect_verifications : recapture_proof
   organizations ||--o{ maintenance_work_orders : owns
   assets ||--o{ maintenance_work_orders : remediates
-  users ||--o{ maintenance_work_orders : governs
+  users ||--o{ maintenance_work_orders : owns_work_order
+  users ||--o{ maintenance_work_orders : approves_budget
+  users ||--o{ maintenance_work_orders : leads_team
+  users ||--o{ maintenance_work_orders : authors_completion_report
+  users ||--o{ maintenance_work_orders : accepts_completion
   findings ||--o{ maintenance_work_orders : initiates
   inspection_reports ||--o{ maintenance_work_orders : references
   inspections |o--o{ maintenance_work_orders : reinspects
@@ -299,6 +303,7 @@ erDiagram
     uuid id PK
     uuid request_id FK
     integer occurrence_index
+    varchar status
     timestamptz planned_start_at
     timestamptz planned_end_at
     uuid inspector_id FK
@@ -345,7 +350,6 @@ erDiagram
     varchar flight_permit_file_key
     varchar flight_permit_file_name
     timestamptz findings_confirmed_at
-    varchar findings_snapshot_hash
     boolean partner_assignment
     timestamptz created_at
     timestamptz updated_at
@@ -406,8 +410,6 @@ erDiagram
     timestamptz reviewed_at
     timestamptz published_at
     varchar return_reason
-    varchar rendered_object_key
-    character rendered_checksum_sha256
     timestamptz created_at
   }
   reinspection_defect_verifications {
@@ -417,6 +419,8 @@ erDiagram
     uuid new_evidence_id FK
     varchar resolution_status
     varchar inspector_notes
+    varchar repair_proof_url
+    varchar repair_engineer_notes
     timestamptz created_at
     timestamptz updated_at
   }
@@ -466,6 +470,7 @@ erDiagram
     varchar acceptance_criteria
     varchar status
     timestamptz created_at
+    timestamptz updated_at
     bigint row_version
   }
   maintenance_estimate_versions {
@@ -533,8 +538,6 @@ erDiagram
     varchar status
     timestamptz author_verified_at
     text content_snapshot
-    varchar rendered_object_key
-    character rendered_checksum_sha256
     timestamptz created_at
   }
   maintenance_acceptance_decisions {
@@ -600,6 +603,8 @@ erDiagram
   }
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/17f6ca83790f.png)
 **Table Descriptions**
 
 | No | Table | Description |
@@ -618,16 +623,16 @@ erDiagram
 | 12 | `asset_documents` | Engineering and reference documents attached to an asset, with checksum-based duplicate detection and uploader attribution.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`; `uploaded_by_user_id` identifies the uploader |
 | 13 | `service_requests` | Commercial inspection service requests (`ONE_TIME`, `RECURRING`) tracking lifecycle status (`OPEN`, `QUOTED`, `ACCEPTED`, `CONTRACT_SIGNED`, `ASSIGNED`, `CANCELLED`), accepted quote version, and the object key/upload time for the signed paper contract (`V8`, `V12`, `V18`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `organization_id` references `organizations(id)`, `asset_id` references `assets(id)`, `created_by_user_id` references `users(id)` |
 | 14 | `service_request_messages` | In-context order chat messages exchanged between `CUSTOMER` and `MANAGER` during service request and quote negotiation (`V8`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `request_id` references `service_requests(id)`, `author_user_id` references `users(id)` |
-| 15 | `service_request_quotes` | Versioned commercial quotations (`version_no`) recording scope snapshot, proposed schedule, partner `inspector_id`, inspector-owned `drone_id`, and VND price per occurrence (`V8`, `V12`, `V18`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `request_id` references `service_requests(id)`, `inspector_id` references `users(id)`, `drone_id` references `drones(id)`, `issued_by_user_id` references `users(id)` |
-| 16 | `service_request_occurrences` | Individual inspection delivery occurrences (`PENDING_ASSIGNMENT`, `ASSIGNED`, `CANCELLED`) tracking dispatch assignment snapshots, `payos_order_code`, payment status (`PENDING`, `PAYMENT_DUE`, `PAID`), and payout status (`PENDING`, `ELIGIBLE`, `PAID`). V18 removed per-occurrence contract fields and the obsolete PayOS payment-link identifier; V25 removed only the unused sequence.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `request_id` references `service_requests(id)`, `inspector_id` references `users(id)`, `drone_id` references `drones(id)`, `inspection_id` references `inspections(id)` |
+| 15 | `service_request_quotes` | Versioned commercial quotations (`version_no`) recording scope snapshot, proposed schedule, partner `inspector_id`, inspector-owned `drone_id`, and the VND price per occurrence (`price_per_occurrence_vnd`; `V8`, `V12`, `V18`). The request DTO retains a legacy USD-compatible input field, but its amount maps into this VND persistence field; it is not separate USD storage or USD PayOS settlement. PayOS amounts are VND-only.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `request_id` references `service_requests(id)`, `inspector_id` references `users(id)`, `drone_id` references `drones(id)`, `issued_by_user_id` references `users(id)` |
+| 16 | `service_request_occurrences` | Individual inspection delivery occurrences (`PENDING_ASSIGNMENT`, `ASSIGNED`, `CANCELLED`) tracking dispatch assignment snapshots, `payos_order_code`, payment status (`PENDING`, `PAYMENT_DUE`, `PAID`), and payout status (`PENDING`, `ELIGIBLE`, `PAID`). Successful PayOS settlement records payout `PAID` with an automatic disbursement reference when an Inspector is assigned; the implementation does not leave that assigned payout only `ELIGIBLE`. The signed contract is stored on the parent `service_requests` row, not on each occurrence. V18 removed per-occurrence contract fields and the obsolete PayOS payment-link identifier; V25 removed only the unused sequence.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `request_id` references `service_requests(id)`, `inspector_id` references `users(id)`, `drone_id` references `drones(id)`, `inspection_id` references `inspections(id)` |
 | 17 | `inspection_finance_settings` | Platform financial rate configuration (`commission_rate`, `vat_rate`, `tncn_rate`) governing VND quote settlement and partner net payout calculations (`V12`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `updated_by_user_id` references `users(id)` |
 | 18 | `inspections` | Core inspection mission table tracking 6-state canonical lifecycle status (`SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED` — `V15`), `inspection_type` (`INITIAL`, `RE_INSPECTION` — `V10`), partner assignment flag, flight permit attributes, and source Work Order linkage.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `drone_id` references `drones(id)`, `inspector_id` references `users(id)`, `organization_id` references `organizations(id)`, `work_order_id` references `maintenance_work_orders(id)`, `source_inspection_id` references `inspections(id)` |
 | 19 | `field_sessions` | Records individual on-site flight survey sessions, pre-flight safety checklist notes, abort reasons, and operational outcomes (`PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `ABORTED`; historical `POSTPONED` read-only).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `inspection_id` references `inspections(id)` |
 | 20 | `evidence` | Digital photo and `video/mp4` captures collected during field sessions with MinIO object keys, EXIF capture timestamps, GPS coordinates, location descriptions, and soft-delete flag (`is_deleted`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `field_session_id` references `field_sessions(id)`, `inspection_id` references `inspections(id)` |
 | 21 | `findings` | Unified defect findings table managing `YOLO11` / Vision fallback candidates (`PENDING`) and Inspector-confirmed findings (`CONFIRMED`) with bounding boxes and maintenance forwarding timestamps.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `evidence_id` references `evidence(id)`, `inspection_id` references `inspections(id)` |
-| 22 | `inspection_reports` | Versioned inspection report deliverables with 5 canonical states (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED` — `V16`, `V17`), auto-compiled from confirmed findings and rendered to immutable `SHA-256` PDFs.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reviewer_user_id` references `users(id)`, `inspection_id` references `inspections(id)` |
-| 23 | `reinspection_defect_verifications` | Three-way comparative defect verification records linking a `RE_INSPECTION` mission to each original `source_finding_id`, recaptured drone `new_evidence_id`, and resolution status (`RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reinspection_id` references `inspections(id)`, `source_finding_id` references `findings(id)`, `new_evidence_id` references `evidence(id)` |
-| 24 | `maintenance_work_orders` | Remediation projects initiated from confirmed published findings, tracking corrective scope, acceptance criteria, team role assignments, optional `reinspection_id`, and 12-state lifecycle status (`V6`, `V10`). V25 retains owner and linked reinspection-report version data.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `organization_id` references `organizations(id)`, `source_finding_id` references `findings(id)`, `source_report_version_id` references `inspection_reports(id)`, `reinspection_id` references `inspections(id)`, `reinspection_report_version_id` references `inspection_reports(id)` |
+| 22 | `inspection_reports` | Versioned inspection report deliverables with 5 persisted states (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED` — `V16`, `V17`). Automatic generation and manual draft, section editing, author verification, submission, withdrawal, reviewer decisions, and publication are API authoring/workflow actions rather than additional persisted states; published versions render to immutable `SHA-256` PDFs.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reviewer_user_id` references `users(id)`, `inspection_id` references `inspections(id)` |
+| 23 | `reinspection_defect_verifications` | Three-way comparative defect verification records linking a `RE_INSPECTION` mission to each original `source_finding_id`, recaptured drone `new_evidence_id`, repair proof URL, repair engineer notes, and resolution status (`RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reinspection_id` references `inspections(id)`, `source_finding_id` references `findings(id)`, `new_evidence_id` references `evidence(id)` |
+| 24 | `maintenance_work_orders` | Remediation projects initiated from confirmed published findings, tracking corrective scope, acceptance criteria, distinct owner, budget approver, team lead, report author and accepting reviewer assignments, optional `reinspection_id`, and 12-state lifecycle status (`V6`, `V10`). V25 retains owner and linked reinspection-report version data.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `organization_id` references `organizations(id)`, `source_finding_id` references `findings(id)`, `source_report_version_id` references `inspection_reports(id)`, `reinspection_id` references `inspections(id)`, `reinspection_report_version_id` references `inspection_reports(id)`, and `owner_user_id`, `budget_approver_user_id`, `team_lead_user_id`, `report_author_user_id`, `accepting_reviewer_user_id` each reference `users(id)` |
 | 25 | `maintenance_team_members` & `maintenance_tasks` | Engineering team members (`LEAD`, `REPORT_AUTHOR`, `MEMBER`) and decomposed repair tasks (`PLANNED`, `READY`, `IN_PROGRESS`, `WORK_COMPLETED`, `REWORK_REQUIRED`, `ACCEPTED`, `CANCELLED`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `work_order_id` references `maintenance_work_orders(id)`, `engineer_user_id` / `assigned_engineer_user_id` reference `users(id)` |
 | 26 | `maintenance_estimate_versions`, `maintenance_cost_lines` & `maintenance_change_orders` | Versioned repair budgets (`DRAFT`, `SUBMITTED`, `APPROVED`, `REJECTED`, `SUPERSEDED`), itemized cost rows (`LABOR`, `MATERIAL`, `EQUIPMENT`, `EXTERNAL_SERVICE`, `OTHER`, `CONTINGENCY`), and Change Order variance requests.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `work_order_id` references `maintenance_work_orders(id)` |
 | 27 | `maintenance_work_logs`, `maintenance_reports` & `maintenance_acceptance_decisions` | Field execution logs (`IN_PROGRESS`, `PAUSED_FOR_CHANGE`, `SUBMITTED`, `VERIFIED`), auto-drafted completion reports rendered to PDF, and independent `CUSTOMER` acceptance decisions (`ACCEPTED`, `REWORK_REQUIRED`, `REINSPECTION_REQUIRED`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `work_order_id` references `maintenance_work_orders(id)` |
@@ -663,17 +668,20 @@ stateDiagram-v2
     [*] --> PAY_PENDING : occurrenceCreated() [FE-03, FE-04]
     PAY_PENDING --> PAYMENT_DUE : customerAcceptsReport() [FE-06]
     PAYMENT_DUE --> PAID : payOSWebhookVerified() / confirmPayment() [FE-06]
-    PAID --> PAYOUT_ELIGIBLE : unlockPartnerPayout() [FE-06]
+    PAID --> PAYOUT_PAID : assignedInspectorAutoDisbursement() [FE-06]
+    PAID --> PAYOUT_ELIGIBLE : no assigned Inspector / payout remains pending [FE-06]
     PAYOUT_ELIGIBLE --> PAYOUT_PAID : recordPayout() [FE-06]
     PAYOUT_PAID --> [*]
   }
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/0239c479fdd5.png)
 | Domain Entity | Lifecycle States & Key Transitions | Business Rule Guards |
 | --- | --- | --- |
 | **Onboarding Applications**<br>(`ProspectiveCustomerRegistration`, `DroneRegistrationApplication`) | - **States**: `PENDING`, `APPROVED`, `REJECTED`<br>- **Customer Airspace**: `NO_FLY_ZONE` rejected immediately (`403`); `RESTRICTED_ZONE` $\rightarrow$ `PENDING`; `CLEAR_ZONE` auto-approved<br>- **Drone**: `/approve` (`-> APPROVED`), `/reject` (`-> REJECTED`) | - Platform-administered Inspector provisioning is represented by the user/profile and partner-owned drone records; there is no active Inspector partner-application table in V25.<br>- Drone approval requires all 3 files (`REGISTRATION`, `OWNERSHIP`, `INSPECTION`) and provisions `Drone` (`inspector_owner_id`). |
 | **Service Request & Quote**<br>(`ServiceRequestStatus`) | - **States**: `OPEN`, `QUOTED`, `ACCEPTED`, `CONTRACT_SIGNED`, `ASSIGNED`, `CANCELLED`<br>- **Transitions**: `/quotes` (`-> QUOTED`), `/accept` (`-> ACCEPTED`), `/signed-contract` (`-> CONTRACT_SIGNED`), `/assign` (`-> ASSIGNED`) | - Quotes persist VND pricing; PayOS handles occurrence settlement.<br>- Recurring service requests materialize `service_request_occurrences`; these are distinct from the retired internal recurring-schedule tables. |
-| **Occurrence Payment & Payout**<br>(`OccurrencePaymentStatus`, `PayoutStatus`) | - **Payment States**: `PENDING` $\rightarrow$ `PAYMENT_DUE` $\rightarrow$ `PAID`<br>- **Payout States**: `PENDING` $\rightarrow$ `ELIGIBLE` $\rightarrow$ `PAID`<br>- **Transitions**: `/accept` (`-> PAYMENT_DUE`), `/payos/create-payment-link` & `/webhooks/payos` (`-> PAID`), `/record-payout` (`-> PAID`) | - Customer PDF report download requires `payment_status = PAID` (`402 Payment Required` when `PAYMENT_DUE`).<br>- Net payout deducts platform commission and PIT/TNCN withholding per `inspection_finance_settings`. |
+| **Occurrence Payment & Payout**<br>(`OccurrencePaymentStatus`, `PayoutStatus`) | - **Payment States**: `PENDING` $\rightarrow$ `PAYMENT_DUE` $\rightarrow$ `PAID`<br>- **Payout States**: `PENDING` $\rightarrow$ `ELIGIBLE` $\rightarrow$ `PAID`<br>- **Transitions**: `/accept` (`-> PAYMENT_DUE`), verified PayOS webhook (`-> PAID`), assigned Inspector payout is automatically recorded `PAID`; explicit `/record-payout` records `PAID` where applicable | - PayOS checkout requires a VND amount; legacy USD-compatible API quote input is mapped to the VND quote storage field and does not constitute USD settlement.<br>- `ReportService` currently does not enforce a `402 Payment Required` guard for report PDF downloads.<br>- Payout records the automatic disbursement reference for an assigned Inspector; net amount is calculated using configured finance rates. |
 | **Asset & Drone Fleet**<br>(`AssetStatus`, `DroneServiceability`) | - **Asset States**: `ACTIVE`, `INACTIVE`, `RETIRED`<br>- **Drone Serviceability**: `ACTIVE`, `MAINTENANCE`, `SUSPENDED`, `RETIRED`<br>- **Transitions**: `/retire` (`-> RETIRED`), `/serviceability` | - Asset creation in a `NO_FLY_ZONE` is blocked.<br>- Only `ACTIVE` assets and `ACTIVE` inspector-owned drones can be dispatched; this status does not imply legal permit or mission readiness. |
 
 **2. Inspection, FieldSession, Finding & InspectionReport State Machines**
@@ -699,9 +707,9 @@ stateDiagram-v2
 %% title: InspectionReport Version Lifecycle State Machine Diagram
 stateDiagram-v2
   direction LR
-  [*] --> SUBMITTED : submitReport (auto-compiled from confirmed findings) [FE-06]
+  [*] --> SUBMITTED : auto-generated or manually authored, then author verifies/submits [FE-06]
   SUBMITTED --> RETURNED : reviewBy(approve=false, reason) [FE-06]
-  SUBMITTED --> RETURNED : withdraw() (before review decision) [FE-06]
+  SUBMITTED --> RETURNED : author withdraws before reviewer action [FE-06]
   RETURNED --> SUBMITTED : submit() (after re-confirming findings) [FE-06]
   SUBMITTED --> APPROVED : reviewBy(approve=true) [FE-06]
   APPROVED --> PUBLISHED : publish() (renders PDF to MinIO) [FE-06]
@@ -710,6 +718,8 @@ stateDiagram-v2
   SUPERSEDED --> [*]
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/f20ddd6e8874.png)
 | Domain Entity | Lifecycle States & Key Transitions | Business Rule Guards |
 | --- | --- | --- |
 | **Inspection Mission**<br>(`InspectionStatus` — 6 Canonical States `V15`) | - **States**: `SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED`<br>- **Key Steps**: Dispatch (`-> SCHEDULED`), Field Session (`-> IN_PROGRESS -> FIELD_COMPLETED`), Auto-Compile & Submit Report (`-> UNDER_REVIEW`), Publish (`-> COMPLETED`) | - Flight readiness verified via permit on file (`hasFlightPermit()`) and active pilot licensing.<br>- Findings confirmation and report auto-compilation occur in `FIELD_COMPLETED`; publication moves directly to `COMPLETED`. |
@@ -736,8 +746,10 @@ stateDiagram-v2
   SUBMITTED_FOR_ACCEPTANCE --> REWORK_REQUIRED : recordAcceptance(REWORK_REQUIRED) [FE-08]
   SUBMITTED_FOR_ACCEPTANCE --> REINSPECTION_REQUIRED : recordAcceptance(REINSPECTION_REQUIRED) [FE-08]
   REWORK_REQUIRED --> IN_PROGRESS : resumeAfterRework() [FE-07]
-  REINSPECTION_REQUIRED --> SUBMITTED_FOR_ACCEPTANCE : reinspectionReportPublished() [FE-08]
-  REINSPECTION_REQUIRED --> IN_PROGRESS : resumeAfterReinspection() [FE-07]
+  REINSPECTION_REQUIRED --> REINSPECTION_REPORT_ATTACHED : reinspectionReportPublished() / reinstateCompletionReportForCustomerDecision [FE-08]
+  REINSPECTION_REPORT_ATTACHED --> ACCEPTED : recordAcceptance(ACCEPTED) [FE-08]
+  REINSPECTION_REPORT_ATTACHED --> REWORK_REQUIRED : recordAcceptance(REWORK_REQUIRED) [FE-08]
+  REINSPECTION_REPORT_ATTACHED --> IN_PROGRESS : recordAcceptance(REINSPECTION_REQUIRED) / resumeRepairWork [FE-07]
   ACCEPTED --> COST_RECONCILED : reconcileCosts(actualLines) [FE-08]
   COST_RECONCILED --> CLOSED : close() [FE-08]
   CLOSED --> [*]

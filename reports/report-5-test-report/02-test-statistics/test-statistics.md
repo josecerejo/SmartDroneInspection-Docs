@@ -10,8 +10,12 @@ round.
 | --- | --- |
 | Project Name | SmartDroneInspection |
 | Project Code | GFA26SE139 |
-| Test round | 2026-11-01 Synchronized 65-Case Test Suite across 8 Features FE-01 to FE-08 (2 features per team member, mapped 1-to-1 to Feature 1 to Feature 8). Round 1 summary formulas reflect historical executions; V25 migration/Testcontainers execution is pending because Docker was unavailable during this run. |
-| Last updated | 2026-11-01 (Report 5 version 2.0; 65 cases across 8 feature sheets: 60 Passed, 0 Failed, 5 Pending, 92.31% overall / 93.75% baseline coverage) |
+| Test round | Historical Round 1 inventory: 65 retained case IDs across 8 features FE-01 to FE-08 (2 features per team member, mapped 1-to-1 to Feature 1 to Feature 8). Round 1 and Round 2 figures below are historical only. Current V25-target verification is Pending; the latest recorded PostgreSQL/Testcontainers attempt was blocked before assertions because Docker was unavailable on 2026-11-01. |
+| Last updated | 2026-11-02 (documentation audit; historical Round 1 totals remain 65 IDs: 60 Passed, 0 Failed, 5 Pending; 92.31% overall / 93.75% of the 64-case historical baseline). No tests were run for this update. |
+
+### Historical Round 1 summary (65 retained IDs)
+
+The following status/count table preserves the historical Round 1 worksheet totals only. It includes legacy recurrence scenarios WF1-018, WF1-019, and WF1-021 (which are excluded from current V25 target coverage) and implementation-specific WF3-017. Totals and pass-rate formulas must not be read as current V25 results. Current V25 verification: **Pending**, blocked before migration assertions when Docker was unavailable on 2026-11-01.
 
 ## Module summary
 

@@ -5,7 +5,7 @@ type: "docs"
 
 # SmartDroneInspection
 
-SmartDroneInspection is a platform-managed infrastructure inspection and corrective maintenance service platform covering the complete lifecycle (`MF1`–`MF4`) across 8 product features (`FE-01`–`FE-08`).
+SmartDroneInspection documentation defines the target for a platform-managed infrastructure inspection and corrective maintenance service across `MF1`–`MF4` and 8 features (`FE-01`–`FE-08`). This target description is not a claim that all workflows are implemented.
 
 ## Architecture at a glance
 
@@ -17,8 +17,8 @@ SmartDroneInspection is a platform-managed infrastructure inspection and correct
 
 ## Roles
 
-- `ADMIN` (Platform Admin — `ActorZone.PLATFORM`)
-- `MANAGER` (Platform Manager — `ActorZone.PLATFORM`)
+- `ADMIN` (`ActorZone.PLATFORM`; platform-scoped administration)
+- `MANAGER` (`ActorZone.PLATFORM`; platform-scoped service operations)
 - `CUSTOMER` (Customer Organization Owner/Manager — `ActorZone.CUSTOMER_ORGANIZATION`)
 - `INSPECTOR` (Partner Drone Inspector — `ActorZone.INSPECTOR_PARTNER`)
 - `MAINTENANCE_ENGINEER` (Customer Maintenance Engineer — `ActorZone.CUSTOMER_ORGANIZATION`)
@@ -26,7 +26,7 @@ SmartDroneInspection is a platform-managed infrastructure inspection and correct
 ## Documentation map
 
 - [Project reference](project-reference/): workflows, error-prevention checks, and mainflow references.
-- [Mainflows & 5-Role Architecture](bao-cao-thay-doi-mainflows-5-roles.md): synchronized 5-role & 8-feature (`FE-01`–`FE-08`) reference across `MF1`–`MF4`.
+- [Mainflows & 5-Role Architecture](bao-cao-thay-doi-mainflows-5-roles.md): target workflow and implementation comparison for `MF1`–`MF4` and 8 features (`FE-01`–`FE-08`).
 - [Diagram assignments](phan-cong-ve-so-do.md): 35-diagram ownership map across the 8 features.
 - [Formal reports](reports/):
   - [Report 1 — Project Introduction](reports/report-1-project-introduction/)

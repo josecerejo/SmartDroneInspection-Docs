@@ -11,7 +11,9 @@ Values for the `Feature 8` summary block (`A2:E8` in the workbook).
 | `B2` | Feature | Completion Report, 3-Way Re-inspection Verification & Cost Closure |
 | `B3` | Test requirement | Verifies smart auto-drafted completion report (`auto-draft`), RAG acceptance compliance audit (`acceptance-compliance`), 3-step/3-way Re-inspection defect verification loop, independent Customer acceptance, and cost reconciliation/closure. |
 
-## Current cases
+## Case history and current V25 target
+
+Round 1/2 results below are historical and retained as recorded. Current V25 schema/Testcontainers verification is Pending; the latest recorded attempt was blocked before assertions because Docker was unavailable on 2026-11-01. The V25 schema inventory is Flyway V1–V25. No tests were run for this documentation update.
 
 | Test Case ID | Test Case Description | Test Case Procedure | Expected Results | Pre-conditions | Round 1 | Test date | Tester | Round 2 | Test date | Tester | Round 3 | Test date | Tester | Note |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

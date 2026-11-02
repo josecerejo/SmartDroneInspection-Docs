@@ -2,15 +2,15 @@
 
 **Dự án:** SmartDroneInspection
 
-**Phiên bản:** v2.0 (Chính thức) — Đồng bộ với mã nguồn thực tế đã triển khai trên Backend, Frontend và Mobile (01/11/2026); thu gọn phạm vi về **8 Features (`FE-01`..`FE-08`)**.
+**Phiên bản:** v2.1 (02/11/2026) — Cập nhật đối chiếu giữa target nghiệp vụ và bằng chứng triển khai hiện tại; phạm vi target gồm **8 Features (`FE-01`..`FE-08`)**.
 
-**Trạng thái:** Đã duyệt và hoàn tất triển khai trên cả 3 repositories (`SmartDroneInspection-backend`, `SmartDroneInspection-frontend`, `SmartDroneInspection-mobile`) cùng hệ thống tài liệu chính thức (Reports 1–5).
+**Trạng thái tài liệu (02/11/2026):** Đây là tài liệu mô tả target nghiệp vụ và đối chiếu implementation, không khẳng định MF1–MF4/FE-01–FE-08 đã hoàn tất triển khai.
 
-**Phạm vi bàn giao:** Tài liệu tham chiếu kiến trúc mô hình 5 role, 8 features (`FE-01`..`FE-08`), chi tiết `MF1`–`MF4` và bảng đối chiếu giữa thiết kế đề xuất ban đầu với mã nguồn thực thi (Flyway migrations `V6`–`V17`).
+**Phạm vi:** Mô hình target 5 role, 8 features (`FE-01`..`FE-08`), `MF1`–`MF4`, cùng đối chiếu với mã nguồn hiện có. Source Flyway hiện có tới `V25`. Report 5 ghi việc xác minh V25 bằng Testcontainers là Pending; lần thử ngày 01/11/2026 bị chặn trước assertions do Docker không khả dụng. Có migration file không đồng nghĩa schema đã được xác minh hoặc workflow đã hoàn tất.
 
-> **Kết luận:** Hệ thống đã chuyển đổi hoàn toàn từ mô hình doanh nghiệp tự tổ chức kiểm tra/thuê drone sang **nền tảng cung cấp dịch vụ kiểm tra công trình, do Platform điều phối mạng lưới Inspector đối tác**. Customer sở hữu tài sản và quản lý đội bảo trì; Manager quản lý đối tác Inspector/Drone, báo giá VND/USD, hợp đồng dịch vụ, điều phối nhiệm vụ, phát hành báo cáo và thanh toán qua cổng **PayOS (VietQR)**.
+> **Target nghiệp vụ:** Nền tảng cung cấp dịch vụ kiểm tra công trình, Platform điều phối Inspector đối tác; Customer sở hữu tài sản và quản lý đội bảo trì. Quy trình target gồm hồ sơ đối tác, request/báo giá/hợp đồng/điều phối, kiểm tra hiện trường, báo cáo và bảo trì.
 >
-> Tài liệu này đã được đồng bộ với các trạng thái enum, API endpoint và schema thực tế trong mã nguồn tính đến ngày `01/11/2026`.
+> **Implementation evidence (02/11/2026):** Dùng Report 5 làm căn cứ phạm vi đã kiểm thử; không suy diễn hoàn tất từ tài liệu target, API/UI hoặc migration source. V25 Testcontainers vẫn Pending theo lần chạy được ghi nhận ngày 01/11/2026.
 
 ## Mục lục
 
@@ -275,7 +275,7 @@ flowchart TD
 
 **Đầu vào:** Nhiệm vụ `ASSIGNED` từ MF2, có hợp đồng đã ghi nhận, Asset, lịch và Inspector/drone được phân công. Với bay lại sau bảo trì, MF4 bàn giao nhiệm vụ liên kết đúng hồ sơ nguồn.
 
-**Phạm vi mới theo D5:** Hồ sơ bay → kiểm tra an toàn → phiên thực địa và thu ảnh/video → Evidence → AI hỗ trợ hoặc khai báo thủ công → xác nhận Findings → nháp báo cáo → tác giả xác nhận → người độc lập duyệt → publish PDF bất biến. Phần Evidence/Findings/report giữ lõi flow cũ.
+**Phạm vi mới theo D5:** Hồ sơ bay → kiểm tra an toàn → phiên thực địa và thu ảnh/video → Evidence → AI hỗ trợ hoặc khai báo thủ công → xác nhận Findings → nháp báo cáo → tác giả xác nhận → người độc lập duyệt → phê duyệt và công bố báo cáo kiểm định trên hệ thống (xuất file PDF là tính năng phụ tải về). Phần Evidence/Findings/report giữ lõi flow cũ.
 
 **Đổi trách nhiệm:** Inspector gửi **Manager phía Platform**, không gửi Organization Manager phía khách hàng để publish. Customer nhận báo cáo sau khi Manager phát hành.
 
@@ -283,7 +283,7 @@ flowchart TD
 
 | Bước | Chủ thể | Xử lý và kết quả |
 | --- | --- | --- |
-| MF3-01 | Inspector được giao và System | Tiếp nhận nhiệm vụ; cung cấp/upload giấy phép bay áp dụng cho nhiệm vụ theo cổng hồ sơ cũ. Kiểm tra lại hiệu lực bằng lái, điều kiện drone, phân công và vùng bay; đủ điều kiện mới chuyển sang `READY_FOR_FLIGHT`. Hợp đồng không thay thế hồ sơ bay. |
+| MF3-01 | Inspector được giao và System | Target: cung cấp/upload giấy phép bay áp dụng cho nhiệm vụ; kiểm tra bằng lái, điều kiện drone, phân công và vùng bay. Trong implementation, giấy phép là gate khi bắt đầu FieldSession; `READY_FOR_FLIGHT` không phải trạng thái Inspection. Hợp đồng không thay thế hồ sơ bay. |
 | MF3-02 | Inspector | Đến địa chỉ Asset theo lịch đã chốt; ghi kiểm tra an toàn trước bay. Chỉ khi hồ sơ và điều kiện an toàn còn hợp lệ mới bắt đầu phiên thực địa `IN_PROGRESS`. |
 | MF3-03 | Inspector | Bay khảo sát các hạng mục, chụp ảnh/quay video làm bằng chứng; ghi kết quả và hoàn tất phiên `FIELD_COMPLETED`. Nếu chưa an toàn thì hoãn/dừng kèm lý do theo mục 6.3. |
 | MF3-04 | Inspector | Upload ảnh/video của đúng nhiệm vụ/phiên khảo sát; gắn vị trí hạng mục, thời gian và metadata có được. Thiếu GPS phải thể hiện là thiếu, không tự bịa tọa độ. |
@@ -291,7 +291,7 @@ flowchart TD
 | MF3-06 | Inspector | Rà soát độ phủ hạng mục và các gợi ý còn chờ; chốt Findings baseline. Nếu không phát hiện lỗi vẫn phải xác nhận kết quả, độ phủ và giới hạn khảo sát. |
 | MF3-07 | Inspector | Tạo nháp report bằng AI hoặc thủ công từ dữ liệu đã xác nhận; chỉnh nội dung, xem PDF preview, xác nhận tác giả và submit cho Manager. |
 | MF3-08 | Manager độc lập với tác giả | Rà soát; trả lại đúng Inspector kèm lý do nếu cần sửa/bổ sung. Nếu nguồn Findings thay đổi, phải làm mới baseline/báo cáo và xác nhận lại trước khi duyệt. |
-| MF3-09 | Manager và System | Manager approve rồi publish; System tạo bản PDF chính thức bất biến, lưu dấu vết phiên bản và gửi thông báo cho Customer. |
+| MF3-09 | Manager và System | Manager approve rồi publish báo cáo kiểm định trên hệ thống; System lưu dấu vết phiên bản, gửi thông báo cho Customer (hỗ trợ xuất file PDF tải về khi cần). |
 | MF3-10 | Customer | Đọc/tải bản published; chọn defects cần chuyển bảo trì ở MF4. Nếu không cần sửa, ghi nhận quyết định xử lý; việc publish đơn thuần chưa có nghĩa mọi defect đã được sửa. |
 
 **Ảnh và video:** Yêu cầu mới bao gồm cả hai. Backend đang có allowlist nhận `video/mp4`, nhưng điều đó **không chứng minh** đã có đầy đủ trình xem video, chọn khung hình hoặc AI phân tích cả video. Đề xuất Findings của video phải chỉ tới mốc thời gian/đoạn liên quan; nếu dùng YOLO thì dùng ảnh/khung hình có truy vết về video nguồn. Cách chọn khung hình và giới hạn tệp cần chốt, không tự thêm pipeline phân tích video liên tục.
@@ -314,7 +314,7 @@ flowchart TD
   D --> E{"Manager review độc lập"}
   E -->|"Cần sửa hoặc bổ sung"| F["Return kèm lý do<br/>Inspector sửa và xác nhận lại"]
   F --> D
-  E -->|"Đạt"| G["Manager approve và publish<br/>PDF chính thức bất biến"]
+  E -->|"Đạt"| G["Manager approve và publish<br/>Báo cáo kiểm định"]
   G --> H["Customer nhận báo cáo published"]
   H --> J["Chọn defects cần bảo trì ở MF4<br/>hoặc ghi nhận không cần sửa"]
 ```
@@ -402,14 +402,14 @@ flowchart TD
 
 ### 8.1. Tách các vòng đời, không dùng một trạng thái thay cho tất cả
 
-Các trạng thái dưới đây phản ánh chính xác các enum và ràng buộc database đã triển khai trong mã nguồn (`V7`–`V17`):
+Bảng dưới tách trạng thái có trong code khỏi target; không phải tuyên bố hoàn thành MF1–MF4. Audit này đối chiếu migration source `V1`–`V25` và Report 5 cập nhật `02/11/2026`; xác minh tích hợp/Testcontainers của V25 vẫn Pending:
 
-| Đối tượng | Vòng đời thực tế trong Code (BE / FE / DB) |
+| Đối tượng | Trạng thái trong code hiện có / target cần phân biệt |
 | --- | --- |
-| Request/đơn dịch vụ (`service_requests.status`) | `OPEN` → `QUOTED` → `ACCEPTED` → `CONTRACT_SIGNED` → `ASSIGNED` (hoặc `CANCELLED`). Các phiên bản báo giá (`service_request_quotes` hỗ trợ `VND`/`USD`) và bằng chứng hợp đồng giấy (`PDF`/`DOCX`/`JPEG`/`PNG` kèm SHA-256) được lưu tách biệt. |
+| Request/đơn dịch vụ (`service_requests.status`) | Code hiện có các trạng thái `OPEN` → `QUOTED` → `ACCEPTED` → `CONTRACT_SIGNED` → `ASSIGNED` (hoặc `CANCELLED`). Schema sau V18 chỉ lưu giá báo giá VND; không mô tả `VND`/`USD` là hai currency được lưu đồng thời. Loại bằng chứng hợp đồng được quyết định bởi contract upload/API hiện hành, không suy ra checksum từ migration schema. |
 | Đợt thực hiện & Thanh toán (`service_request_occurrences`) | Trạng thái phân công: `PENDING_ASSIGNMENT` → `ASSIGNED` (hoặc `CANCELLED`).<br>Trạng thái thanh toán (`payment_status`): `PENDING` → `PAYMENT_DUE` (khi Customer bấm `accept-report`) → `PAID` (qua cổng **PayOS VietQR** hoặc xác nhận thanh toán).<br>Trạng thái chi trả đối tác (`payout_status`): `PENDING` → `ELIGIBLE` (khi `PAID`) → `PAID` (khi Manager ghi nhận `record-payout` sau khi khấu trừ hoa hồng, VAT, thuế TNCN theo `inspection_finance_settings`). |
 | Nhiệm vụ inspection (`InspectionStatus` — 6 trạng thái chuẩn `V15`) | `SCHEDULED` → `IN_PROGRESS` → `FIELD_COMPLETED` → `UNDER_REVIEW` → `COMPLETED` (hoặc `CANCELLED`).<br>- Điều kiện sẵn sàng bay (`hasFlightPermit()` + bằng lái còn hạn) là chốt chặn khi bắt đầu `FieldSession`, không tạo trạng thái `READY_FOR_FLIGHT` riêng.<br>- Phiên thực địa (`FieldSession`): `PLANNED` → `IN_PROGRESS` → `FIELD_COMPLETED` hoặc `ABORTED` (đã loại bỏ `POSTPONED`). Khi `ABORTED`, Inspection tự quay về `SCHEDULED` và phát `FieldSessionAbortedEvent` để Manager điều phối lại (`Reschedule`, `Reassign`, `Cancel`). |
-| Inspection Report (`ReportStatus` — 5 trạng thái chuẩn `V17`) | `SUBMITTED` → `APPROVED` → `PUBLISHED` → `SUPERSEDED` (và nhánh `RETURNED` về tác giả).<br>- Đã loại bỏ `DRAFT`, `AUTHOR_VERIFIED` và cột ghi chú thủ công `content_snapshot` (`V16`). Khi Inspector mở tab Report (đã chốt Findings), báo cáo tự động biên dịch từ dữ liệu xác thực và nộp thẳng sang `SUBMITTED` (chuyển Inspection sang `UNDER_REVIEW`), kèm **AI Executive Summary** (`/ai-summary`). |
+| Inspection Report (`ReportStatus` — 5 trạng thái chuẩn từ migration `V17`) | `SUBMITTED` → `APPROVED` → `PUBLISHED` → `SUPERSEDED` (và nhánh `RETURNED` về tác giả).<br>- Đã loại bỏ `DRAFT`, `AUTHOR_VERIFIED` và cột ghi chú thủ công `content_snapshot` (`V16`). Khi Inspector mở tab Report (đã chốt Findings), báo cáo tự động biên dịch từ dữ liệu xác thực và nộp thẳng sang `SUBMITTED` (chuyển Inspection sang `UNDER_REVIEW`), kèm **AI Executive Summary** (`/ai-summary`). |
 | Work Order (`WorkOrderStatus` — 12 trạng thái) | `DRAFT` → `AWAITING_APPROVAL` → `APPROVED` → `READY` → `IN_PROGRESS` → `WORK_COMPLETED` → `SUBMITTED_FOR_ACCEPTANCE` → (`ACCEPTED` / `REWORK_REQUIRED` / `REINSPECTION_REQUIRED`) → `COST_RECONCILED` → `CLOSED`.<br>- Khi chọn `REINSPECTION_REQUIRED`, hệ thống tự động sinh nhiệm vụ bay lại (`inspection_type = 'RE_INSPECTION'`) kèm bảng đối chiếu 3 chiều `reinspection_defect_verifications` (`RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`). |
 
 **Bốn mốc không được đồng nhất:** Customer accept báo giá ≠ hợp đồng đã ký ≠ hồ sơ đủ để bay ≠ nghiệm thu/đóng hồ sơ.
@@ -429,29 +429,29 @@ Các trạng thái dưới đây phản ánh chính xác các enum và ràng bu�
 
 ## 9. Tác động đến tính năng, dữ liệu và tài liệu
 
-### 9.1. Cấu trúc chuẩn hóa 8 Features (`FE-01`–`FE-08`, 2 Features / thành viên)
+### 9.1. Cấu trúc target 8 Features (`FE-01`–`FE-08`, 2 Features / thành viên)
 
-Phạm vi hệ thống được thu gọn về đúng **8 Features (`FE-01` đến `FE-08`)**, loại bỏ hoàn toàn Subscription (PayPal) và Drone Leasing khỏi danh mục tính năng chính, ánh xạ 1–1 với 8 sheets (`Feature 1`..`Feature 8`) trong `Report5_Test Report.xlsx`:
+Phạm vi target gồm **8 Features (`FE-01` đến `FE-08`)**, không gồm Subscription (PayPal) và Drone Leasing trong danh mục tính năng chính, ánh xạ 1–1 với 8 sheets (`Feature 1`..`Feature 8`) trong Report 5. Mô tả dưới đây là phạm vi target; trạng thái kiểm thử/triển khai phải đọc từ Report 5. Tính đến 02/11/2026, Report 5 chưa ghi nhận xác minh V25 bằng Testcontainers; các kịch bản ứng dụng Inspector và recurring scheduler cũ được giữ là lịch sử/已 supersede, không phải bằng chứng coverage hiện tại:
 
-| Mã | Tên Feature chuẩn hóa | Thành viên phụ trách | Nội dung thực tế đã triển khai | MF liên quan |
+| Mã | Tên Feature chuẩn hóa | Thành viên phụ trách | Nội dung target (không phải trạng thái hoàn tất) | MF liên quan |
 | --- | --- | --- | --- | --- |
-| **FE-01** | **Authentication, Google OAuth2 & 5-Role Access Control** | **Trần Tùng Bách** *(SE180220)* | Đăng ký Customer kèm Asset đầu tiên (qua cổng vùng cấm bay), đăng nhập Argon2id, Google OAuth2 (Web & Mobile deep-link `smartdrone://auth`), quản lý hồ sơ `/users/me`, và phân quyền 5 role (`ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`) theo `ActorZone`. | Toàn bộ |
-| **FE-02** | **Partner Onboarding, Workforce, Asset, Drone Registry & Airspace Map** | **Trần Hoàng Trung Hiếu** *(SE184212)* | Tiếp nhận & xét duyệt hồ sơ đối tác Inspector (`inspector_partner_applications` kèm bằng lái & hợp đồng đối tác; chưa bắt buộc có drone); Customer cấp tài khoản kỹ sư bảo trì; quản lý Asset/checkpoints/tài liệu kèm bản đồ vùng cấm bay OpenStreetMap/Nominatim; đăng ký & xét duyệt Drone thuộc sở hữu Inspector (`drone_registration_applications` với 3 tài liệu: đăng ký, sở hữu, kiểm định). | MF1 |
-| **FE-03** | **Recurring Schedules, Contract Occurrences & Outbox Notifications** | **Trần Hoàng Trung Hiếu** *(SE184212)* | Một hợp đồng định kỳ bao phủ nhiều đợt kiểm tra (`service_request_occurrences` kế thừa hợp đồng gốc theo D2), lịch kiểm tra định kỳ theo múi giờ và thông báo phi đồng bộ qua Spring Modulith Outbox (`notifications`). | MF1, MF2 |
-| **FE-04** | **Service Requests, Quotations & Commercial Order Chat** | **Phùng Trung Quốc** *(SE170027)* | Khách hàng tạo yêu cầu kiểm tra một lần hoặc định kỳ (`service_requests`), Sàn điều phối phát hành các phiên bản báo giá VND/USD (`service_request_quotes`), kênh đàm phán Order Chat trực tiếp giữa Customer và Manager (`service_request_messages`), và khách hàng chấp thuận phiên bản báo giá mới nhất (`acceptedQuoteVersion`). | MF2 |
-| **FE-05** | **Signed Contract Evidence & Partner Occurrence Dispatch** | **Phùng Trung Quốc** *(SE170027)* | Quản lý hợp đồng dịch vụ ký kết giấy offline, tải lên và xem/tải an toàn bản scan hợp đồng đã ký (`contract_object_key`), sinh các đợt bay cụ thể, và Manager phân công cặp Inspector–Drone cho từng đợt bay có kiểm tra chống trùng lịch liên tổ chức, bàn giao nhiệm vụ `ASSIGNED` sang MF3. | MF2 |
-| **FE-06** | **Flight Permit, Field Execution, YOLO11, Auto-Report & PayOS** | **Trần Tùng Bách** *(SE180220)* | Cổng tải giấy phép bay từng nhiệm vụ (`flight-permit`), thực thi phiên thực địa (`FieldSession`: Start, Complete, Abort), Dashboard vận hành 5 role, tải ảnh & video MP4 streaming MinIO, YOLO11 + Vision LLM fallback, preview Findings, tự động biên dịch báo cáo (`SUBMITTED`), AI Executive Summary, Manager review/publish PDF bất biến (`PUBLISHED`), Customer nghiệm thu báo cáo (`accept-report`) và thanh toán VietQR qua **PayOS** kèm cấu hình tài chính đối tác (`inspection_finance_settings`). | MF3, bay lại MF4 |
+| **FE-01** | **Authentication, Google OAuth2 & 5-Role Access Control** | **Trần Hoàng Trung Hiếu** *(SE184212)* | Đăng ký Customer kèm Asset đầu tiên (qua cổng vùng cấm bay), đăng nhập Argon2id, Google OAuth2 (Web & Mobile deep-link `smartdrone://auth`), quản lý hồ sơ `/users/me`, và phân quyền 5 role (`ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`) theo `ActorZone`. | MF1 |
+| **FE-02** | **Partner Onboarding, Workforce, Asset & Inspector Drone Registry** | **Trần Hoàng Trung Hiếu** *(SE184212)* | Platform cấp tài khoản Inspector và quản lý hồ sơ/bằng lái phi công, Customer cấp tài khoản kỹ sư bảo trì, danh mục tài sản & cổng chặn vùng cấm bay, đăng ký & xét duyệt Drone thuộc sở hữu Inspector với 3 tài liệu (đăng ký, sở hữu, kiểm định). | MF1 |
+| **FE-03** | **Recurring Service Requests, Contract Occurrences & Outbox Notifications** | **Phùng Trung Quốc** *(SE170027)* | Yêu cầu dịch vụ định kỳ, sinh các đợt kiểm tra `service_request_occurrences` theo phạm vi hợp đồng, và hàng đợi thông báo Outbox đa kênh nội bộ. | MF2 |
+| **FE-04** | **Service Requests, Quotations, Contracts, Dispatch & Airspace Map** | **Phùng Trung Quốc** *(SE170027)* | Yêu cầu dịch vụ một lần/định kỳ, phát hành báo giá VND versioned, Order Chat hai chiều, ghi nhận bản scan hợp đồng giấy ký offline, phân công điều phối Inspector–Drone chống trùng lịch, và bản đồ vùng trời tác nghiệp. | MF2 |
+| **FE-05** | **Flight Permit Gate, Field Flight Execution, Dashboard & Calendar** | **Trần Tùng Bách** *(SE180220)* | Cổng kiểm tra giấy phép bay (`flight-permit`), thực thi phiên thực địa (`FieldSession`: Start, Complete, Abort), Dashboard vận hành 5 role, lịch điều phối và thanh tiến độ kiểm định 5 giai đoạn cho khách hàng. | MF3 |
+| **FE-06** | **Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS** | **Trần Tùng Bách** *(SE180220)* | Tải ảnh & video MP4 streaming MinIO, AI YOLO11 + Vision fallback, xác nhận findings, tự động biên dịch báo cáo (`SUBMITTED`), AI Executive Summary, Manager xem xét & phê duyệt báo cáo (`PUBLISHED`), Customer nghiệm thu báo cáo và thanh toán VietQR qua PayOS (xuất file PDF là tính năng phụ trợ tải về). | MF3, bay lại MF4 |
 | **FE-07** | **Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution** | **Trương Thái Như** *(SE180082)* | Chuyển giao defects từ report published sang Work Order, RAG tư vấn phạm vi (`suggest-scope`) kèm 1-Click khởi tạo `initialTasks`, phân công đội kỹ sư, RAG gợi ý định mức dự toán (`suggest-estimate`), Customer duyệt ngân sách/Change Order, thi công hiện trường và Team Lead duyệt hàng loạt nhật ký 1-Click (`batch-verify`). | MF4 |
 | **FE-08** | **Completion Report, 3-Way Re-inspection Verification & Cost Closure** | **Trương Thái Như** *(SE180082)* | Tự động tổng hợp báo cáo hoàn thành (`auto-draft`), RAG thẩm tra tuân thủ nghiệm thu (`acceptance-compliance`), vòng lặp bay lại tự động (`REINSPECTION_REQUIRED`) với giao diện 3 bước & đối chiếu 3 chiều (`reinspection_defect_verifications`: Lỗi ban đầu vs Ảnh sửa chữa của kỹ sư vs Ảnh drone bay lại), Manager publish Re-inspection Report, Customer nghiệm thu độc lập, quyết toán chi phí và đóng Work Order. | MF4 |
 
-### 9.2. Tác động dữ liệu — Đã triển khai qua Flyway Migrations `V7`–`V17`
+### 9.2. Migration source và tác động dữ liệu (source hiện có `V1`–`V25`; chưa đồng nghĩa đã xác minh triển khai)
 
 | Nhóm dữ liệu | Chi tiết triển khai thực tế trong Database & Code |
 | --- | --- |
 | Identity và phạm vi sở hữu (`V7`) | Chuyển đổi chuẩn hóa `PLATFORM_MANAGER` → `MANAGER`, `ORG_MANAGER` → `CUSTOMER` kèm `ActorZone` (`PLATFORM`, `CUSTOMER_ORGANIZATION`, `INSPECTOR_PARTNER`, `PROSPECT_CUSTOMER`). Hỗ trợ alias tương thích ngược trong `UserRole.java` và `authStore.ts`. |
-| Đối tác, bằng lái và drone (`V7`, `V8`, `V9`) | Bảng `inspector_partner_applications`, `drone_registration_applications`, `contract_partner_inspectors`, `contract_partner_drones`. Bảng `drones` thêm cột `inspector_owner_id` (độc lập với `organization_id`). Inspector đăng ký 0..N drone kèm 3 tài liệu (`REGISTRATION`, `OWNERSHIP`, `INSPECTION`). |
+| Đối tác, bằng lái và drone (`V7`–`V9`, `V18`, `V25`) | `inspector_partner_applications` bị V25 loại bỏ; không trình bày đây là bảng/luồng hiện hành. V18 loại bỏ `contract_partner_inspectors` và `contract_partner_drones`; V25 loại bỏ `recurring_inspection_schedules` và `schedule_occurrences`. `drone_registration_applications` và quan hệ sở hữu Inspector–Drone còn trong phạm vi code hiện tại; onboarding đối tác hiện dùng tài khoản Inspector hiện hữu và hồ sơ profile/license, không phải self-registration/application. |
 | Asset và vùng bay (`V7`) | Bảng `prospective_customer_registrations` lưu kết quả đánh giá vùng bay (`NO_FLY_ZONE` chặn ngay `403`, `RESTRICTED_ZONE` chờ Admin duyệt, `CLEAR_ZONE` kích hoạt ngay). |
-| Request, báo giá, chat, hợp đồng & PayOS (`V8`, `V12`, `V13`) | Bảng `service_requests`, `service_request_quotes` (hỗ trợ `VND`/`USD`), `service_request_messages`, `service_request_occurrences` (gắn `payos_order_code`, `payos_payment_link_id`, `payment_status`, `payout_status`), và `inspection_finance_settings` (`commission_rate`, `vat_rate`, `tncn_rate`). |
+| Request, báo giá, chat, hợp đồng & PayOS (`V8`, `V12`, `V13`, `V18`) | `service_requests`, `service_request_quotes` (schema chỉ lưu `price_per_occurrence_vnd` sau V18), `service_request_messages`, `service_request_occurrences` (có `payos_order_code`, `payment_status`, `payout_status`; V18 loại `payos_payment_link_id`), và `inspection_finance_settings`. |
 | Inspection, FieldSession & Report (`V11`, `V15`, `V16`, `V17`) | Tinh gọn `inspections.status` về 6 trạng thái (`SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED`). Bỏ `content_snapshot` (`V16`) và tinh gọn `inspection_reports.status` về 5 trạng thái (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`). |
 | Maintenance và bay lại (`V6`, `V10`, `V14`) | Bảng `inspections` thêm `inspection_type` (`INITIAL`, `RE_INSPECTION`), `work_order_id`, `source_inspection_id`, `source_report_version_id`. Bảng `maintenance_work_orders` thêm `reinspection_id`, `reinspection_report_version_id`. Bảng `reinspection_defect_verifications` lưu đối chiếu 3 chiều (`repair_proof_url`, `repair_engineer_notes`, `new_evidence_id`, `resolution_status`). |
 
@@ -478,7 +478,7 @@ Phạm vi hệ thống được thu gọn về đúng **8 Features (`FE-01` đ�
 | O5 | Phạm vi truy cập của Manager và Admin? | `MANAGER` và `ADMIN` thuộc `ActorZone.PLATFORM`, quản lý toàn bộ yêu cầu dịch vụ, điều phối đối tác, xét duyệt báo cáo và xem danh sách tài sản cấp nền tảng. |
 | O6 | Xác minh hồ sơ bay và quy trình duyệt báo cáo? | Giữ cổng upload `flight-permit` và kiểm tra bằng lái còn hạn khi bắt đầu phiên bay; báo cáo tự động biên dịch từ Findings đã xác nhận, kèm AI Executive Summary, và do `MANAGER` độc lập với `INSPECTOR` tác giả duyệt/publish. |
 | O7 | Hỗ trợ video MP4 trên Web và Mobile? | Hỗ trợ upload/streaming `video/mp4` (tối đa 10 MiB) trên cả Web (`AuthenticatedMedia` phát HTML5 video) và Mobile (`file_picker` + `MultipartFile.fromStream`). |
-| O8 | Xử lý dữ liệu và role cũ? | Migration `V7`–`V17` chuyển đổi an toàn role (`PLATFORM_MANAGER` → `MANAGER`, `ORG_MANAGER` → `CUSTOMER`) và trạng thái (`V15` 6-state inspection, `V17` 5-state report), loại bỏ hoàn toàn Subscription/Drone Leasing khỏi 8 Features chính. |
+| O8 | Xử lý dữ liệu và role cũ? | Source migration `V1`–`V25` gồm chuẩn hóa role cũ, state inspection/report, simplification MF2 tại V18 và dọn bảng legacy tại V25. Report 5 ghi V25 Testcontainers Pending; không coi source file là bằng chứng migration đã được xác minh. |
 
 ---
 

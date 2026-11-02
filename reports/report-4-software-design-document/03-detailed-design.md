@@ -17,8 +17,12 @@ classDiagram
   class BrowserAuthController {
     +csrf(CsrfToken) Map
     +register(OrganizationRegistrationRequest) ResponseEntity~ApiResponse~
+    +sendRegistrationOtp(SendRegistrationOtpRequest) ResponseEntity~ApiResponse~
+    +sendPasswordResetOtp(SendPasswordResetOtpRequest) ResponseEntity~ApiResponse~
+    +confirmPasswordReset(ConfirmPasswordResetRequest) ResponseEntity~ApiResponse~
     +login(LoginRequest, HttpServletRequest, HttpServletResponse) ResponseEntity~ApiResponse~
-    +setupInitialPassword(InitialPasswordSetupRequest) ResponseEntity~ApiResponse~
+    +sendLoginOtp(SendLoginOtpRequest) ResponseEntity~ApiResponse~
+    +verifyLoginOtp(VerifyLoginOtpRequest) ResponseEntity~ApiResponse~
     +refresh(HttpServletRequest, HttpServletResponse) ResponseEntity~ApiResponse~
   }
   class OAuth2Controller {
@@ -48,8 +52,29 @@ classDiagram
     -UserStatus status
     -ActorZone actorZone
     -String roles
+  }
+  class InspectorProfileController {
+    +listInspectors() ApiResponse~List~
+    +getProfile(UUID) ApiResponse~InspectorProfileResponse~
+    +updateProfile(UUID, UpdateInspectorProfileRequest) ApiResponse~InspectorProfileResponse~
+    +uploadLicenseScan(UUID, MultipartFile) ApiResponse~InspectorProfileResponse~
+    +listFlightLogs(UUID) ApiResponse~List~
+  }
+  class InspectorProfile {
+    -UUID userId
     -String pilotLicenseNumber
+    -String pilotLicenseClass
     -Instant pilotLicenseExpiresAt
+    -BigDecimal priorFlightHours
+    -String specializations
+  }
+  class OtpChallenge {
+    -UUID id
+    -OtpChallengePurpose purpose
+    -UUID userId
+    -String destination
+    -Instant expiresAt
+    -Instant consumedAt
   }
   class ProspectiveCustomerRegistration {
     -UUID id
@@ -62,19 +87,24 @@ classDiagram
     -String status
   }
   BrowserAuthController --> AuthService
+  BrowserAuthController --> OtpChallenge
   OAuth2Controller --> AuthService
-  UserProfileController --> User
+  UserProfileController --> AuthService
+  InspectorProfileController --> InspectorProfile
   PlatformUserController --> User
   AuthService --> User
+  AuthService --> InspectorProfile
   AuthService --> ProspectiveCustomerRegistration
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/ed55a07c2fe4.png)
 **Class Specifications**
 
-- **BrowserAuthController, MobileAuthController & OAuth2Controller**: Expose web (`/api/v1/auth`), native mobile (`/api/v1/mobile/auth`), and Google OAuth 2.0 (`/api/v1/auth/oauth2/authorize/google`, `/callback/google` with `smartdrone://auth` mobile deep-link redirect) authentication endpoints, enforcing `AuthRateLimitFilter` (`10` req/60s per IP), Argon2id password verification, `HS256` JWT issuance (`15m` TTL), and `HmacSHA256` refresh session rotation (`auth_sessions`, `7d` TTL).
-- **UserProfileController & PlatformUserController**: Decouple self-service profile and pilot license updates (`/api/v1/users/me`) from authentication routes (`7cc2534`), and govern 5-role accounts (`ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, `MAINTENANCE_ENGINEER`) across `ActorZone` boundaries (`PLATFORM`, `CUSTOMER_ORGANIZATION`, `INSPECTOR_PARTNER`, `PROSPECT_CUSTOMER`).
+- **BrowserAuthController, MobileAuthController & OAuth2Controller**: Expose web (`/api/v1/auth`), native mobile (`/api/v1/mobile/auth`), and Google OAuth 2.0 authentication endpoints, plus LOGIN OTP send/verify and REGISTRATION/PASSWORD_RESET OTP flows. All challenge purposes persist in consolidated `otp_challenges` through `OtpChallenge`; enforcement includes `AuthRateLimitFilter`, Argon2id password verification, `HS256` JWT issuance, and refresh session rotation (`auth_sessions`).
+- **UserProfileController, InspectorProfileController & PlatformUserController**: Keep self-service license updates under `/api/v1/users/me/pilot-license`, with pilot-license/profile fields persisted in `InspectorProfile`/`inspector_profiles`, not `User`; provide platform Inspector profile and flight-log management through `InspectorProfileController` (`/api/v1/platform/inspectors`). `PlatformUserController` provisions platform-side accounts, including Inspector accounts; no separate Inspector application controller/entity remains. Canonical role names are `ADMIN`, `MANAGER`, `CUSTOMER`, `INSPECTOR`, and `MAINTENANCE_ENGINEER`, scoped by `ActorZone` (`PLATFORM`, `CUSTOMER_ORGANIZATION`, `INSPECTOR_PARTNER`, `PROSPECT_CUSTOMER`).
 
-#### 3.1.2 User Authentication, Google OAuth2 & Airspace Registration Sequence Diagram
+#### 3.1.2 User Authentication, OTP, Google OAuth2 & Airspace Registration Sequence Diagram
 
 ```mermaid
 %% title: User Authentication, Google OAuth2 and Airspace Registration Sequence Diagram
@@ -84,8 +114,9 @@ sequenceDiagram
   participant Client as Web Portal / Flutter Mobile
   participant AuthCtrl as BrowserAuthController / OAuth2Controller
   participant AuthSvc as AuthService
+  participant Otp as RegistrationOtpService / LoginOtpService / PasswordResetService
   participant Airspace as CustomerAirspacePolicyAdapter
-  participant DB as PostgreSQL (users, organizations, auth_sessions)
+  participant DB as PostgreSQL (users, organizations, auth_sessions, otp_challenges)
 
   User->>Client: Submit Customer & First Asset Registration (lat, lng)
   Client->>AuthCtrl: POST /api/v1/auth/register (OrganizationRegistrationRequest)
@@ -100,27 +131,48 @@ sequenceDiagram
     AuthSvc-->>Client: 201 Created
   end
 
+  User->>Client: Request registration OTP / password-reset OTP
+  Client->>AuthCtrl: POST /registration/otp/send or /password-reset/otp/send
+  AuthCtrl->>Otp: issueChallenge(purpose=REGISTRATION or PASSWORD_RESET)
+  Otp->>DB: insertOtpChallenge(purpose, destination, challengeHash, expiry)
   User->>Client: Sign In via Email/Password or Google OAuth2
-  Client->>AuthCtrl: POST /api/v1/auth/login (or GET /api/v1/auth/oauth2/authorize/google)
-  AuthCtrl->>AuthSvc: verifyCredentialsOrGoogleCode()
-  AuthSvc->>DB: verifyStatusAndLockout & insertAuthSession(HmacSHA256, 7d TTL)
-  AuthSvc-->>Client: 200 OK (HS256 JWT AccessToken + Refresh Token / smartdrone://auth)
+  Client->>AuthCtrl: POST /api/v1/auth/login (or Google OAuth2 sign-in)
+  AuthCtrl->>AuthSvc: verifyCredentialsOrGoogleToken()
+  AuthSvc->>DB: verifyStatusAndLockout & insertOtpChallenge(purpose=LOGIN)
+  AuthSvc-->>Client: OTP_REQUIRED (challengeToken)
+  Client->>AuthCtrl: POST /otp/send then POST /otp/verify
+  AuthCtrl->>Otp: deliverAndVerifyLoginChallenge(challengeToken, code)
+  Otp->>DB: loadChallenge(purpose=LOGIN) & markConsumed()
+  AuthSvc->>DB: insertAuthSession(HmacSHA256)
+  AuthSvc-->>Client: AUTHENTICATED (HS256 JWT AccessToken + Refresh Token / smartdrone://auth)
+  User->>Client: Reset Password with registration/reset OTP when needed
+  Client->>AuthCtrl: POST /password-reset/confirm
+  AuthCtrl->>Otp: verifyAndConsumeChallenge(purpose=PASSWORD_RESET)
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/54944335ac8e.png)
 ---
 
-### 3.2 FE-02 Partner Onboarding, Workforce, Asset & Inspector Drone Registry
+### 3.2 FE-02 Platform Provisioning, Workforce, Asset & Inspector Drone Registry
 
 #### 3.2.1 Class Diagram
 
 ```mermaid
-%% title: Partner Onboarding, Asset Registry and Inspector-Owned Drone Class Diagram
+%% title: Platform Provisioning, Asset Registry and Inspector-Owned Drone Class Diagram
 classDiagram
-  class InspectorPartnerApplicationController {
-    +listPending(Jwt) ApiResponse~List~
-    +downloadLicenseDocument(Jwt, UUID) ResponseEntity~InputStreamResource~
-    +approve(Jwt, UUID, ApprovePartnerRequest) ApiResponse~PartnerApplicationResponse~
-    +reject(Jwt, UUID, RejectApplicationRequest) ApiResponse~PartnerApplicationResponse~
+  class PlatformUserController {
+    +list() ApiResponse~List~
+    +create(Jwt, CreateUserRequest) ResponseEntity~ApiResponse~
+    +resetPassword(Jwt, UUID) ResponseEntity~ApiResponse~
+    +updateRoles(Jwt, UUID, UpdateRolesRequest) ApiResponse
+    +updateStatus(Jwt, UUID, UpdateStatusRequest) ApiResponse
+  }
+  class InspectorProfileController {
+    +listInspectors() ApiResponse~List~
+    +updateProfile(Jwt, UUID, UpdateInspectorProfileRequest) ApiResponse~InspectorProfileResponse~
+    +uploadLicenseScan(Jwt, UUID, MultipartFile) ApiResponse~InspectorProfileResponse~
+    +recordFlightLog(Jwt, UUID, CreateInspectorFlightLogRequest) ApiResponse~InspectorFlightLogResponse~
   }
   class AirspaceReviewController {
     +listPending(Jwt) ApiResponse~List~
@@ -145,13 +197,12 @@ classDiagram
     +approve(Jwt, UUID, ReviewNoteRequest) ApiResponse~DroneRegistrationResponse~
     +reject(Jwt, UUID, ReviewNoteRequest) ApiResponse~DroneRegistrationResponse~
   }
-  class InspectorPartnerApplication {
-    -UUID id
-    -String normalizedEmail
+  class InspectorProfile {
+    -UUID userId
     -String pilotLicenseNumber
+    -String pilotLicenseClass
     -String pilotLicenseFileKey
-    -String partnerContractFileKey
-    -String status
+    -BigDecimal priorFlightHours
   }
   class DroneRegistrationApplication {
     -UUID id
@@ -177,47 +228,54 @@ classDiagram
     -BigDecimal longitude
     -AssetStatus status
   }
-  InspectorPartnerApplicationController --> InspectorPartnerApplication
+  PlatformUserController --> InspectorProfile
+  InspectorProfileController --> InspectorProfile
+  UserProfileController --> InspectorProfile
   DroneRegistrationApplicationController --> DroneRegistrationApplication
   DroneRegistrationApplication --> Drone
   AssetController --> Asset
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/a1235ee95d5c.png)
 **Class Specifications**
 
-- **InspectorPartnerApplicationController, AirspaceReviewController & WorkforceController**: Govern `MF1` onboarding review queues (`/admin/onboarding-reviews`) for restricted-airspace customers and partner Inspectors (requiring `partnerContractFileKey` proof of the executed offline partner contract), and allow `CUSTOMER` users to provision `MAINTENANCE_ENGINEER` accounts.
-- **AssetController, AssetDocumentController & DroneRegistrationApplicationController**: Manage customer infrastructure assets (`assets`, `asset_documents`) with No-Fly Zone guards and platform-wide `ADMIN`/`MANAGER` read visibility (`92fb490`), and govern 3-document inspector-owned drone registrations (`REGISTRATION`, `OWNERSHIP`, `INSPECTION` $\rightarrow$ `drones.inspector_owner_id`).
+- **PlatformUserController, InspectorProfileController, AirspaceReviewController & WorkforceController**: Provision Inspector accounts through platform user administration rather than a separate Inspector application workflow; maintain license/profile/flight-log records through `InspectorProfileController`. `AirspaceReviewController` reviews customer registrations requiring restricted-airspace review, while `CUSTOMER` users provision `MAINTENANCE_ENGINEER` accounts.
+- **AssetController, AssetDocumentController & DroneRegistrationApplicationController**: Manage customer infrastructure assets (`assets`, `asset_documents`) with No-Fly Zone guards and `ADMIN`/`MANAGER` read visibility (`92fb490`), and govern 3-document inspector-owned drone registrations (`REGISTRATION`, `OWNERSHIP`, `INSPECTION` $\rightarrow$ `drones.inspector_owner_id`).
 
-#### 3.2.2 Partner Inspector Application & Customer Workforce Provisioning Sequence Diagram
+#### 3.2.2 Platform Inspector Provisioning & Customer Workforce Sequence Diagram
 
 ```mermaid
-%% title: Partner Inspector Onboarding and Customer Workforce Sequence Diagram
+%% title: Platform Inspector Provisioning and Customer Workforce Sequence Diagram
 sequenceDiagram
   autonumber
-  actor Admin as Platform Admin / Manager
+  actor Admin as ADMIN / MANAGER
   actor Cust as Customer (CUSTOMER)
-  actor Insp as Partner Inspector (INSPECTOR)
-  participant PartCtrl as InspectorPartnerApplicationController
+  actor Insp as Inspector (INSPECTOR)
+  participant UserCtrl as PlatformUserController
+  participant ProfileCtrl as InspectorProfileController
   participant WfCtrl as WorkforceController
-  participant ProfCtrl as UserProfileController
-  participant DB as PostgreSQL (inspector_partner_applications, users)
+  participant DB as PostgreSQL (users, inspector_profiles)
 
-  Admin->>PartCtrl: GET /api/v1/inspector-partner-applications/pending
-  PartCtrl->>DB: findByStatus(PENDING)
-  DB-->>Admin: Pending Partner Applications (pilotLicenseFileKey)
-  Admin->>PartCtrl: POST /api/v1/inspector-partner-applications/{id}/approve (partnerContractFileKey)
-  PartCtrl->>DB: markApplicationApproved & provisionPartnerInspectorUser(ActorZone.INSPECTOR_PARTNER, 0 drones required)
-  DB-->>Admin: 200 OK (Approved Partner Inspector Account)
+  Admin->>UserCtrl: POST /api/v1/platform/users (role=INSPECTOR, actorZone=INSPECTOR_PARTNER)
+  UserCtrl->>DB: provisionInspectorUser()
+  DB-->>Admin: 201 Created (Provisioned Inspector Account)
+  Admin->>ProfileCtrl: PUT /api/v1/platform/inspectors/{id} (license/profile details)
+  ProfileCtrl->>DB: updateInspectorProfile(inspector_profiles)
+  Insp->>ProfileCtrl: GET /api/v1/platform/inspectors/me / me/flight-logs
+  ProfileCtrl->>DB: read own InspectorProfile and flight logs
 
   Cust->>WfCtrl: POST /api/v1/workforce/users (role=MAINTENANCE_ENGINEER)
   WfCtrl->>DB: insertUser(orgId, ActorZone.CUSTOMER_ORGANIZATION, role=MAINTENANCE_ENGINEER)
   DB-->>Cust: 201 Created (WorkforceUserCreatedResponse)
 
-  Insp->>ProfCtrl: PUT /api/v1/users/me/pilot-license (number, class, expiresAt, fileKey)
-  ProfCtrl->>DB: updatePilotLicenseCredentials(inspectorUserId)
-  DB-->>Insp: 200 OK (CurrentUserResponse)
+  Insp->>UserCtrl: PUT /api/v1/users/me/pilot-license (number, class, expiresAt, fileKey)
+  UserCtrl->>DB: update InspectorProfile / inspector_profiles
+  DB-->>Insp: 200 OK (UserResponse with Inspector profile fields)
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/a12bc0b5939b.png)
 #### 3.2.3 Inspector-Owned Drone 3-Document Registration & Review Sequence Diagram
 
 ```mermaid
@@ -225,7 +283,7 @@ sequenceDiagram
 sequenceDiagram
   autonumber
   actor Insp as Partner Inspector (INSPECTOR)
-  actor Admin as Platform Admin / Manager
+  actor Admin as ADMIN / MANAGER
   participant DroneAppCtrl as DroneRegistrationApplicationController
   participant MinIO as MinIO Object Storage
   participant DB as PostgreSQL (drone_registration_applications, drones)
@@ -245,6 +303,8 @@ sequenceDiagram
   DB-->>Admin: 200 OK (Provisioned Partner Drone)
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/8d95adb0f367.png)
 #### 3.2.4 WF-01 Activity Diagram — Customer Airspace & Partner Onboarding, Asset & Drone Registry
 
 ```mermaid
@@ -257,20 +317,20 @@ flowchart TD
   end
 
   subgraph IN1["Partner Inspector (INSPECTOR)"]
-    A7["Verify Pilot License & Sign Offline Partner Contract (No Drone Required at Signup)"]
+    A7["Provide Inspector Profile & Pilot License Details (Drone Not Required at Account Provisioning)"]
     A9["Submit Owned Drone Application + 3 Documents (Registration, Ownership, Inspection)"]
   end
 
-  subgraph ADM1["Platform Admin / Manager (ADMIN / MANAGER)"]
-    A3["Review Restricted-Zone Registration / Partner Application (partnerContractFileKey)"]
-    A8["Approve Partner Inspector Account (ActorZone.INSPECTOR_PARTNER)"]
+  subgraph ADM1["ADMIN / MANAGER (platform duties)"]
+    A3["Review Restricted-Zone Customer Registration"]
+    A8["Provision Inspector Account (ActorZone.INSPECTOR_PARTNER)"]
     A10["Verify 3 Drone Documents & Approve Inspector-Owned Drone (ACTIVE)"]
   end
 
   subgraph SYS1["Automated System (AirspaceAdvisoryService)"]
     A2{"Evaluate First Asset\nAirspace Zone?"}
     A4["Reject Registration (403 NO_FLY_ZONE)"]
-    A11(["End: Customer Assets & Partner Inspector/Drone Pool Ready for MF2"])
+    A11(["End: Customer Assets & Provisioned Inspector-Owned Drone Pool Ready for MF2"])
   end
 
   A1 --> A2
@@ -280,9 +340,11 @@ flowchart TD
   A7 --> A8 --> A9 --> A10 --> A11
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/4990fbdacb78.png)
 ---
 
-### 3.3 FE-03 Recurring Schedules, Contract Occurrences & Outbox Notifications
+### 3.3 FE-03 Recurring Service Requests, Occurrence Materialization & Outbox Notifications
 
 #### 3.3.1 Class Diagram
 
@@ -301,7 +363,6 @@ classDiagram
   class InspectionNotificationListener {
     +onInspectionAssigned(InspectionAssignedEvent) void
     +onFieldSessionAborted(FieldSessionAbortedEvent) void
-    +onInspectionReminderDue(InspectionReminderDueEvent) void
   }
   class MaintenanceNotificationListener {
     +onWorkOrderAssigned(WorkOrderAssignedEvent) void
@@ -323,9 +384,11 @@ classDiagram
   NotificationService --> Notification
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/4b1da24c085e.png)
 **Class Specifications**
 
-- **InspectionScheduleController, RecurringInspectionScheduleService & ContractWorkflowService (Occurrences)**: Manage timezone-anchored recurring schedules (`recurring_inspection_schedules`, `schedule_occurrences`) and multi-occurrence contract cycles (`service_request_occurrences`) that automatically inherit the parent signed paper contract (Decision D2, `92fb490`).
+- **ContractWorkflowService (Occurrences)**: Expands one-time and recurring service requests into `service_request_occurrences` when a quote is accepted, derives occurrence dates from the request's recurrence settings, and keeps the signed paper contract on the parent `service_requests` record. The V25 schema has no internal recurring-inspection schedule or schedule-occurrence tables.
 - **NotificationController & InspectionNotificationListener / MaintenanceNotificationListener**: Persist deduplicated in-app notifications (`uq_notifications_deduplication_key`) via Spring Modulith's `event_publication` outbox, including urgent manager alerts when a field session is aborted (`FieldSessionAbortedEvent`, `3792889`).
 
 #### 3.3.2 Event-Driven Transactional Outbox Notification Sequence Diagram
@@ -398,9 +461,7 @@ classDiagram
     -int versionNo
     -UUID inspectorId
     -UUID droneId
-    -String currency
     -BigDecimal pricePerOccurrenceVnd
-    -BigDecimal pricePerOccurrenceUsd
   }
   class ServiceRequestOccurrence {
     -UUID id
@@ -417,9 +478,11 @@ classDiagram
   ContractWorkflowService --> Mf2InspectionAssignmentAdapter
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/dfa67ceebe38.png)
 **Class Specifications**
 
-- **ContractWorkflowController & ContractWorkflowService**: Implement the commercial `MF2` request-to-assignment vertical slice (`/api/v1/contracts/requests`), managing `ONE_TIME` and `RECURRING` service requests, in-context order chat (`service_request_messages` with author details), versioned `VND`/`USD` quotations, quote acceptance, and `SHA-256` signed paper contract storage (`PDF`, `DOCX`, `JPEG`, `PNG`).
+- **ContractWorkflowController & ContractWorkflowService**: Implement the commercial `MF2` request-to-assignment vertical slice (`/api/v1/contracts/requests`), managing `ONE_TIME` and `RECURRING` service requests, in-context order chat (`service_request_messages` with author details), and versioned quotes persisted only as VND (`service_request_quotes.price_per_occurrence_vnd`). The API DTO retains legacy USD-compatible input, which maps its value into the VND storage field; this is compatibility behavior, not USD settlement, and PayOS checkout requires a VND amount. The offline signed paper contract is stored on the parent `ServiceRequest` (`PDF`, `DOCX`, `JPEG`, `PNG`).
 - **Mf2InspectionAssignmentAdapter & InspectionCreationService**: Enforce partner Inspector license validity, inspector-owned drone ownership (`drone.inspectorOwnerId == inspectorId`), and cross-organization schedule conflict checks (`hasPlatformPartnerScheduleConflict`) before creating a `SCHEDULED` inspection mission, and expose manager dispatch endpoints (`PUT /schedule`, `PUT /assignment`, `POST /cancellation`) for aborted missions.
 
 #### 3.4.2 Service Request Negotiation, Signed Contract & Cross-Org Partner Dispatch Sequence Diagram
@@ -429,7 +492,7 @@ classDiagram
 sequenceDiagram
   autonumber
   actor Cust as Customer (CUSTOMER)
-  actor Mgr as Platform Manager (MANAGER)
+  actor Mgr as MANAGER
   participant Ctrl as ContractWorkflowController
   participant Svc as ContractWorkflowService
   participant Bridge as Mf2InspectionAssignmentAdapter
@@ -438,7 +501,7 @@ sequenceDiagram
 
   Cust->>Ctrl: POST /api/v1/contracts/requests (assetId, ONE_TIME/RECURRING, window)
   Ctrl->>Svc: create(customerId, request) -> status=OPEN
-  Mgr->>Ctrl: POST /api/v1/contracts/requests/{id}/quotes (inspectorId, inspectorOwnedDroneId, VND/USD)
+  Mgr->>Ctrl: POST /api/v1/contracts/requests/{id}/quotes (VND price; legacy USD-compatible field accepted and mapped to VND storage)
   Ctrl->>Svc: issueQuote() -> verifyDroneOwnedByInspector & saveQuote(versionNo) -> status=QUOTED
   Cust->>Ctrl: POST /api/v1/contracts/requests/{id}/messages (Order Chat negotiation)
   Cust->>Ctrl: POST /api/v1/contracts/requests/{id}/accept?versionNo={v}
@@ -447,7 +510,7 @@ sequenceDiagram
   Mgr->>Ctrl: POST /api/v1/contracts/requests/{id}/signed-contract (MultipartFile PDF/DOCX/Image)
   Ctrl->>Svc: uploadSignedContract()
   Svc->>MinIO: putObject(signedContractBytes, sha256)
-  Svc->>DB: saveContractMetadata & inheritAcrossOccurrences() -> status=CONTRACT_SIGNED
+  Svc->>DB: save signed-contract metadata on parent ServiceRequest -> status=CONTRACT_SIGNED
 
   Mgr->>Ctrl: POST /api/v1/contracts/requests/{id}/occurrences/{occId}/assign
   Ctrl->>Svc: assignOccurrence(inspectorId, droneId, plannedStartAt, plannedEndAt)
@@ -457,7 +520,9 @@ sequenceDiagram
   Bridge-->>Svc: inspectionId -> Occurrence: ASSIGNED, ServiceRequest: ASSIGNED
 ```
 
-#### 3.4.3 WF-02 Activity Diagram — Service Request, VND/USD Quote, Signed Contract & Cross-Org Partner Dispatch
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/82246ee7b9d5.png)
+#### 3.4.3 WF-02 Activity Diagram — Service Request, VND Quote Compatibility, Signed Contract & Cross-Org Partner Dispatch
 
 ```mermaid
 %% title: WF-02 Activity Diagram - Service Request, Quote, Signed Contract and Partner Dispatch
@@ -469,9 +534,9 @@ flowchart TD
     B6["Accept Latest Quote Version -> ACCEPTED (Occurrences Materialized)"]
   end
 
-  subgraph MG2["Platform Manager (MANAGER)"]
+  subgraph MG2["MANAGER (MANAGER)"]
     B2["Select Vetted Partner Inspector & Owned Drone (Check Availability)"]
-    B3["Issue Versioned Quote (VND / USD) -> QUOTED"]
+    B3["Issue VND Quote -> QUOTED (legacy USD-compatible API input maps to VND field)"]
     B7["Sign Paper Contract Offline & Upload Scan (PDF/DOCX/JPEG/PNG + SHA-256) -> CONTRACT_SIGNED"]
     B8["Assign Partner Inspector & Owned Drone to Occurrence"]
   end
@@ -489,6 +554,8 @@ flowchart TD
   B9 -->|"Valid"| B10 --> B11
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/251be7fd6fee.png)
 ---
 
 ### 3.5 FE-05 Flight Permit Gate, Field Execution, Dashboard & Calendar
@@ -551,7 +618,7 @@ classDiagram
 sequenceDiagram
   autonumber
   actor Inspector as Assigned Partner Inspector
-  actor Manager as Platform Manager (MANAGER)
+  actor Manager as MANAGER
   participant Mobile as Flutter Mobile / Web Client
   participant InspCtrl as InspectionController
   participant SessCtrl as InspectionFieldSessionController
@@ -584,6 +651,8 @@ sequenceDiagram
   end
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/a2bda7d60583.png)
 ---
 
 ### 3.6 FE-06 Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS
@@ -672,6 +741,11 @@ sequenceDiagram
 classDiagram
   class InspectionController {
     +generateDraft(Jwt, UUID, HttpServletRequest) ApiResponse~InspectionReportResponse~
+    +authorManualDraft(Jwt, UUID) ApiResponse~InspectionReportResponse~
+    +saveReportSections(Jwt, UUID, UUID, ReportSectionsRequest) ApiResponse~InspectionReportResponse~
+    +verifyVersion(Jwt, UUID, UUID) ApiResponse~InspectionReportResponse~
+    +submitVersion(Jwt, UUID, UUID) ApiResponse~InspectionReportResponse~
+    +withdrawVersion(Jwt, UUID, UUID) ApiResponse~InspectionReportResponse~
     +getAiSummary(Jwt, UUID, UUID, HttpServletRequest) ApiResponse~ReportAiSummaryResponse~
     +reviewVersion(Jwt, UUID, UUID, boolean, String) ApiResponse~InspectionReportResponse~
     +publishVersion(Jwt, UUID, UUID, HttpServletRequest) ApiResponse~ReportPublishedResponse~
@@ -708,10 +782,12 @@ classDiagram
   PayOSWebhookController --> PayOSPaymentGateway
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/e9801eee95a0.png)
 **Class Specifications**
 
-- **ReportService & ReportDraftClient**: Auto-compile confirmed findings, evidence metadata, and field session records directly into a `SUBMITTED` `InspectionReport` (`V16`, `V17` — `DRAFT`, `AUTHOR_VERIFIED`, and `content_snapshot` eliminated), transition the mission to `UNDER_REVIEW`, generate the LLM Executive Summary (`ReportAiSummaryResponse`), enforce independent `MANAGER` review (`APPROVED` / `RETURNED`), and render the immutable `SHA-256` A4 PDF (`PUBLISHED`, moving the mission to `COMPLETED`).
-- **ContractWorkflowService (InspectionReportAcceptancePort), PayOSPaymentGateway & PayOSWebhookController**: Transition occurrence `payment_status` to `PAYMENT_DUE` when the `CUSTOMER` accepts the published report, generate a VietQR checkout link (`/payos/create-payment-link`), verify HMAC-SHA256 webhook callbacks (`POST /api/v1/webhooks/payos`) to mark `payment_status = PAID` and `payout_status = ELIGIBLE`, and enforce the `402 Payment Required` download guard until paid.
+- **ReportService & ReportDraftClient**: Generate an automatic or manual structured draft; the Inspector can edit report sections, verify against evidence/findings, submit, or withdraw an unreviewed submission. These authoring actions are distinct from persisted report states (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`). The service generates an AI Executive Summary (`ReportAiSummaryResponse`) and enforces separate reviewer decision/publication actions; publication renders an immutable `SHA-256` A4 PDF and completes the inspection. The current `ReportService` document-download method does not enforce a `402 Payment Required` gate.
+- **ContractWorkflowService (InspectionReportAcceptancePort), PayOSPaymentGateway & PayOSWebhookController**: Transition occurrence `payment_status` to `PAYMENT_DUE` when report acceptance is recorded, generate a VND VietQR checkout link, and verify HMAC-SHA256 webhook callbacks (`POST /api/v1/webhooks/payos`) to mark `payment_status = PAID`. If an Inspector is assigned, settlement also records `payout_status = PAID` with an automatic disbursement reference; other payout-eligible cases can be `ELIGIBLE`. USD-compatible quote DTO input is not USD PayOS settlement.
 
 #### 3.6.4 Report Auto-Compilation, Manager Publication & PayOS Settlement Sequence Diagram
 
@@ -720,7 +796,7 @@ classDiagram
 sequenceDiagram
   autonumber
   actor Inspector as Assigned Partner Inspector
-  actor Manager as Platform Manager (MANAGER)
+  actor Manager as MANAGER
   actor Customer as Customer (CUSTOMER)
   participant Client as Web Portal
   participant InspCtrl as InspectionController
@@ -728,10 +804,12 @@ sequenceDiagram
   participant MinIO as MinIO Object Storage
   participant DB as PostgreSQL (inspection_reports, inspections, occurrences)
 
-  Inspector->>Client: Open Report Tab (InspectionDraftPage auto-triggers compilation)
-  Client->>InspCtrl: POST /api/v1/inspections/{id}/report/draft
-  InspCtrl->>DB: autoCompileFromConfirmedFindings() -> Report: SUBMITTED, Inspection: UNDER_REVIEW
-  InspCtrl-->>Client: 200 OK (InspectionReportResponse status=SUBMITTED)
+  Inspector->>Client: Open Report Tab or start manual draft
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/report/draft (or /report/draft/manual)
+  InspCtrl->>DB: create version; report status=SUBMITTED, inspection=UNDER_REVIEW
+  InspCtrl-->>Client: Report content/context for author review
+  Inspector->>InspCtrl: PUT /report/versions/{vId}/sections; POST /verify then /submit
+  Inspector->>InspCtrl: POST /withdraw before reviewer action (optional)
 
   Manager->>Client: View AI Summary (/ai-summary), Review & Publish Report
   Client->>InspCtrl: POST /api/v1/inspections/{id}/report/versions/{vId}/review?approve=true
@@ -748,10 +826,12 @@ sequenceDiagram
   Client->>InspCtrl: POST /api/v1/inspections/{id}/payos/create-payment-link
   InspCtrl->>PayOS: createPaymentLink(payosOrderCode, amountVnd)
   PayOS-->>Client: Redirect to checkoutUrl (VietQR)
-  PayOS->>DB: POST /api/v1/webhooks/payos (HMAC-SHA256 verified) -> paymentStatus=PAID, payoutStatus=ELIGIBLE
-  Customer->>InspCtrl: GET /api/v1/inspections/{id}/report/versions/{vId}/document (200 OK PDF Stream)
+  PayOS->>DB: POST /api/v1/webhooks/payos (HMAC-SHA256 verified) -> paymentStatus=PAID, assigned inspector payoutStatus=PAID
+  Customer->>InspCtrl: GET /api/v1/inspections/{id}/report/versions/{vId}/document (PDF stream; current service has no 402 payment guard)
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/c4666da54f0a.png)
 #### 3.6.5 WF-03 Activity Diagram — Flight Permit, Field Session, YOLO11, Auto-Compiled Report & PayOS Settlement
 
 ```mermaid
@@ -764,10 +844,10 @@ flowchart TD
     C4["Abort Session (Reason) -> Inspection: SCHEDULED"]
     C5["Complete Session -> FIELD_COMPLETED & Upload Photo/MP4 Evidence"]
     C6["Run YOLO11 (+ Vision Fallback) & Confirm Findings Baseline"]
-    C7["Visit Report Tab -> Auto-Compile & Submit Report (SUBMITTED, Inspection: UNDER_REVIEW)"]
+    C7["Auto-compile or author manual draft; edit sections, verify and submit (SUBMITTED)"]
   end
 
-  subgraph MG3["Platform Manager (MANAGER)"]
+  subgraph MG3["MANAGER (MANAGER)"]
     C4M["Reschedule / Reassign / Cancel Aborted Mission"]
     C8{"Review Submitted\nReport?"}
     C9["Return Report with Reason -> RETURNED (Inspection: FIELD_COMPLETED)"]
@@ -776,7 +856,7 @@ flowchart TD
 
   subgraph CU3["Customer (CUSTOMER) & PayOS VietQR"]
     C11["Track 5-Stage Progress -> Review Published Report & AI Executive Summary"]
-    C12["Accept Report (PAYMENT_DUE) & Complete PayOS VietQR Checkout (PAID)"]
+    C12["Accept Report, then complete VND-only PayOS VietQR checkout (PAID; assigned inspector payout PAID)"]
     C13(["End: Download Official PDF & Forward Defects to MF4 Maintenance"])
   end
 
@@ -787,6 +867,8 @@ flowchart TD
   C8 -->|"Approve & Publish"| C10 --> C11 --> C12 --> C13
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/b943cd360391.png)
 ---
 
 ### 3.7 FE-07 Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution
@@ -817,7 +899,9 @@ classDiagram
   }
   class MaintenanceScopeAdvisorService {
     +suggestScope(UUID, SuggestScopeRequest) SuggestScopeResponse
-    +suggestEstimateNorms(UUID, UUID) SuggestEstimateResponse
+    +suggestEstimate(UUID, UUID) SuggestEstimateResponse
+  }
+  class MaintenanceExecutionService {
     +checkAcceptanceCompliance(UUID, UUID) AcceptanceComplianceResponse
   }
   class MaintenanceWorkOrder {
@@ -831,13 +915,16 @@ classDiagram
     -UUID acceptingReviewerUserId
   }
   MaintenanceController --> MaintenanceScopeAdvisorService
+  MaintenanceExecutionController --> MaintenanceExecutionService
   MaintenanceController --> MaintenanceWorkOrder
   MaintenanceExecutionController --> MaintenanceWorkOrder
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/0b3d6a16e3d9.png)
 **Class Specifications**
 
-- **MaintenanceController & MaintenanceScopeAdvisorService (`FE-07`)**: Query `repair_knowledge_chunks` (`pgvector`) to recommend corrective scope and acceptance criteria (`/suggest-scope`), provision `initialTasks` in 1 click inside `WorkOrderService.create` (`92fb490`), and generate standard Vietnamese engineering cost norm breakdowns (`LABOR`, `MATERIAL`, `EQUIPMENT`, `CONTINGENCY`) via `/suggest-estimate`.
+- **MaintenanceController & MaintenanceScopeAdvisorService (`FE-07`)**: Query `repair_knowledge_chunks` (`pgvector`) to recommend corrective scope and acceptance criteria (`/suggest-scope`), provision `initialTasks` in 1 click inside work-order creation, and expose standard Vietnamese engineering cost norm breakdowns via `/suggest-estimate`; the estimate is currently a separate deterministic function, not the RAG scope advisor.
 - **MaintenanceExecutionController (`FE-07`)**: Governs repair execution (`READY` $\rightarrow$ `IN_PROGRESS` $\rightarrow$ `WORK_COMPLETED`), Change Orders, and 1-click Team Lead batch work log verification (`POST /work-orders/{id}/work-logs/batch-verify`), enforcing that no pending Change Orders or unverified work logs exist on `declareComplete()`.
 
 #### 3.7.2 Work Order Planning, 1-Click RAG Tasks, Norm Estimation & Batch Log Verification Sequence Diagram
@@ -921,7 +1008,7 @@ classDiagram
 
 **Class Specifications**
 
-- **MaintenanceExecutionController (`auto-draft` & `acceptance-compliance`)**: Synthesizes a 5-part completion report from completed tasks, verified hours, `testReadings`, `asLeftCondition`, and approved Change Orders (`GET /reports/auto-draft`), and evaluates quantitative field measurements against `TCVN` standards (`GET /acceptance-compliance`).
+- **MaintenanceExecutionController (`auto-draft` & `acceptance-compliance`)**: Synthesizes a completion report draft from completed tasks, verified hours, `testReadings`, `asLeftCondition`, and approved Change Orders (`GET /reports/auto-draft`). The compliance score checks task completion, work-log verification, and whether field-reading/as-left fields are populated; it does not compare numeric readings against `TCVN` thresholds.
 - **InspectionReinspectionListener, WorkOrderReinspectionListener & ReinspectionVerificationService**: Orchestrate the event-driven re-inspection loop (`ReinspectionRequestedEvent` $\rightarrow$ `Inspection` with `inspection_type = 'RE_INSPECTION'` + `ReinspectionDefectVerification` rows $\rightarrow$ `ReinspectionCreatedEvent` $\rightarrow$ 3-way verification `RESOLVED`/`UNRESOLVED`/`INCONCLUSIVE` $\rightarrow$ `ReinspectionReportPublishedEvent` reinstating the Work Order for final `CUSTOMER` acceptance).
 
 #### 3.8.2 Auto-Draft Completion Report, RAG Compliance Audit, 3-Way Re-inspection & Cost Closure Sequence Diagram
@@ -933,7 +1020,7 @@ sequenceDiagram
   actor Author as Maintenance Engineer (REPORT_AUTHOR)
   actor Cust as Customer (Accepting Reviewer)
   actor Insp as Partner Inspector (INSPECTOR)
-  actor Mgr as Platform Manager (MANAGER)
+  actor Mgr as MANAGER
   participant ExecCtrl as MaintenanceExecutionController
   participant InspCtrl as InspectionController
   participant Outbox as Spring Modulith Events
@@ -954,12 +1041,15 @@ sequenceDiagram
   Insp->>InspCtrl: Auto-Compile & Submit Re-inspection Report (SUBMITTED)
   Mgr->>InspCtrl: Review & Publish Re-inspection Report (PUBLISHED)
   InspCtrl->>Outbox: publish ReinspectionReportPublishedEvent
-  Outbox->>DB: attach reinspectionReportVersionId & reinstate Completion Report to SUBMITTED
+  Outbox->>DB: attach reinspectionReportVersionId & reinstate prior returned completion-report version for customer acceptance
 
-  Cust->>ExecCtrl: Review Published Re-inspection Report -> POST /acceptance-decisions (ACCEPTED)
+  Lead->>ExecCtrl: Explicitly resume work-order execution only when further repair work is required
+  Cust->>ExecCtrl: Review the re-inspection report and reinstated completion report -> POST /acceptance-decisions (ACCEPTED)
   Cust->>ExecCtrl: Inherit Baseline Costs -> POST /cost-reconciliation (COST_RECONCILED) -> POST /close (CLOSED)
 ```
 
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/f87ab8221fec.png)
 #### 3.8.3 WF-04 Activity Diagram — Maintenance Work Order, RAG Advisor, 3-Way Re-inspection & Cost Closure
 
 ```mermaid
@@ -982,7 +1072,7 @@ flowchart TD
     D8["Auto-Draft (/reports/auto-draft), Verify & Submit Completion Report -> SUBMITTED_FOR_ACCEPTANCE"]
   end
 
-  subgraph RI4["Partner Inspector & Platform Manager (3-Step Re-inspection Loop)"]
+  subgraph RI4["Partner Inspector & MANAGER (3-Step Re-inspection Loop)"]
     D12["Auto-Create Linked RE_INSPECTION Mission & 3-Way Verification Cards"]
     D13["Inspector Captures New Drone Proof & Marks RESOLVED / UNRESOLVED / INCONCLUSIVE"]
     D14["Manager Reviews & Publishes Re-inspection Report -> Reinstates WorkOrder"]
@@ -995,3 +1085,6 @@ flowchart TD
   D10 -->|"REINSPECTION_REQUIRED"| D11 --> D12 --> D13 --> D14 --> D9
   D10 -->|"ACCEPTED"| D15 --> D16
 ```
+
+
+![Existing Mermaid render (not regenerated)](assets/mermaid/7ffed64fa810.png)
