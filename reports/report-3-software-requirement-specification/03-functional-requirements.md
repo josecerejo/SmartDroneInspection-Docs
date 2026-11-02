@@ -286,19 +286,19 @@ The target business record set includes customer organizations and users; partne
 - **Abnormal cases**: The findings baseline cannot be confirmed while unresolved candidate suggestions remain. An unconfirmed or rejected suggestion is excluded from official findings and maintenance scope.
 
 #### 3.7.2 Inspection Report Preparation, Independent Publication and Payment
-- **Function trigger**: The report author prepares and submits an inspection report after findings confirmation; an independent reviewer assesses it; the Customer reviews the published report.
-- **Actors**: `INSPECTOR`, `MANAGER`, `ADMIN`, `CUSTOMER`, automated advisory service, payment service.
-- **Function description**: Deliver a human-prepared and independently reviewed inspection report, provide any AI summary as advisory material, and record Customer acceptance and service payment.
+- **Function trigger**: The report author prepares and submits an inspection report after findings confirmation; an independent reviewer assesses it; the Customer reviews the published report and initiates online payment via VNPay or PayOS.
+- **Actors**: `INSPECTOR`, `MANAGER`, `ADMIN`, `CUSTOMER`, automated advisory service, payment service (`VNPay Gateway`, `PayOS Gateway`).
+- **Function description**: Deliver a human-prepared and independently reviewed inspection report, provide any AI summary as advisory material, and record Customer acceptance and service payment via VNPay (v2.1.0 HMAC-SHA512) or PayOS VietQR.
 - **Requirements**:
   - The report author uses the confirmed findings and relevant field records to prepare and submit the inspection report for independent review. Submission is an explicit report-preparation action; merely visiting a screen does not submit it.
   - A report summary generated with AI is advisory, based on verified inspection information, and reviewed by a person before reliance on it.
   - A `MANAGER` or `ADMIN` reviewer who is not the report author approves a report for publication or returns it with reasons. Only an approved report may be published as the official deliverable.
   - A published report is preserved as a versioned record. Any correction is issued as a new version, with prior versions retained.
   - Customers see the official published report, not internal drafts or unapproved findings. The applicable payment rule governs access to the official deliverable.
-  - When the Customer accepts a published report, the service records the acceptance and applicable fee as due. Payment is recorded against the relevant occurrence; partner settlement is a separate record.
+  - When the Customer accepts a published report, the service records the acceptance and applicable fee as due (`PAYMENT_DUE`). Online checkout supports both **VNPay** (`POST /api/v1/inspections/{inspectionId}/vnpay/create-payment-url`, verified via HMAC-SHA512 on `GET /api/v1/webhooks/vnpay/ipn` and `GET /api/v1/webhooks/vnpay/return`) and **PayOS VietQR** (`POST /api/v1/inspections/{inspectionId}/payos/create-payment-link`, verified via HMAC-SHA256 on `POST /api/v1/webhooks/payos`). Payment is recorded against the relevant occurrence (`PAID`); partner settlement is recorded automatically upon verified payment when an inspector is assigned.
   - If payment services are unavailable, the business must retain an authorized, attributable way to record payment confirmation rather than treat an unconfirmed payment as settled.
-- **Normal cases**: The Inspector prepares and submits a report; an independent platform reviewer reviews and publishes it; the Customer reviews and accepts it and pays through the supported payment process.
-- **Abnormal cases**: A report author cannot review or publish their own report. A returned report includes reasons and remains available for revision. A Customer cannot access an unpublished report as an official deliverable, and payment is not marked settled without confirmation.
+- **Normal cases**: The Inspector prepares and submits a report; an independent platform reviewer reviews and publishes it; the Customer reviews and accepts it and pays through VNPay or PayOS (or authorized manual confirmation).
+- **Abnormal cases**: A report author cannot review or publish their own report. A returned report includes reasons and remains available for revision. A Customer cannot access an unpublished report as an official deliverable, and payment is not marked settled without verified cryptographic signature or authorized confirmation.
 
 ---
 
