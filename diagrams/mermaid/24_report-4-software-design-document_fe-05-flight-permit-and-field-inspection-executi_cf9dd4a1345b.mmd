@@ -1,0 +1,25 @@
+%% title: FE-05 Flight Permit and Field Inspection Execution Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Insp as Inspector
+  actor Mgr as Manager
+  participant Svc as Inspection Service
+  participant DB as Database
+
+  Insp->>Svc: Upload flight permit document
+  Svc->>DB: Save flight permit and verify mission readiness
+
+  Insp->>Svc: Start field session with pre-flight safety note
+  Svc->>DB: Create active field session and mark mission in progress
+
+  alt Field Session Aborted (Weather or Safety Issue)
+    Insp->>Svc: Abort field session with reason
+    Svc->>DB: Record aborted session and return mission to scheduled state
+    Svc-->>Mgr: Notify Manager of aborted field session
+    Mgr->>Svc: Reschedule, reassign, or cancel inspection
+    Svc->>DB: Update inspection schedule or assignment
+  else Field Session Completed Normally
+    Insp->>Svc: Complete field session with outcome notes
+    Svc->>DB: Record completed session and mark field work completed
+    Svc-->>Insp: Confirm completion and unlock Evidence upload
+  end

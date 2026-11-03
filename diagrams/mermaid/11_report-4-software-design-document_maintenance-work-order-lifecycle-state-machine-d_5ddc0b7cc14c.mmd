@@ -1,0 +1,22 @@
+%% title: Maintenance Work Order Lifecycle State Machine Diagram
+stateDiagram-v2
+  direction TB
+  [*] --> DRAFT : Create Work Order from Defect
+  DRAFT --> AWAITING_APPROVAL : Submit Cost Estimate
+  AWAITING_APPROVAL --> APPROVED : Customer Approves Estimate
+  AWAITING_APPROVAL --> REWORK_REQUIRED : Customer Rejects Estimate
+  REWORK_REQUIRED --> AWAITING_APPROVAL : Submit Revised Estimate
+  APPROVED --> READY : Release Work Order
+  READY --> IN_PROGRESS : Start Field Repair
+  IN_PROGRESS --> WORK_COMPLETED : Complete Repair (All Work Logs Verified)
+  WORK_COMPLETED --> SUBMITTED_FOR_ACCEPTANCE : Submit Completion Report
+  SUBMITTED_FOR_ACCEPTANCE --> ACCEPTED : Customer Accepts Repair
+  SUBMITTED_FOR_ACCEPTANCE --> REWORK_REQUIRED : Customer Requests Rework
+  SUBMITTED_FOR_ACCEPTANCE --> REINSPECTION_REQUIRED : Customer Requests Drone Re-inspection
+  REWORK_REQUIRED --> IN_PROGRESS : Resume Repair Work
+  REINSPECTION_REQUIRED --> REINSPECTION_REPORT_ATTACHED : Re-inspection Report Published
+  REINSPECTION_REPORT_ATTACHED --> ACCEPTED : Customer Accepts After Re-inspection
+  REINSPECTION_REPORT_ATTACHED --> REWORK_REQUIRED : Customer Requests Further Rework
+  ACCEPTED --> COST_RECONCILED : Reconcile Actual Costs
+  COST_RECONCILED --> CLOSED : Close Work Order
+  CLOSED --> [*]

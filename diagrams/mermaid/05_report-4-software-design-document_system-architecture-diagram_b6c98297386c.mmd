@@ -1,0 +1,52 @@
+%% title: System Architecture Diagram
+flowchart TD
+  subgraph Clients["Client Presentation Layer"]
+    CLIENT_WEB["Web Portal Application\n(React 19, TypeScript, Material UI)"]
+    CLIENT_MOB["Mobile Field Application\n(Flutter, Dart, Riverpod)"]
+  end
+
+  subgraph Backend["Application Server Layer (Java 21 & Spring Boot Modulith)"]
+    SEC_FILTER["Security & Access Filter\n(JWT, OAuth 2.0, CSRF & Rate Limiting)"]
+    MOD_USERS["users & workforce\n(Identity, 5-Role Access, Profiles & Onboarding)"]
+    MOD_CONTRACTS["contracts\n(Service Requests, VND Quotations, Agreements & Billing)"]
+    MOD_ASSETS["assets\n(Infrastructure Assets, Airspace Zones & Partner Drones)"]
+    MOD_INSP["inspections\n(Flight Permits, Field Sessions, Evidence & Inspection Reports)"]
+    MOD_MAINT["maintenance\n(Work Orders, Repair Planning, Work Logs & Acceptance)"]
+    MOD_NOTIF["notifications & dashboard\n(In-App Notifications & Role Dashboards)"]
+    MOD_INFRA["infrastructure & shared\n(Storage, AI Clients, Payment Adapters & PDF Rendering)"]
+  end
+
+  subgraph DataAndStorage["Persistence & Object Storage Layer"]
+    DB_PG[("PostgreSQL 17 + pgvector\n(Relational Schema & Vector Index)")]
+    STORE_MINIO[("MinIO Object Storage\n(Documents, Media & Published PDFs)")]
+  end
+
+  subgraph ExternalAndAI["AI & External Service Layer"]
+    AI_SERVICE["YOLO11 Defect Detection Service\n(Python FastAPI & Ultralytics)"]
+    LLM_GATEWAY["AI Vision, Summary & RAG Service\n(OpenAI-Compatible Gateway)"]
+    PAY_GATEWAY["Online Payment Gateways\n(PayOS VietQR & VNPay)"]
+    GOOGLE_OAUTH["Google OAuth 2.0\n(Federated Sign-In)"]
+  end
+
+  CLIENT_WEB -->|"HTTPS REST API & Secure Cookies"| SEC_FILTER
+  CLIENT_MOB -->|"HTTPS REST API & Bearer Tokens"| SEC_FILTER
+
+  SEC_FILTER --> MOD_USERS
+  SEC_FILTER --> MOD_CONTRACTS
+  SEC_FILTER --> MOD_ASSETS
+  SEC_FILTER --> MOD_INSP
+  SEC_FILTER --> MOD_MAINT
+  SEC_FILTER --> MOD_NOTIF
+
+  MOD_CONTRACTS --> MOD_INFRA
+  MOD_ASSETS --> MOD_INFRA
+  MOD_INSP --> MOD_INFRA
+  MOD_MAINT --> MOD_INFRA
+  MOD_NOTIF --> MOD_INFRA
+
+  MOD_INFRA -->|"Relational & Vector Queries"| DB_PG
+  MOD_INFRA -->|"Object Streaming"| STORE_MINIO
+  MOD_INFRA -->|"Image Defect Inference"| AI_SERVICE
+  MOD_INFRA -->|"Vision Fallback, Summary & RAG"| LLM_GATEWAY
+  MOD_INFRA <-->|"Payment Links & Signed Webhooks"| PAY_GATEWAY
+  MOD_USERS <-->|"OAuth 2.0 Authorization"| GOOGLE_OAUTH

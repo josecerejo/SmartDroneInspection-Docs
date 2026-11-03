@@ -1,0 +1,22 @@
+%% title: FE-06 Defect Detection and Finding Confirmation Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Insp as Inspector
+  participant Svc as Evidence & Finding Service
+  participant AI as YOLO11 & Vision AI
+  participant DB as Database
+
+  Insp->>Svc: Upload field photographs and MP4 videos
+  Svc->>DB: Store media file and save Evidence metadata (GPS and capture time)
+
+  Insp->>Svc: Request AI defect analysis on photograph
+  Svc->>AI: Run YOLO11 detection (with Vision AI fallback if needed)
+  AI-->>Svc: Return candidate bounding boxes, defect labels, and confidence scores
+  Svc->>DB: Save pending candidate Findings
+  Svc-->>Insp: Display candidate defects on photograph
+
+  Insp->>Svc: Review candidates (confirm, edit severity, or remove)
+  Svc->>DB: Save Inspector-confirmed Findings
+
+  Insp->>Svc: Confirm official Findings baseline
+  Svc->>DB: Verify zero pending candidates and lock Findings baseline

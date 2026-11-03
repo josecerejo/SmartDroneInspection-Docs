@@ -1,0 +1,25 @@
+%% title: FE-07 Work Order Planning, Cost Estimation and Repair Execution Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Cust as Customer
+  actor Lead as Maintenance Engineer (Team Lead)
+  participant MaintSvc as Maintenance Service
+  participant Advisor as RAG Scope & Cost Advisor
+  participant DB as Database
+
+  Cust->>MaintSvc: Request advisory repair scope for confirmed defect
+  MaintSvc->>Advisor: Search engineering standards in vector store
+  Advisor-->>Cust: Return recommended repair scope and initial tasks
+
+  Cust->>MaintSvc: Create Work Order with initial tasks and assign repair team
+  MaintSvc->>DB: Save draft Work Order and initial repair tasks
+
+  Lead->>MaintSvc: Generate cost norm suggestions and submit cost estimate
+  MaintSvc->>DB: Save Estimate Version and submit for Customer approval
+
+  Cust->>MaintSvc: Review and approve cost estimate
+  MaintSvc->>DB: Mark Estimate Version and Work Order approved
+
+  Lead->>MaintSvc: Release and start Work Order, then submit field work logs
+  Lead->>MaintSvc: Batch-verify submitted work logs and declare repair complete
+  MaintSvc->>DB: Verify all logs approved and mark repair work completed

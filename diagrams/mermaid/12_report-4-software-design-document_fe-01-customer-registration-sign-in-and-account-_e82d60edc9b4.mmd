@@ -1,0 +1,58 @@
+%% title: FE-01 Customer Registration, Sign-In and Account Access Class Diagram
+classDiagram
+  class BrowserAuthController {
+    +register(req) ApiResponse
+    +sendRegistrationOtp(req) ApiResponse
+    +login(req) ApiResponse
+    +verifyLoginOtp(req) ApiResponse
+    +sendPasswordResetOtp(req) ApiResponse
+    +confirmPasswordReset(req) ApiResponse
+    +refresh() ApiResponse
+  }
+  class OAuth2Controller {
+    +authorizeGoogle(clientType) void
+    +googleCallback(code, state) void
+  }
+  class UserProfileController {
+    +getMe() CurrentUserResponse
+    +updateProfile(req) CurrentUserResponse
+    +updatePilotLicense(req) CurrentUserResponse
+  }
+  class AuthService {
+    +registerCustomer(req) RegistrationResult
+    +login(email, password) LoginResult
+    +loginWithGoogle(profile) LoginResult
+  }
+  class User {
+    -UUID id
+    -UUID organizationId
+    -String email
+    -String fullName
+    -UserStatus status
+    -ActorZone actorZone
+    -String roles
+  }
+  class OtpChallenge {
+    -UUID id
+    -OtpChallengePurpose purpose
+    -UUID userId
+    -String destination
+    -Instant expiresAt
+    -Instant consumedAt
+  }
+  class ProspectiveCustomerRegistration {
+    -UUID id
+    -UUID userId
+    -String organizationName
+    -String assetName
+    -BigDecimal latitude
+    -BigDecimal longitude
+    -String airspaceClassification
+    -String status
+  }
+  BrowserAuthController --> AuthService
+  BrowserAuthController --> OtpChallenge
+  OAuth2Controller --> AuthService
+  UserProfileController --> AuthService
+  AuthService --> User
+  AuthService --> ProspectiveCustomerRegistration

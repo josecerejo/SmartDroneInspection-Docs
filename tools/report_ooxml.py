@@ -426,8 +426,8 @@ class WordDocument:
         tpl_hdr_trs = prototypes[:2] if len(prototypes) >= 3 and descendants(prototypes[0], "gridSpan") else prototypes[:1]
         tpl_labels = {self.text(c).strip().lower() for r in tpl_hdr_trs for c in children(r, "tc") if self.text(c).strip()}
         headers_match = len(wanted_headers & tpl_labels) >= max(2, len(rows[0]) // 2)
-        if len(rows[0]) == 3 and wanted_headers <= {"#", "no", "no.", "package", "table", "entity", "actor", "description"}:
-            widths = [650, 2450, max(4500, total - 3100)]
+        if len(rows[0]) == 3 and wanted_headers <= {"#", "no", "no.", "package", "table", "class", "entity", "actor", "description"}:
+            widths = [650, 2750, max(4500, total - 3400)]
         elif len(rows[0]) == 2:
             widths = [int(total * 0.34), total - int(total * 0.34)]
         elif len(widths) != len(rows[0]) or not headers_match:

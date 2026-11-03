@@ -1,0 +1,29 @@
+%% title: FE-06 Inspection Report, Publication and Online Payment Class Diagram
+classDiagram
+  class ReportService {
+    +compileSubmittedReport(actorId, inspId) InspectionReportResponse
+    +generateAiSummary(actorId, inspId, locale) ReportAiSummaryResponse
+    +reviewVersion(actorId, inspId, verId, approve, reason) InspectionReportResponse
+    +publishVersion(actorId, inspId, verId) ReportPublishedResponse
+  }
+  class PayOSPaymentService {
+    +acceptPublishedReport(custId, inspId) OccurrenceResponse
+    +createPaymentLink(custId, inspId) PayOSCheckoutResponse
+    +handleWebhook(payload, signature) void
+    +recordPayout(adminId, occId) OccurrenceResponse
+  }
+  class InspectionReport {
+    -UUID id
+    -UUID inspectionId
+    -int versionNo
+    -ReportStatus status
+    -UUID reviewerUserId
+    -String returnReason
+    -Instant submittedAt
+    -Instant publishedAt
+    +submit() void
+    +reviewBy(reviewerId, approve, reason) void
+    +publish(publisherId, authorId) void
+  }
+  ReportService --> InspectionReport
+  PayOSPaymentService --> InspectionReport

@@ -1,0 +1,13 @@
+%% title: Inspection and Field Session State Machine Diagram
+stateDiagram-v2
+  direction TB
+  [*] --> SCHEDULED : Dispatch Inspector & Drone
+  SCHEDULED --> IN_PROGRESS : Start Field Session (Flight Permit Required)
+  IN_PROGRESS --> SCHEDULED : Abort Session (Notify Manager)
+  IN_PROGRESS --> FIELD_COMPLETED : Complete Field Session
+  FIELD_COMPLETED --> UNDER_REVIEW : Submit Inspection Report
+  UNDER_REVIEW --> FIELD_COMPLETED : Return or Withdraw Report
+  UNDER_REVIEW --> COMPLETED : Approve & Publish Report
+  SCHEDULED --> CANCELLED : Cancel Inspection
+  COMPLETED --> [*]
+  CANCELLED --> [*]

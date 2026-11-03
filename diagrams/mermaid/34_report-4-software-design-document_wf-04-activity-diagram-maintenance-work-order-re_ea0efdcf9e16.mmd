@@ -1,0 +1,31 @@
+%% title: WF-04 Activity Diagram - Maintenance Work Order, Re-inspection and Closure
+flowchart TD
+  subgraph CU4["Customer"]
+    D1(["Start: Create Work Order from Confirmed Defect"])
+    D4{"Review Cost Estimate"}
+    D5["Approve Cost Estimate"]
+    D9["Review Completion Report & Compliance Check"]
+    D10{"Acceptance Decision"}
+    D11["Request Drone Re-inspection"]
+    D15["Accept Repair, Reconcile Actual Costs & Close Work Order"]
+    D16(["End: Closed Work Order with Complete Audit Trail"])
+  end
+
+  subgraph ME4["Maintenance Engineer Team"]
+    D2["Prepare Cost Estimate Using Standard Norms"]
+    D6["Execute Repair Tasks, Record Work Logs & Batch Verify"]
+    D8["Compile & Submit Maintenance Completion Report"]
+  end
+
+  subgraph RI4["Inspector & Manager"]
+    D12["Dispatch Linked Re-inspection Mission"]
+    D13["Compare Original Defect, Repair Proof & New Drone Evidence"]
+    D14["Publish Re-inspection Report & Return to Customer Review"]
+  end
+
+  D1 --> D2 --> D4
+  D4 -->|"Reject"| D2
+  D4 -->|"Approve"| D5 --> D6 --> D8 --> D9 --> D10
+  D10 -->|"Rework Required"| D6
+  D10 -->|"Re-inspection Required"| D11 --> D12 --> D13 --> D14 --> D9
+  D10 -->|"Accepted"| D15 --> D16

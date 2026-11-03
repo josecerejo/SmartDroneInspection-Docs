@@ -1,0 +1,27 @@
+%% title: FE-08 Completion Report, Three-Way Re-inspection and Closure Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Author as Maintenance Engineer (Report Author)
+  actor Cust as Customer (Accepting Reviewer)
+  actor Insp as Inspector
+  actor Mgr as Manager
+  participant MaintSvc as Maintenance Service
+  participant InspSvc as Inspection Service
+  participant DB as Database
+
+  Author->>MaintSvc: Auto-draft and submit Maintenance Completion Report
+  MaintSvc->>DB: Save completion report and submit Work Order for acceptance
+
+  Cust->>MaintSvc: Review compliance summary and request Drone Re-inspection
+  MaintSvc->>InspSvc: Publish re-inspection request event
+  InspSvc->>DB: Create linked Re-inspection Mission and 3-way verification records
+
+  Insp->>InspSvc: Capture new drone evidence and record 3-way verification result
+  Insp->>InspSvc: Submit Re-inspection Report
+  Mgr->>InspSvc: Review and publish Re-inspection Report
+  InspSvc->>MaintSvc: Attach published re-inspection report to Work Order
+
+  Cust->>MaintSvc: Review re-inspection result and accept completed repair
+  MaintSvc->>DB: Mark Work Order accepted
+  Cust->>MaintSvc: Reconcile actual costs and close Work Order
+  MaintSvc->>DB: Save final cost lines and close Work Order

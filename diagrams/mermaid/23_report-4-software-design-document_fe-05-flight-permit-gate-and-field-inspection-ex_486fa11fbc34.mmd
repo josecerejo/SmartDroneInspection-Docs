@@ -1,0 +1,57 @@
+%% title: FE-05 Flight Permit Gate and Field Inspection Execution Class Diagram
+classDiagram
+  class InspectionController {
+    +uploadFlightPermit(inspId, file) InspectionResponse
+    +openFlightPermit(inspId) ResponseEntity
+    +reschedule(inspId, req) InspectionResponse
+    +reassign(inspId, req) InspectionResponse
+    +cancel(inspId, req) InspectionResponse
+  }
+  class InspectionFieldSessionController {
+    +listSessions(inspId) List~FieldSessionResponse~
+    +start(inspId, req) FieldSessionResponse
+    +complete(inspId, sessId, req) FieldSessionResponse
+    +abort(inspId, sessId, req) FieldSessionResponse
+  }
+  class InspectionCreationService {
+    +uploadFlightPermit(actorId, inspId, file) Inspection
+    +reschedule(actorId, inspId, startAt, endAt) Inspection
+    +reassign(actorId, inspId, inspectorId, droneId) Inspection
+    +cancel(actorId, inspId, reason) Inspection
+  }
+  class InspectionFieldSessionService {
+    +start(actorId, inspId, safetyNote) FieldSession
+    +complete(actorId, inspId, sessId, notes) FieldSession
+    +abort(actorId, inspId, sessId, reason) FieldSession
+  }
+  class Inspection {
+    -UUID id
+    -UUID organizationId
+    -UUID assetId
+    -UUID inspectorId
+    -UUID droneId
+    -InspectionStatus status
+    -String flightPermitFileKey
+    +hasFlightPermit() boolean
+    +moveTo(nextStatus) void
+    +reopenAfterSessionAbort() void
+  }
+  class FieldSession {
+    -UUID id
+    -UUID inspectionId
+    -FieldSessionStatus status
+    -Instant startedAt
+    -Instant endedAt
+    -String preFlightChecklistNote
+    -String outcomeNotes
+    -String abortReason
+    +start(startedAt) void
+    +complete(endedAt, notes) void
+    +abort(endedAt, reason) void
+  }
+  InspectionController --> InspectionCreationService
+  InspectionFieldSessionController --> InspectionFieldSessionService
+  InspectionCreationService --> Inspection
+  InspectionFieldSessionService --> Inspection
+  InspectionFieldSessionService --> FieldSession
+  Inspection "1" *-- "1..*" FieldSession : executes

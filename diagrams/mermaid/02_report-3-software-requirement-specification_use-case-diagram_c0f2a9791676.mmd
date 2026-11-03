@@ -1,0 +1,25 @@
+%% title: Use Case Diagram
+flowchart LR
+  ADMIN["ADMIN"] --> GOV["Govern platform accounts, categories and finance"]
+  ADMIN --> REVIEW["Review customer airspace cases, partner qualifications and drone records"]
+  MANAGER["MANAGER"] --> REVIEW
+  MANAGER --> COMMERCIAL["Manage requests, negotiation, VND quotations and signed agreements"]
+  MANAGER --> DISPATCH["Assign partners and manage inspection dispatch"]
+  MANAGER --> REPORT["Independently review and publish inspection reports"]
+
+  CUSTOMER["CUSTOMER"] --> REGISTER["Register organization and initial asset"]
+  CUSTOMER --> ASSET["Manage assets and maintenance workforce"]
+  CUSTOMER --> COMMERCIAL
+  CUSTOMER --> PAYMENT["Accept published report and pay service fee"]
+  CUSTOMER --> MAINTENANCE["Govern repair work, budgets, re-inspection and acceptance"]
+
+  INSPECTOR["INSPECTOR"] --> QUALIFY["Provide partner qualification information through platform-governed admission"]
+  INSPECTOR --> DRONE["Register owned drones"]
+  INSPECTOR --> FIELD["Provide permits and record field work"]
+  INSPECTOR --> EVIDENCE["Provide evidence and review findings"]
+  INSPECTOR --> REPORT
+
+  ENGINEER["MAINTENANCE_ENGINEER"] --> REPAIR["Plan and perform repairs; report completion"]
+  PAYMENT --> CUSTOMER
+  AI["Automated advisory support"] --> EVIDENCE
+  AI --> REPAIR

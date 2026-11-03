@@ -1,0 +1,30 @@
+%% title: WF-03 Activity Diagram - Field Session, AI Detection, Reporting and Payment
+flowchart TD
+  subgraph IN3["Inspector"]
+    C1(["Start: Upload Mission Flight Permit"])
+    C2["Start Field Session with Pre-Flight Safety Note"]
+    C3{"Field Session Outcome"}
+    C4["Abort Session with Reason"]
+    C5["Complete Session & Upload Photograph and Video Evidence"]
+    C6["Run AI Defect Detection & Confirm Findings Baseline"]
+    C7["Compile & Submit Inspection Report"]
+  end
+
+  subgraph MG3["Manager"]
+    C4M["Reschedule, Reassign, or Cancel Aborted Mission"]
+    C8{"Review Submitted Report"}
+    C9["Return Report with Feedback"]
+    C10["Approve & Publish Official Report"]
+  end
+
+  subgraph CU3["Customer"]
+    C11["Review Published Report & Executive Summary"]
+    C12["Accept Report & Complete Online Payment (PayOS or VNPay)"]
+    C13(["End: Obtain Report Copy & Initiate Maintenance if Needed"])
+  end
+
+  C1 --> C2 --> C3
+  C3 -->|"Aborted"| C4 --> C4M --> C2
+  C3 -->|"Completed"| C5 --> C6 --> C7 --> C8
+  C8 -->|"Returned"| C9 --> C6
+  C8 -->|"Published"| C10 --> C11 --> C12 --> C13

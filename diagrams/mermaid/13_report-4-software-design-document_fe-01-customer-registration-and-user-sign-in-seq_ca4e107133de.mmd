@@ -1,0 +1,29 @@
+%% title: FE-01 Customer Registration and User Sign-In Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor User as Customer or User
+  participant App as Client Application
+  participant Auth as Authentication Service
+  participant Airspace as Airspace Screening Service
+  participant DB as Database
+
+  User->>App: Submit organization and initial asset registration
+  App->>Auth: Request customer registration with asset coordinates
+  Auth->>Airspace: Evaluate asset location against airspace zones
+  alt Prohibited No-Fly Zone
+    Airspace-->>Auth: Prohibited zone detected
+    Auth-->>App: Reject registration with airspace reason
+  else Restricted or Clear Zone
+    Airspace-->>Auth: Eligible or pending review
+    Auth->>DB: Save organization, customer account, and registration record
+    Auth-->>App: Confirm registration status
+  end
+
+  User->>App: Sign in with email and password (or Google OAuth 2.0)
+  App->>Auth: Submit sign-in credentials
+  Auth->>DB: Verify account status and create login verification challenge
+  Auth-->>App: Prompt for one-time verification code
+  User->>App: Enter one-time verification code
+  App->>Auth: Verify code and complete sign-in
+  Auth->>DB: Mark code consumed and create active session
+  Auth-->>App: Return access token and role workspace

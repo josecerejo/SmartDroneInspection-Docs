@@ -1,0 +1,22 @@
+%% title: FE-04 Service Request, Quotation, Signed Contract and Dispatch Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Cust as Customer
+  actor Mgr as Manager
+  participant ContractSvc as Contract Service
+  participant DB as Database
+
+  Cust->>ContractSvc: Submit one-time or recurring service request
+  ContractSvc->>DB: Save open service request
+
+  Mgr->>ContractSvc: Select Inspector and drone, then issue VND quotation
+  ContractSvc->>DB: Save quotation version and update request status
+
+  Cust->>ContractSvc: Exchange order chat messages and accept quotation
+  ContractSvc->>DB: Create inspection occurrences and record accepted quote
+
+  Mgr->>ContractSvc: Upload signed offline service agreement scan
+  ContractSvc->>DB: Store agreement file and mark contract signed
+
+  Mgr->>ContractSvc: Assign Inspector and drone to occurrence
+  ContractSvc->>DB: Verify license and schedule availability, then create scheduled Inspection

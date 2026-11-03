@@ -1,0 +1,27 @@
+%% title: FE-06 Report Compilation, Publication and Online Payment Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Insp as Inspector
+  actor Mgr as Manager
+  actor Cust as Customer
+  participant Svc as Report & Payment Service
+  participant Ext as AI & Payment Gateway
+  participant DB as Database
+
+  Insp->>Svc: Generate AI executive summary and submit Inspection Report
+  Svc->>DB: Save submitted Inspection Report and mark mission under review
+
+  alt Manager Returns Report for Revision
+    Mgr->>Svc: Return report with revision feedback
+    Svc->>DB: Record returned status and return mission to field-completed state
+  else Manager Approves and Publishes Report
+    Mgr->>Svc: Approve and publish official report
+    Svc->>DB: Record published status and complete inspection
+  end
+
+  Cust->>Svc: Review published report and click Accept Report
+  Svc->>DB: Mark occurrence payment due
+  Cust->>Svc: Initiate online payment (PayOS VietQR or VNPay)
+  Svc->>Ext: Create signed payment order and return checkout link
+  Ext-->>Svc: Send verified payment confirmation webhook
+  Svc->>DB: Record occurrence paid status and partner payout settlement

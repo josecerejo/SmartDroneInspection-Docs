@@ -10,10 +10,7 @@ source_docx: report2-project-management-plan.docx
 | Date | A* M, D | In charge | Change Description |
 | --- | --- | --- | --- |
 | 11 Sep 2026 | A | Team | Version 1.0: Initial Project Management Plan (PMP) content. |
-| 14 Sep 2026 | M | Team | Version 1.5: Organized WBS as software features/functions and responsibility matrix. |
-| 27 Oct 2026 | M | Team | Version 2.0: Synchronized WBS, effort estimation, risk register, responsibility matrix (RACI), and tool stack with Review 2 baseline. |
-| 01 Nov 2026 | M | Team | Version 3.0: Synchronized WBS, RACI matrix, and risk controls with the 5-Role Platform Inspection Service model (ADMIN, MANAGER, CUSTOMER, INSPECTOR, MAINTENANCE_ENGINEER) and narrowed scope to 8 product features (FE-01 to FE-08, 16 functions, 2 features per team member) with PayOS VietQR payment, 6-state inspections, 5-state auto-compiled reports, and 3-way re-inspection verification. |
-| 02 Nov 2026 | M | Team | Version 3.1: Corrected FE-04/FE-05/FE-06 titles and WBS/RACI scope mapping, aligned Inspector provisioning and recurring-request scope with current implementation, and labeled test metrics as historical results or targets while updating the current migration and mobile SDK references. |
+| 03 Nov 2026 | M | Team | Version 2.0: Synchronized WBS, effort estimation (135 man-days), risk register, RACI matrix, and quality plan with the 5-Role Platform Inspection Service model and 8 product features (FE-01 to FE-08, 16 functions, 2 features per team member) across Flyway V1–V28, SmartDroneHub integration, and PayOS/VNPay settlement. |
 
 *A - Added M - Modified D - Deleted
 
@@ -81,9 +78,9 @@ Allocated Effort (man-days): requirements and project management 18; architectur
 | 2 | Self-hosted YOLO11 container or external LLM/Vision API is unreachable during field operations. | High | Medium | Isolate behind PrimaryWithFallbackInference, provide Vision LLM fallback, manual finding entry (POST /findings), deterministic report compilation, and DeterministicScopeFallback for RAG advice. |
 | 3 | Report content drifts from confirmed findings or requires manual note duplication. | High | Low | Drop manual content_snapshot notes (V16) and DRAFT/AUTHOR_VERIFIED states (V17); auto-compile reports deterministically from confirmed findings upon tab visit and require independent MANAGER publication. |
 | 4 | Cross-tenant data leakage or privilege escalation across the 5 roles. | High | Low | Enforce ActorZone constraints (PLATFORM, CUSTOMER_ORGANIZATION, INSPECTOR_PARTNER), composite tenant FKs (id, organization_id), @PreAuthorize guards, and independent reviewer checks. |
-| 5 | Partner Inspector or Drone double-booking across different customer organizations. | High | Medium | Enforce cross-organization conflict checking (hasPlatformPartnerScheduleConflict) and 3-document inspector-owned drone verification before occurrence assignment. |
+| 5 | Inspector or Drone double-booking across different customer organizations. | High | Medium | Enforce cross-organization conflict checking (hasPlatformPartnerScheduleConflict) and 3-document inspector-owned drone verification before occurrence assignment. |
 | 6 | Unverified online payment or unauthorized PDF report downloads before settlement. | High | Low | Require Customer report acceptance (PAYMENT_DUE), verify PayOS VietQR webhooks via HMAC-SHA256 signature, and block PDF downloads with 402 Payment Required until PAID. |
-| 7 | Corrupt or oversized media uploads (photos and MP4 videos) degrade MinIO storage. | Medium | Medium | Enforce 10 MB per-file limit, ImageIO decode validation on images, chunked streaming upload (MultipartFile.fromStream on Mobile, AuthenticatedMedia on Web), and SHA-256 contract/document hashing. |
+| 7 | Corrupt or oversized media uploads (photos and MP4 videos) degrade MinIO storage. | Medium | Medium | Enforce 10 MB per-file limit for photos/documents and 500 MB limit for MP4 flight videos, ImageIO decode validation on images, chunked streaming upload (MultipartFile.fromStream on Mobile, AuthenticatedMedia on Web), and SHA-256 contract/document hashing. |
 | 8 | Concurrent CI/CD deployments from Backend and Frontend repositories collide on staging VPS. | Medium | Low | Serialize deployments in deploy.yml via flock -w 900 /tmp/sdi-deploy.lock and take automated pre-deploy pg_dump backups. |
 
 ## 2. Management Approach
@@ -100,7 +97,7 @@ Figure 1. Iterative development process.
 
 ### 2.2 Quality Management
 
-- **Defect Prevention**: Use compile-time Spring Modulith boundary checks, Flyway migration tests through the current V25 schema target, TypeScript strict builds, and `flutter analyze`.
+- **Defect Prevention**: Use compile-time Spring Modulith boundary checks, Flyway migration tests through the current V28 schema target, TypeScript strict builds, and `flutter analyze`.
 - **Peer Review**: Require pull-request review and automated CI verification before merging to the project's protected branch.
 - **Unit & Integration Testing**: Target `>= 80%` backend JaCoCo coverage and maintain backend, frontend Vitest, and Flutter mobile test suites.
 - **System & Acceptance Testing**: Track functional test cases across `Feature 1`–`Feature 8` in Report 5; record executed results and pending work separately.

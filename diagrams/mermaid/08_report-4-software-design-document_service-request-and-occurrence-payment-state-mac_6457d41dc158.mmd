@@ -1,0 +1,22 @@
+%% title: Service Request and Occurrence Payment State Machine Diagram
+stateDiagram-v2
+  direction LR
+  state "Service Request Lifecycle" as ReqSM {
+    [*] --> OPEN : Submit Request
+    OPEN --> QUOTED : Issue VND Quotation
+    QUOTED --> QUOTED : Revise Quotation Version
+    QUOTED --> ACCEPTED : Customer Accepts Quote
+    ACCEPTED --> CONTRACT_SIGNED : Upload Signed Agreement
+    CONTRACT_SIGNED --> ASSIGNED : Dispatch Inspector & Drone
+    OPEN --> CANCELLED : Cancel Request
+    QUOTED --> CANCELLED : Cancel Request
+    ASSIGNED --> [*]
+    CANCELLED --> [*]
+  }
+
+  state "Occurrence Payment Lifecycle" as PaySM {
+    [*] --> PENDING : Occurrence Created
+    PENDING --> PAYMENT_DUE : Customer Accepts Report
+    PAYMENT_DUE --> PAID : Online Payment Confirmed
+    PAID --> [*]
+  }

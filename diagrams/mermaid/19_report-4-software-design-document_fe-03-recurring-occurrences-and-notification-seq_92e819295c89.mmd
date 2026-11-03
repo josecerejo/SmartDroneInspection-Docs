@@ -1,0 +1,19 @@
+%% title: FE-03 Recurring Occurrences and Notification Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor User as Customer or User
+  participant ContractSvc as Contract Service
+  participant NotifSvc as Notification Service
+  participant DB as Database
+
+  User->>ContractSvc: Accept quotation for recurring service request
+  ContractSvc->>DB: Generate planned inspection occurrences
+  ContractSvc->>NotifSvc: Publish domain event for request update
+  NotifSvc->>DB: Save deduplicated in-app notification
+
+  User->>NotifSvc: Open notification inbox
+  NotifSvc->>DB: Query user notifications and unread count
+  DB-->>User: Return notification list and unread count
+
+  User->>NotifSvc: Mark notification as read
+  NotifSvc->>DB: Update notification read status

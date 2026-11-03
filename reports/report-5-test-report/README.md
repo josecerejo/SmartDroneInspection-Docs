@@ -41,11 +41,11 @@ Report 3 feature (`FE-01`–`FE-08`). Sheet `Feature N` contains SRS feature `FE
 | `00-cover/` | `Cover` | Project metadata and record of changes. |
 | `01-test-cases/` | `Test Cases` | The retained historical inventory of 65 IDs, annotated to distinguish legacy-only scenarios from current V25 target coverage. |
 | `02-test-statistics/` | `Test Statistics` | Module totals, coverage, and execution summary across `Feature 1`–`Feature 8`. |
-| `03-features/fe-01-authentication-access-control.md` | `Feature 1` sheet | `FE-01` (`WF1-001`–`WF1-005`: 5 cases, Owner: Trần Tùng Bách). |
+| `03-features/fe-01-authentication-access-control.md` | `Feature 1` sheet | `FE-01` (`WF1-001`–`WF1-005`: 5 cases, Owner: Trần Hoàng Trung Hiếu). |
 | `03-features/fe-02-workforce-subscription-management.md` | `Feature 2` sheet | `FE-02` (`WF1-006`–`WF1-016`: 11 cases, Owner: Trần Hoàng Trung Hiếu). |
-| `03-features/fe-03-asset-drone-fleet-management.md` | `Feature 3` sheet | `FE-03` (`WF1-017`–`WF1-021`: 5 cases, Owner: Trần Hoàng Trung Hiếu). |
+| `03-features/fe-03-asset-drone-fleet-management.md` | `Feature 3` sheet | `FE-03` (`WF1-017`–`WF1-021`: 5 cases, Owner: Phùng Trung Quốc). |
 | `03-features/fe-04-recurring-schedule-notifications.md` | `Feature 4` sheet | `FE-04` (`WF2-001`–`WF2-005`: 5 cases, Owner: Phùng Trung Quốc). |
-| `03-features/fe-05-mission-dispatch-airspace-advisory.md` | `Feature 5` sheet | `FE-05` (`WF2-008`–`009`, `011`–`012`, `015`–`020`, `WF3-009`: 11 cases, Owner: Phùng Trung Quốc). |
+| `03-features/fe-05-mission-dispatch-airspace-advisory.md` | `Feature 5` sheet | `FE-05` (`WF2-008`–`009`, `011`–`012`, `015`–`020`, `WF3-009`: 11 cases, Owner: Trần Tùng Bách). |
 | `03-features/fe-06-flight-readiness-field-execution.md` | `Feature 6` sheet | `FE-06` (`WF3-001`–`008`, `WF3-010`, `012`, `016`, `017`: 12 cases, Owner: Trần Tùng Bách). |
 | `03-features/fe-07-operational-dashboard-schedule-calendar.md` | `Feature 7` sheet | `FE-07` (`WF4-001`–`WF4-011`: 11 cases, Owner: Trương Thái Như). |
 | `03-features/fe-08-evidence-ai-defect-detection.md` | `Feature 8` sheet | `FE-08` (`WF4-012`–`WF4-016`: 5 cases, Owner: Trương Thái Như). |
@@ -56,11 +56,11 @@ The `FE-01`–`FE-08` codes and their Report 3 sections are:
 
 | FE | Report 3 § | Report 3 feature title | Owner |
 | --- | --- | --- | --- |
-| `FE-01` | `3.2` | Authentication, Google OAuth2 & 5-Role Access Control | Trần Tùng Bách (`SE180220`) |
+| `FE-01` | `3.2` | Authentication, Google OAuth2 & 5-Role Access Control | Trần Hoàng Trung Hiếu (`SE184212`) |
 | `FE-02` | `3.3` | Partner Onboarding, Workforce, Asset & Inspector Drone Registry | Trần Hoàng Trung Hiếu (`SE184212`) |
-| `FE-03` | `3.4` | Recurring Schedules, Contract Occurrences & Outbox Notifications | Trần Hoàng Trung Hiếu (`SE184212`) |
-| `FE-04` | `3.5` | Service Requests, Quotations & Commercial Order Chat | Phùng Trung Quốc (`SE170027`) |
-| `FE-05` | `3.5` | Signed Contract Evidence & Partner Occurrence Dispatch | Phùng Trung Quốc (`SE170027`) |
+| `FE-03` | `3.4` | Recurring Service Requests, Contract Occurrences & Outbox Notifications | Phùng Trung Quốc (`SE170027`) |
+| `FE-04` | `3.5` | Service Requests, Quotations, Contracts, Dispatch & Airspace Map | Phùng Trung Quốc (`SE170027`) |
+| `FE-05` | `3.6` | Flight Permit Gate, Field Execution, Dashboard & Calendar | Trần Tùng Bách (`SE180220`) |
 | `FE-06` | `3.7` | Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS | Trần Tùng Bách (`SE180220`) |
 | `FE-07` | `3.8` | Maintenance Work Orders, RAG Scope/Norms Advisor & Repair Execution | Trương Thái Như (`SE180082`) |
 | `FE-08` | `3.9` | Completion Report, 3-Way Re-inspection Verification & Cost Closure | Trương Thái Như (`SE180082`) |

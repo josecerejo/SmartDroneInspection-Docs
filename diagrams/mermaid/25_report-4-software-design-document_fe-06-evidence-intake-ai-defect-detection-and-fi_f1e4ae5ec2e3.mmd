@@ -1,0 +1,47 @@
+%% title: FE-06 Evidence Intake, AI Defect Detection and Finding Confirmation Class Diagram
+classDiagram
+  class EvidenceService {
+    +upload(actorId, inspId, file) EvidenceResponse
+    +listForInspection(actorId, inspId) EvidencePageResponse
+    +openContent(actorId, inspId, evidId) EvidenceContent
+    +retire(actorId, inspId, evidId) void
+  }
+  class FindingService {
+    +analyzeEvidence(actorId, inspId, evidId) List~FindingResponse~
+    +createManual(actorId, inspId, req) FindingResponse
+    +review(actorId, inspId, findingId, decision) FindingResponse
+    +confirmFindings(actorId, inspId, ack) void
+  }
+  class AiInferencePort {
+    +predict(imageBytes, contentType) List~DetectedBox~
+  }
+  class YoloInferenceClient {
+    +predict(imageBytes, contentType) List~DetectedBox~
+  }
+  class Evidence {
+    -UUID id
+    -UUID inspectionId
+    -UUID fieldSessionId
+    -String fileName
+    -String contentType
+    -String objectKey
+    -BigDecimal latitude
+    -BigDecimal longitude
+    -boolean isDeleted
+  }
+  class Finding {
+    -UUID id
+    -UUID inspectionId
+    -UUID evidenceId
+    -String findingCode
+    -String defectLabel
+    -FindingSeverity severity
+    -String boundingBox
+    -FindingStatus status
+    -BigDecimal confidence
+  }
+  EvidenceService --> Evidence
+  FindingService --> Finding
+  FindingService --> AiInferencePort
+  YoloInferenceClient --|> AiInferencePort
+  Evidence "1" o-- "0..*" Finding : locates

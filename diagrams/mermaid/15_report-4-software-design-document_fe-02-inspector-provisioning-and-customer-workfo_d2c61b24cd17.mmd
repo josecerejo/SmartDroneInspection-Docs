@@ -1,0 +1,21 @@
+%% title: FE-02 Inspector Provisioning and Customer Workforce Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Admin as Admin or Manager
+  actor Cust as Customer
+  actor Insp as Inspector
+  participant UserSvc as Account & Profile Service
+  participant DB as Database
+
+  Admin->>UserSvc: Provision Inspector account
+  UserSvc->>DB: Create Inspector account and qualification profile
+  DB-->>Admin: Confirm provisioned Inspector account
+
+  Admin->>UserSvc: Record pilot license details and upload license scan
+  UserSvc->>DB: Update Inspector profile and license expiration date
+  Insp->>UserSvc: View own profile and flight log history
+  UserSvc->>DB: Load Inspector profile and flight logs
+
+  Cust->>UserSvc: Create Maintenance Engineer account for organization
+  UserSvc->>DB: Save Maintenance Engineer scoped to Customer organization
+  DB-->>Cust: Confirm Maintenance Engineer account ready

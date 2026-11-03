@@ -32,8 +32,8 @@
           <mxGeometry x="40" y="450" width="240" height="85" as="geometry" />
         </mxCell>
 
-        <!-- 4. Partner Inspector (INSPECTOR) -->
-        <mxCell id="inspector" value="&lt;b&gt;Partner Inspector (INSPECTOR)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;Pilot License, Owned Drones (3 Docs), Permits, Field Sessions, Photo/MP4 &amp;amp; 3-Way Verification&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
+        <!-- 4. Inspector (INSPECTOR) -->
+        <mxCell id="inspector" value="&lt;b&gt;Inspector (INSPECTOR)&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 10px; color: #475569;&quot;&gt;Pilot License, Owned Drones (3 Docs), Permits, Field Sessions, Photo/MP4 &amp;amp; 3-Way Verification&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#475569;strokeWidth=2;fontColor=#0f172a;arcSize=10;shadow=1;align=center;" vertex="1" parent="1">
           <mxGeometry x="40" y="660" width="240" height="85" as="geometry" />
         </mxCell>
 

@@ -1,0 +1,38 @@
+%% title: FE-07 Maintenance Work Order, RAG Planning and Repair Execution Class Diagram
+classDiagram
+  class MaintenanceController {
+    +suggestScope(req) SuggestScopeResponse
+    +suggestEstimate(workOrderId) SuggestEstimateResponse
+    +createWorkOrder(req) ApiResponse
+    +assignTeam(workOrderId, req) List~TeamMemberView~
+    +createTask(workOrderId, req) ApiResponse
+    +createEstimateVersion(workOrderId, req) ApiResponse
+    +submitEstimateVersion(workOrderId, verNo) EstimateVersionView
+    +approveEstimateVersion(workOrderId, verNo) EstimateVersionView
+  }
+  class MaintenanceExecutionController {
+    +releaseWorkOrder(workOrderId) WorkOrderView
+    +startWorkOrder(workOrderId) WorkOrderView
+    +createWorkLog(workOrderId, req) ApiResponse
+    +submitWorkLog(workOrderId, logId) WorkLogView
+    +batchVerifyWorkLogs(workOrderId) List~WorkLogView~
+    +declareComplete(workOrderId) WorkOrderView
+  }
+  class MaintenanceScopeAdvisorService {
+    +suggestScope(actorId, req) SuggestScopeResponse
+    +suggestEstimate(actorId, workOrderId) SuggestEstimateResponse
+  }
+  class MaintenanceWorkOrder {
+    -UUID id
+    -UUID organizationId
+    -UUID assetId
+    -UUID sourceFindingId
+    -WorkOrderStatus status
+    -UUID budgetApproverUserId
+    -UUID teamLeadUserId
+    -UUID reportAuthorUserId
+    -UUID acceptingReviewerUserId
+  }
+  MaintenanceController --> MaintenanceScopeAdvisorService
+  MaintenanceController --> MaintenanceWorkOrder
+  MaintenanceExecutionController --> MaintenanceWorkOrder

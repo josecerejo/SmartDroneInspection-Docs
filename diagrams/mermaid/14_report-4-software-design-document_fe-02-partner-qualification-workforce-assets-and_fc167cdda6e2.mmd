@@ -1,0 +1,68 @@
+%% title: FE-02 Partner Qualification, Workforce, Assets and Drone Registration Class Diagram
+classDiagram
+  class PlatformUserController {
+    +listUsers(page, size, query) PagedResponse
+    +createUser(req) ApiResponse
+    +updateRoles(userId, req) ApiResponse
+    +updateStatus(userId, req) ApiResponse
+  }
+  class InspectorProfileController {
+    +listInspectors() List~InspectorProfileResponse~
+    +updateProfile(userId, req) InspectorProfileResponse
+    +uploadLicenseScan(userId, file) InspectorProfileResponse
+    +recordFlightLog(userId, req) InspectorFlightLogResponse
+  }
+  class WorkforceController {
+    +createWorkforceUser(req) ApiResponse
+    +listWorkforceUsers(page, size, query) PagedResponse
+  }
+  class AssetController {
+    +createAsset(req) ApiResponse
+    +listAssets(page, size, query) PagedResponse
+    +updateAsset(assetId, req) AssetView
+    +retireAsset(assetId) AssetView
+  }
+  class DroneRegistrationApplicationController {
+    +uploadEvidence(docType, file) UploadedKeyResponse
+    +submit(req) ApiResponse
+    +listPending() List~DroneRegistrationResponse~
+    +approve(appId, req) DroneRegistrationResponse
+    +reject(appId, req) DroneRegistrationResponse
+  }
+  class InspectorProfile {
+    -UUID userId
+    -String pilotLicenseNumber
+    -String pilotLicenseClass
+    -Instant pilotLicenseExpiresAt
+    -BigDecimal priorFlightHours
+  }
+  class DroneRegistrationApplication {
+    -UUID id
+    -UUID inspectorUserId
+    -String serialNumber
+    -String registrationFileKey
+    -String ownershipFileKey
+    -String inspectionFileKey
+    -String status
+  }
+  class Drone {
+    -UUID id
+    -UUID inspectorOwnerId
+    -String serialNumber
+    -String model
+    -DroneServiceability serviceability
+  }
+  class Asset {
+    -UUID id
+    -UUID organizationId
+    -String assetCode
+    -String name
+    -BigDecimal latitude
+    -BigDecimal longitude
+    -AssetStatus status
+  }
+  PlatformUserController --> InspectorProfile
+  InspectorProfileController --> InspectorProfile
+  DroneRegistrationApplicationController --> DroneRegistrationApplication
+  DroneRegistrationApplication --> Drone
+  AssetController --> Asset

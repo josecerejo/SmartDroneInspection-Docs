@@ -1,0 +1,34 @@
+%% title: FE-03 Recurring Occurrences and Notification Inbox Class Diagram
+classDiagram
+  class NotificationController {
+    +listNotifications(page, size, unreadOnly) PagedResponse
+    +getUnreadCount() UnreadCountResponse
+    +markRead(notificationId) NotificationItemResponse
+  }
+  class NotificationService {
+    +createInAppNotification(orgId, userId, type, title, body, key) void
+    +markAsRead(orgId, userId, notificationId) Notification
+  }
+  class InspectionNotificationListener {
+    +onInspectionAssigned(event) void
+    +onFieldSessionAborted(event) void
+  }
+  class MaintenanceNotificationListener {
+    +onWorkOrderAssigned(event) void
+    +onEstimateApproved(event) void
+    +onAcceptanceRecorded(event) void
+    +onWorkOrderClosed(event) void
+  }
+  class Notification {
+    -UUID id
+    -UUID organizationId
+    -UUID recipientUserId
+    -String eventType
+    -String title
+    -NotificationStatus status
+    -String deduplicationKey
+  }
+  NotificationController --> NotificationService
+  InspectionNotificationListener --> NotificationService
+  MaintenanceNotificationListener --> NotificationService
+  NotificationService --> Notification

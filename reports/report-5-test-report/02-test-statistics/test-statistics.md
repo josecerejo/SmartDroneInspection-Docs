@@ -10,8 +10,8 @@ round.
 | --- | --- |
 | Project Name | SmartDroneInspection |
 | Project Code | GFA26SE139 |
-| Test round | Historical Round 1 inventory: 65 retained case IDs across 8 features FE-01 to FE-08 (2 features per team member, mapped 1-to-1 to Feature 1 to Feature 8). Round 1 and Round 2 figures below are historical only. Round 3 has two verified cases (WF3-006 and WF3-016); all other Round 3 cases remain Pending. Current V25-target verification is Pending; the latest recorded PostgreSQL/Testcontainers attempt was blocked before assertions because Docker was unavailable on 2026-11-01. |
-| Last updated | 2026-11-03 (targeted Round 3 verification: WF3-006 and WF3-016 Passed; all other Round 3 cases remain Pending. Historical Round 1 totals remain 65 IDs: 60 Passed, 0 Failed, 5 Pending; 92.31% overall / 93.75% of the 64-case historical baseline). |
+| Test round | Historical Round 1 inventory: 65 retained case IDs across 8 features FE-01 to FE-08 (2 features per team member, mapped 1-to-1 to Feature 1 to Feature 8). Round 1 and Round 2 figures below are historical only. Round 3 has two verified FE-06 cases (WF3-006 and WF3-016); the remaining Round 3 cases are Pending. Current V25-target verification is Pending; the latest recorded PostgreSQL/Testcontainers attempt was blocked before assertions because Docker was unavailable on 2026-11-01. |
+| Last updated | 2026-11-03 (Round 3 targeted verification: WF3-006 and WF3-016 Passed; other Round 3 cases remain Pending. Historical Round 1 totals remain 65 IDs: 60 Passed, 0 Failed, 5 Pending; 92.31% overall / 93.75% of the 64-case historical baseline). |
 
 ### Historical Round 1 summary (65 retained IDs)
 
@@ -23,7 +23,7 @@ The following status/count table preserves the historical Round 1 worksheet tota
 | ---: | --- | ---: | ---: | ---: | ---: | ---: |
 | 1 | Authentication, Google OAuth2 & 5-Role Access Control | 5 | 0 | 0 | 0 | 5 |
 | 2 | Partner Onboarding, Workforce, Asset & Inspector Drone Registry | 10 | 0 | 1 | 0 | 11 |
-| 3 | Recurring Schedules, Contract Occurrences & Outbox Notifications | 5 | 0 | 0 | 0 | 5 |
+| 3 | Recurring Service Requests, Contract Occurrences & Outbox Notifications | 5 | 0 | 0 | 0 | 5 |
 | 4 | Service Requests, Quotations, Contracts, Dispatch & Airspace Map | 5 | 0 | 0 | 0 | 5 |
 | 5 | Flight Permit Gate, Field Execution, Dashboard & Calendar | 10 | 0 | 1 | 0 | 11 |
 | 6 | Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS | 10 | 0 | 2 | 0 | 12 |

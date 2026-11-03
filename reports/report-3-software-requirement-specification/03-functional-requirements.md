@@ -16,10 +16,9 @@ SmartDroneInspection supports eight product features (`FE-01` to `FE-08`) across
 ```mermaid
 %% title: Business Screens Flow Diagram
 flowchart TD
-  SIGNIN["FE-01: Customer Registration and User Sign-in"] --> HOME["FE-05: Role-Appropriate Work Overview"]
-  HOME --> ONBOARD["FE-02: Partner, Customer Workforce and Asset Onboarding"]
-  HOME --> REQUEST["FE-03: Recurring Requests and Occurrences"]
-  HOME --> QUOTE["FE-04: Requests, VND Quotations and Signed Agreements"]
+  SIGNIN["FE-01: Customer Registration and User Sign-in"] --> ONBOARD["FE-02: Partner, Customer Workforce and Asset Onboarding"]
+  SIGNIN --> REQUEST["FE-03: Recurring Requests and Occurrences"]
+  SIGNIN --> QUOTE["FE-04: Requests, VND Quotations and Signed Agreements"]
   QUOTE --> DISPATCH["FE-04: Partner Assignment and Dispatch"]
   DISPATCH --> PERMIT["FE-05: Permit and Field Readiness"]
   PERMIT --> FIELD["FE-05: Record On-site Field Session"]
@@ -49,13 +48,12 @@ flowchart TD
 | 7 | FE-04 | Service Requests, Quotations, Chat and Agreements | Allows Customers to request inspections, negotiate through contextual messages, review and accept VND quotations, and access the signed agreement record. |
 | 8 | FE-04 | Partner Assignment and Airspace Information | Allows `MANAGER` to assign qualified Inspectors and eligible drones, account for schedule conflicts across customer organizations, and review relevant airspace information. |
 | 9 | FE-05 | Permit and Field Session | Allows assigned Inspectors to provide a mission flight permit and record the start, completion, or abort of field work with required notes. |
-| 10 | FE-05 | Work Overview, Calendar and Progress | Provides role-appropriate operational information, inspection schedules, and a Customer-facing view of inspection progress. |
-| 11 | FE-06 | Evidence and Findings Review | Allows Inspectors to provide and review inspection photographs and videos, consider advisory defect suggestions, and confirm the findings baseline. |
-| 12 | FE-06 | Report Preparation, Publication and Payment | Supports author preparation and submission, independent review and publication, Customer report acceptance, and service-fee payment (report export to PDF is an auxiliary deliverable download). |
-| 13 | FE-07 | Maintenance Work Orders and Team Allocation | Allows Customers to create work orders from confirmed defects, assign repair responsibilities, and consider advisory repair-scope guidance. |
-| 14 | FE-07 | Estimates, Change Requests and Work Records | Allows Engineers to prepare estimates, request changes, record repair work and evidence, and allows a designated Team Lead to verify work records. |
-| 15 | FE-08 | Completion Report and Customer Review | Allows a Report Author to prepare a maintenance completion report and a Customer to review it, with optional advisory technical guidance. |
-| 16 | FE-08 | Re-inspection, Acceptance and Closeout | Supports three-way defect verification, independent Customer acceptance, cost reconciliation, and work-order closure. |
+| 10 | FE-06 | Evidence and Findings Review | Allows Inspectors to provide and review inspection photographs and videos, consider advisory defect suggestions, and confirm the findings baseline. |
+| 11 | FE-06 | Report Preparation, Publication and Payment | Supports author preparation and submission, independent review and publication, Customer report acceptance, and service-fee payment (report export to PDF is an auxiliary deliverable download). |
+| 12 | FE-07 | Maintenance Work Orders and Team Allocation | Allows Customers to create work orders from confirmed defects, assign repair responsibilities, and consider advisory repair-scope guidance. |
+| 13 | FE-07 | Estimates, Change Requests and Work Records | Allows Engineers to prepare estimates, request changes, record repair work and evidence, and allows a designated Team Lead to verify work records. |
+| 14 | FE-08 | Completion Report and Customer Review | Allows a Report Author to prepare a maintenance completion report and a Customer to review it, with optional advisory technical guidance. |
+| 15 | FE-08 | Re-inspection, Acceptance and Closeout | Supports three-way defect verification, independent Customer acceptance, cost reconciliation, and work-order closure. |
 
 #### 3.1.3 Screen Authorization
 
@@ -73,7 +71,6 @@ The following matrix describes which roles may carry out the named business acti
 | Issue VND quotation and record signed agreement |  | X |  |  |  |
 | Assign, reschedule, reassign, or cancel an inspection |  | X |  |  |  |
 | Provide mission permit and record assigned field work |  |  |  | X |  |
-| View role-appropriate progress and operational schedule | X | X | X | X | X |
 | Provide evidence and confirm findings |  |  |  | X |  |
 | Prepare and submit inspection report |  |  |  | X |  |
 | Independently review and publish inspection report | X | X |  |  |  |
@@ -110,7 +107,7 @@ flowchart LR
   REQUEST --> AGREEMENT["Signed Service Agreement"]
   REQUEST --> OCCURRENCE["Inspection Occurrence"]
   OCCURRENCE --> INSPECTION["Inspection"]
-  INSPECTOR["Partner Inspector"] --> INSPECTION
+  INSPECTOR["Inspector"] --> INSPECTION
   DRONE["Inspector-Owned Drone"] --> INSPECTION
   ASSET --> INSPECTION
   INSPECTION --> SESSION["Field Session"]
@@ -125,7 +122,7 @@ flowchart LR
   REINSPECTION --> ACCEPTANCE["Customer Acceptance and Cost Closeout"]
 ```
 
-The target business record set includes customer organizations and users; partner Inspector qualification information; owned drone registrations; infrastructure assets and reference documents; service requests, quotations, messages, signed agreements, and occurrences; inspections, permits, field sessions, evidence, findings, and report versions; payment and partner settlement records; maintenance work orders, team assignments, tasks, estimates, change requests, work records, completion reports, acceptance decisions, and re-inspection results; and relevant activity history. In the current service, Inspector accounts are provisioned by platform staff rather than through self-service applications. These concepts describe business information without prescribing how it is stored.
+The target business record set includes customer organizations and users; Inspector qualification information; owned drone registrations; infrastructure assets and reference documents; service requests, quotations, messages, signed agreements, and occurrences; inspections, permits, field sessions, evidence, findings, and report versions; payment and partner settlement records; maintenance work orders, team assignments, tasks, estimates, change requests, work records, completion reports, acceptance decisions, and re-inspection results; and relevant activity history. In the current service, Inspector accounts are provisioned by platform staff rather than through self-service applications. These concepts describe business information without prescribing how it is stored.
 
 ---
 
@@ -159,15 +156,15 @@ The target business record set includes customer organizations and users; partne
 
 ### 3.3 FE-02 Partner Qualification, Workforce, Assets and Drone Registration
 
-#### 3.3.1 Partner Inspector Qualification and Customer Maintenance Workforce
-- **Function trigger**: `ADMIN` or `MANAGER` provisions a partner Inspector account and maintains its qualification information, or a Customer provisions a Maintenance Engineer.
+#### 3.3.1 Inspector Qualification and Customer Maintenance Workforce
+- **Function trigger**: `ADMIN` or `MANAGER` provisions a Inspector account and maintains its qualification information, or a Customer provisions a Maintenance Engineer.
 - **Actors**: `INSPECTOR`, `ADMIN`, `MANAGER`, `CUSTOMER`.
-- **Function description**: The target business requirement is to admit partner Inspectors only after review of qualifications and supporting information. This is distinct from the current service process: platform staff provision Inspector accounts and maintain Inspector profiles; the current service does not offer self-service Inspector applications or an application-review workflow.
+- **Function description**: The target business requirement is to admit Inspectors only after review of qualifications and supporting information. This is distinct from the current service process: platform staff provision Inspector accounts and maintain Inspector profiles; the current service does not offer self-service Inspector applications or an application-review workflow.
 - **Requirements**:
   - Under the target admission requirement, identity, current remote-pilot credentials, relevant experience, and required partner documentation are reviewed by `ADMIN` or `MANAGER`. Drone ownership is not required for admission.
   - The admission decision and qualification information must be attributable. Admission does not replace applicable legal qualifications or mission flight-permit requirements.
   - A Customer may provision Maintenance Engineers for its own organization and assign their maintenance responsibilities.
-  - A partner Inspector without a registered and approved drone may not be assigned to a mission that requires one.
+  - A Inspector without a registered and approved drone may not be assigned to a mission that requires one.
 - **Normal cases**: Under the current service process, platform staff provision an Inspector account and maintain its qualification profile. The target process additionally requires accountable review of qualifications for partner admission. A Customer provisions Engineers within its organization.
 - **Abnormal cases**: Missing or invalid qualifications prevent mission assignment. A Customer cannot provision workforce for another organization.
 
@@ -234,7 +231,7 @@ The target business record set includes customer organizations and users; partne
 - **Actors**: `MANAGER`, `ADMIN`, `CUSTOMER`, `INSPECTOR`, automated service support.
 - **Function description**: Assign a qualified partner and eligible drone to an occurrence, manage dispatch changes, and provide relevant airspace information.
 - **Requirements**:
-  - Assignment uses a partner Inspector and drone eligible for the work; the drone must be owned by that Inspector and have passed its required review.
+  - Assignment uses a Inspector and drone eligible for the work; the drone must be owned by that Inspector and have passed its required review.
   - Assignment considers current pilot qualifications and overlapping commitments across all customer organizations.
   - After an abort, `MANAGER` may reschedule, reassign, or cancel the dispatch. The decision and its reason are attributable.
   - Airspace information supports planning but does not certify legal clearance or authorize flight.
@@ -243,30 +240,20 @@ The target business record set includes customer organizations and users; partne
 
 ---
 
-### 3.6 FE-05 Flight Readiness, Field Sessions and Progress
+### 3.6 FE-05 Flight Permit and On-site Field Sessions
 
 #### 3.6.1 Flight Permit and On-site Field Session
 - **Function trigger**: The assigned Inspector prepares to perform field work, starts a session, completes it, or aborts it.
 - **Actors**: `INSPECTOR`, `MANAGER`.
-- **Function description**: Record the required mission documentation and accountable on-site session outcomes. The service records work; it does not control aircraft.
+- **Function description**: Record required mission documentation and accountable on-site session outcomes. An optional SmartDroneHub integration may display read-only MAVLink telemetry or clearly labelled demo telemetry; the service does not plan routes or control aircraft.
 - **Requirements**:
   - Before field work begins, the assigned Inspector provides the required mission flight permit and current pilot credentials. These checks do not grant governmental authorization.
   - Starting a session records a pre-flight safety note addressing relevant aircraft, battery, and environmental conditions.
+  - For a permitted active field session, the assigned Inspector may start an explicitly selected live Mission Planner MAVLink telemetry connection or a separate telemetry-only demonstration. A live stream is assigned to at most one active session; the Hub does not arm, guide, upload flight plans to, or control an aircraft.
+  - The service may show received flight mode, position, altitude, speed, heading, battery, and waypoint telemetry, persist the session's observed flight report and GPS flight trace (`flight_trace_json`) on closure so both `INSPECTOR` and `MANAGER`/`CUSTOMER` reviewers can audit the flown path, and synchronize mission recording video (`video/mp4`) or camera snapshots from `SmartDroneHub` into the authenticated evidence store.
   - Completion records the outcome. An abort records the reason and alerts `MANAGER` to arrange rescheduling, reassignment, or cancellation.
-  - A further session may be recorded when additional capture is needed before the findings baseline is confirmed.
-- **Normal cases**: The Inspector records readiness, starts and completes a session, and provides field evidence; or the Inspector records an abort and `MANAGER` handles dispatch recovery.
-- **Abnormal cases**: The service prevents a session from being recorded as ready to start when the required permit, current pilot credentials, or safety note is missing. A software record is not a physical flight command.
-
-#### 3.6.2 Operational Overview, Calendar and Customer Progress
-- **Function trigger**: A user reviews work assigned to their role, an inspection schedule, or a Customer inspection's progress.
-- **Actors**: All Roles.
-- **Function description**: Present operational information appropriate to the user's responsibilities and keep internal inspection material distinct from Customer-facing progress.
-- **Requirements**:
-  - Users see only records and summaries allowed by their role, organization, and assignment.
-  - Customers can follow the main progress of an inspection without access to unapproved findings, internal field records, or unpublished reports.
-  - Schedule information identifies planned inspections and relevant dispatch changes.
-- **Normal cases**: A Customer follows authorized inspection stages; operational users review relevant assigned work and schedules.
-- **Abnormal cases**: A user cannot obtain internal or cross-organization records by selecting a filter, opening a schedule item, or following a link.
+- **Normal cases**: The Inspector records readiness, starts and completes a session, and provides field evidence; optionally, the Inspector views read-only Hub telemetry during the active session, synchronizes mission recording video/frames into Evidence, and both the Inspector and Manager view the persisted flight report and GPS flight trace after closure; or the Inspector records an abort and `MANAGER` handles dispatch recovery.
+- **Abnormal cases**: The service prevents a session from being recorded as ready to start when the required permit, current pilot credentials, or safety note is missing, or after field work has already been completed (`FIELD_COMPLETED`). A software record is not a physical flight command; a missing or stale live MAVLink heartbeat prevents live telemetry from being treated as connected; a single live stream cannot serve concurrent sessions.
 
 ---
 
@@ -277,7 +264,7 @@ The target business record set includes customer organizations and users; partne
 - **Actors**: `INSPECTOR`, automated advisory service.
 - **Function description**: Maintain evidence for an inspection and establish an accurate, human-confirmed findings baseline.
 - **Requirements**:
-  - Evidence may include photographs and video, with relevant capture time, location information when available, and structural location notes. Missing camera or location metadata is disclosed and does not by itself invalidate otherwise suitable evidence.
+  - Evidence may include photographs and high-resolution MP4 video (up to 500 MB), with relevant capture time, location information when available, and structural location notes. From a stored MP4 flight video, the assigned Inspector may pause and interactively crop/extract a video frame into an image evidence item, or run automated YOLO11 video keyframe scanning to extract defect frames into Evidence and propose candidate findings. Missing camera or location metadata is disclosed and does not by itself invalidate otherwise suitable evidence.
   - Evidence that cannot be used or is a duplicate within the same inspection is identified for the Inspector.
   - Automated visual analysis may suggest possible defects. Each suggestion remains advisory until the assigned Inspector confirms, edits, or rejects it. The Inspector may record a finding manually when appropriate evidence is available.
   - Only findings confirmed by the Inspector are part of the official baseline and eligible for an inspection report or maintenance referral.
@@ -292,12 +279,12 @@ The target business record set includes customer organizations and users; partne
 - **Requirements**:
   - The report author uses the confirmed findings and relevant field records to prepare and submit the inspection report for independent review. Submission is an explicit report-preparation action; merely visiting a screen does not submit it.
   - A report summary generated with AI is advisory, based on verified inspection information, and reviewed by a person before reliance on it.
-  - A `MANAGER` or `ADMIN` reviewer who is not the report author approves a report for publication or returns it with reasons. Only an approved report may be published as the official deliverable.
+  - A `MANAGER` or `ADMIN` reviewer who is not the report author either publishes the submitted report as the official deliverable or returns it to the author with reasons. Approval and publication are one reviewer decision; no separate approved-but-unpublished state is required.
   - A published report is preserved as a versioned record. Any correction is issued as a new version, with prior versions retained.
   - Customers see the official published report, not internal drafts or unapproved findings. The applicable payment rule governs access to the official deliverable.
   - When the Customer accepts a published report, the service records the acceptance and applicable fee as due (`PAYMENT_DUE`). Online checkout supports both **VNPay** (`POST /api/v1/inspections/{inspectionId}/vnpay/create-payment-url`, verified via HMAC-SHA512 on `GET /api/v1/webhooks/vnpay/ipn` and `GET /api/v1/webhooks/vnpay/return`) and **PayOS VietQR** (`POST /api/v1/inspections/{inspectionId}/payos/create-payment-link`, verified via HMAC-SHA256 on `POST /api/v1/webhooks/payos`). Payment is recorded against the relevant occurrence (`PAID`); partner settlement is recorded automatically upon verified payment when an inspector is assigned.
   - If payment services are unavailable, the business must retain an authorized, attributable way to record payment confirmation rather than treat an unconfirmed payment as settled.
-- **Normal cases**: The Inspector prepares and submits a report; an independent platform reviewer reviews and publishes it; the Customer reviews and accepts it and pays through VNPay or PayOS (or authorized manual confirmation).
+- **Normal cases**: The Inspector prepares and submits a report; an independent platform reviewer publishes it or returns it for revision; the Customer reviews and accepts a published report and pays through VNPay or PayOS (or authorized manual confirmation).
 - **Abnormal cases**: A report author cannot review or publish their own report. A returned report includes reasons and remains available for revision. A Customer cannot access an unpublished report as an official deliverable, and payment is not marked settled without verified cryptographic signature or authorized confirmation.
 
 ---
@@ -346,7 +333,7 @@ The target business record set includes customer organizations and users; partne
 - **Abnormal cases**: An incomplete work order cannot be submitted as complete. A repair team member cannot accept their own work.
 
 #### 3.9.2 Re-inspection, Independent Acceptance and Cost Reconciliation
-- **Function trigger**: The Customer requests re-inspection, a partner Inspector verifies the target defects, and the Customer completes acceptance and cost closeout.
+- **Function trigger**: The Customer requests re-inspection, a Inspector verifies the target defects, and the Customer completes acceptance and cost closeout.
 - **Actors**: `CUSTOMER`, `MANAGER`, `INSPECTOR`.
 - **Function description**: Verify the repair outcome against the original defect and repair evidence, then complete independent acceptance and financial closeout.
 - **Requirements**:

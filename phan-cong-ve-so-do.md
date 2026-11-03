@@ -22,7 +22,7 @@ Mỗi thành viên phụ trách **1 Main Flow trọn vẹn (gồm 2 Features)** 
 | :--- | :---: | :--- | :--- |
 | **Trần Hoàng Trung Hiếu** | **SE184212** | **MF1 / WF-01 (FE-01 + FE-02)**<br>Customer Airspace & Partner Onboarding, Asset & Drone Registry | System Context, System Architecture, Database ERD, sơ đồ Auth/5-Role RBAC, Quản lý Inspector & hồ sơ bằng lái, danh mục Asset & kiểm tra vùng cấm bay, Đăng ký Drone sở hữu riêng (3 tài liệu) & WF-01 Activity |
 | **Phùng Trung Quốc** | **SE170027** | **MF2 / WF-02 (FE-03 + FE-04)**<br>Service Request, VND Quote, Signed Contract & Cross-Org Partner Dispatch | Sơ đồ Yêu cầu dịch vụ định kỳ & sinh đợt bay hợp đồng, Outbox Notifications, Báo giá VND, Order Chat thương thảo, Hợp đồng giấy offline scan, Phân công điều phối Inspector–Drone chống trùng lịch & WF-02 Activity |
-| **Trần Tùng Bách** | **SE180220** | **MF3 / WF-03 (FE-05 + FE-06)**<br>Flight Permit, Field Session, YOLO11, Auto-Compiled Report & PayOS Settlement | Cổng giấy phép bay & Phiên bay thực địa (Start/Complete/Abort), Dashboard & Lịch bay, Thu nhận hình ảnh/video streaming MinIO, AI YOLO11 phát hiện khiếm khuyết, Biên dịch & duyệt báo cáo kiểm định, Thanh toán PayOS & WF-03 Activity |
+| **Trần Tùng Bách** | **SE180220** | **MF3 / WF-03 (FE-05 + FE-06)**<br>Flight Permit, Field Session, YOLO11, Auto-Compiled Report & PayOS Settlement | Cổng giấy phép bay & Phiên bay thực địa (Start/Complete/Abort), Thu nhận hình ảnh/video streaming MinIO, AI YOLO11 phát hiện khiếm khuyết, Biên dịch & duyệt báo cáo kiểm định, Thanh toán PayOS & WF-03 Activity |
 | **Trương Thái Như** | **SE180082** | **MF4 / WF-04 (FE-07 + FE-08)**<br>Corrective Defect Handoff, Work Order, RAG Scope/Cost Norms, 3-Way Re-inspection & Cost Closure | **Use Case Diagram (toàn hệ thống)**, Screens Flow, Backend Package Diagram, Toàn bộ sơ đồ Module Bảo trì, RAG Scope Advisor (TCVN/EN/ISO), RAG Cost Estimator, Vòng lặp Bay lại đối chiếu 3 chiều, Nghiệm thu & Quyết toán & WF-04 Activity |
 
 ---
@@ -68,12 +68,12 @@ Mỗi thành viên phụ trách **1 Main Flow trọn vẹn (gồm 2 Features)** 
 
 ### 👤 3. Trần Tùng Bách (SE180220) — Kỹ sư Full-Stack / AI & Phụ trách MF3 / WF-03
 * **Tính năng đảm nhận:**
-  - **FE-05: Flight Permit Gate, Field Flight Execution, Dashboard & Calendar** (Cổng kiểm tra giấy phép bay trước khi cất cánh, phiên bay thực địa 2 kết quả Start -> Complete hoặc Abort có ghi lý do, bảng điều khiển vận hành phân quyền 5 role, lịch điều phối bay và thanh tiến độ kiểm định 5 giai đoạn cho khách hàng).
+  - **FE-05: Flight Permit Gate & Field Flight Execution** (Cổng kiểm tra giấy phép bay trước khi cất cánh và phiên bay thực địa 2 kết quả Start -> Complete hoặc Abort có ghi lý do kèm điều phối lại của Manager khi Abort; không mở thêm phiên bay mới sau khi đã `FIELD_COMPLETED`).
   - **FE-06: Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS Settlement** (Tải ảnh & video MP4 streaming MinIO, trích xuất GPS/EXIF, AI YOLO11 phát hiện khiếm khuyết với Vision LLM fallback, xác nhận finding, tự động biên dịch báo cáo kiểm định `SUBMITTED`, AI Executive Summary, Manager xem xét & phê duyệt báo cáo `PUBLISHED`, Customer nghiệm thu báo cáo và thanh toán VietQR qua PayOS; xuất file PDF là tính năng phụ trợ tải về).
 
 | STT | Tên sơ đồ | Loại | Mã tệp Mermaid (`diagrams/mermaid/`) / Vị trí tài liệu |
 | :---: | :--- | :---: | :--- |
-| 1 | **Field Flight Session & Operational Dashboard Class Diagram** | Class | `47_report-4-..._flight-session-and-airspace-conflict-evaluatio_13717dfb1191.mmd` *(SDD 3.5.1)* |
+| 1 | **Flight Permit Gate, Field Session & Abort Dispatch Class Diagram** | Class | `47_report-4-..._flight-session-and-airspace-conflict-evaluatio_13717dfb1191.mmd` *(SDD 3.5.1)* |
 | 2 | **Flight Permit Upload Gate & On-Site Field Flight Sequence Diagram** | Sequence | `48_report-4-..._field-execution-flight-logging-and-gps-telemet_4be09fbe7954.mmd` *(SDD 3.5.2)* |
 | 3 | **YOLO11 Defect Detection & Finding Verification Class Diagram** | Class | `50_report-4-..._yolo11-defect-detection-and-finding-verification_64eb1d90feeb.mmd` *(SDD 3.6.1)* |
 | 4 | **YOLO11 Defect Detection & Verification Sequence Diagram** | Sequence | `51_report-4-..._yolo11-defect-detection-and-verification-sequenc_436962a7b8b8.mmd` *(SDD 3.6.2)* |
@@ -111,6 +111,6 @@ Mỗi thành viên phụ trách **1 Main Flow trọn vẹn (gồm 2 Features)** 
 | :--- | :---: | :---: | :--- |
 | **Trần Hoàng Trung Hiếu** | **9** | **MF1 / WF-01 (FE-01 + FE-02)** | System Context, Architecture, ERD + Auth/RBAC, Partner/Workforce, Asset/Drone & WF-01 Activity |
 | **Phùng Trung Quốc** | **8** | **MF2 / WF-02 (FE-03 + FE-04)** | Thông báo Outbox, Yêu cầu dịch vụ, Báo giá VND, Hợp đồng giấy, Phân công điều phối, State Machines & WF-02 Activity |
-| **Trần Tùng Bách** | **9** | **MF3 / WF-03 (FE-05 + FE-06)** | Cổng giấy phép bay, Phiên bay thực địa, Dashboards, AI YOLO11, Biên dịch & duyệt báo cáo kiểm định, PayOS & WF-03 Activity |
+| **Trần Tùng Bách** | **9** | **MF3 / WF-03 (FE-05 + FE-06)** | Cổng giấy phép bay, Phiên bay thực địa, AI YOLO11, Biên dịch & duyệt báo cáo kiểm định, PayOS & WF-03 Activity |
 | **Trương Thái Như** | **10** | **MF4 / WF-04 (FE-07 + FE-08)** | **Use Case tổng hoàn chỉnh**, Screens Flow, Package + Module Bảo trì/RAG, Bay lại 3 chiều, State Machine & WF-04 Activity |
 | **TỔNG CỘNG** | **36** | **4 Main Flows / 8 Features** | Phân chia công bằng, gắn liền 100% với 4 Main Flows và đồng bộ Reports 1–5 |

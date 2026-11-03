@@ -1,0 +1,21 @@
+%% title: Business Domain Concepts Diagram
+flowchart LR
+  CUSTOMER["Customer Organization"] --> ASSET["Infrastructure Asset"]
+  CUSTOMER --> REQUEST["Service Request"]
+  REQUEST --> QUOTE["VND Quotation"]
+  REQUEST --> AGREEMENT["Signed Service Agreement"]
+  REQUEST --> OCCURRENCE["Inspection Occurrence"]
+  OCCURRENCE --> INSPECTION["Inspection"]
+  INSPECTOR["Inspector"] --> INSPECTION
+  DRONE["Inspector-Owned Drone"] --> INSPECTION
+  ASSET --> INSPECTION
+  INSPECTION --> SESSION["Field Session"]
+  SESSION --> EVIDENCE["Inspection Evidence"]
+  EVIDENCE --> FINDING["Confirmed Finding"]
+  INSPECTION --> REPORT["Inspection Report"]
+  REPORT --> PAYMENT["Service Payment"]
+  FINDING --> WORK["Maintenance Work Order"]
+  WORK --> TASK["Repair Tasks and Work Records"]
+  TASK --> COMPLETION["Maintenance Completion Report"]
+  COMPLETION --> REINSPECTION["Re-inspection and Defect Verification"]
+  REINSPECTION --> ACCEPTANCE["Customer Acceptance and Cost Closeout"]

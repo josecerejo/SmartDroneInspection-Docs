@@ -1,0 +1,10 @@
+%% title: Inspection Report Version State Machine Diagram
+stateDiagram-v2
+  direction LR
+  [*] --> SUBMITTED : Submit Compiled Report
+  SUBMITTED --> RETURNED : Manager Returns or Author Withdraws
+  RETURNED --> SUBMITTED : Resubmit Updated Report
+  SUBMITTED --> PUBLISHED : Independent Manager Approves & Publishes Report
+  PUBLISHED --> SUPERSEDED : Newer Version Published
+  PUBLISHED --> [*]
+  SUPERSEDED --> [*]

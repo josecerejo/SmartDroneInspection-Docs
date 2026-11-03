@@ -1,0 +1,27 @@
+%% title: WF-02 Activity Diagram - Service Request, Quotation, Signed Contract and Dispatch
+flowchart TD
+  subgraph CU2["Customer"]
+    B1(["Start: Create Service Request (One-Time or Recurring)"])
+    B4{"Review Quotation"}
+    B5["Discuss Adjustments in Order Chat"]
+    B6["Accept Quotation Version (Occurrences Created)"]
+  end
+
+  subgraph MG2["Manager"]
+    B2["Select Qualified Inspector & Owned Drone"]
+    B3["Issue VND Quotation"]
+    B7["Upload Signed Paper Service Agreement Scan"]
+    B8["Assign Inspector & Drone to Occurrence"]
+  end
+
+  subgraph SYS2["Automated Dispatch Check"]
+    B9{"Verify License Validity &\nSchedule Availability"}
+    B10["Create Scheduled Inspection Mission & Link to Occurrence"]
+    B11(["End: Notify Assigned Inspector for Field Execution"])
+  end
+
+  B1 --> B2 --> B3 --> B4
+  B4 -->|"Request Change"| B5 --> B2
+  B4 -->|"Accept"| B6 --> B7 --> B8 --> B9
+  B9 -->|"Schedule Conflict"| B2
+  B9 -->|"Eligible"| B10 --> B11

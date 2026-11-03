@@ -1,0 +1,24 @@
+%% title: System Context Diagram
+flowchart LR
+  ADMIN["Admin"]
+  MANAGER["Manager"]
+  CUSTOMER["Customer"]
+  INSPECTOR["Inspector"]
+  ENGINEER["Maintenance Engineer"]
+
+  SDI[["SmartDroneInspection System"]]
+  AI["AI Service"]
+  STORAGE["Object Storage"]
+  HUB["SmartDroneHub"]
+  PAYMENT["Payment & OAuth2"]
+
+  ADMIN <-->|"Accounts, categories, airspace & audit"| SDI
+  MANAGER <-->|"Quotes, dispatch, flight trace & report review"| SDI
+  CUSTOMER <-->|"Assets, requests, payment & repair acceptance"| SDI
+  INSPECTOR <-->|"3-doc drones, permits, telemetry & photo/MP4 evidence"| SDI
+  ENGINEER <-->|"Repair planning, work logs & completion report"| SDI
+
+  SDI <-->|"Defect detections, AI summary & RAG advice"| AI
+  SDI <-->|"Contracts, permits & photo/MP4 media"| STORAGE
+  SDI <-->|"Live telemetry, flight trace, report & MP4 video"| HUB
+  SDI <-->|"PayOS / VNPay checkout & Google OAuth2"| PAYMENT

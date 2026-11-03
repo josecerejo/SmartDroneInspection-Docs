@@ -1,0 +1,30 @@
+%% title: WF-01 Activity Diagram - Onboarding, Asset and Drone Registry
+flowchart TD
+  subgraph CU1["Customer"]
+    A1(["Start: Submit Organization & Initial Asset Registration"])
+    A5["Register Infrastructure Assets & Inspection Checkpoints"]
+    A6["Provision Maintenance Engineer Accounts"]
+  end
+
+  subgraph IN1["Inspector"]
+    A7["Maintain Pilot License Credentials & Flight History"]
+    A9["Submit Owned Drone Registration with Three Supporting Documents"]
+  end
+
+  subgraph ADM1["Admin or Manager"]
+    A3["Review Restricted-Airspace Customer Registration"]
+    A8["Provision Inspector Account & Verify Credentials"]
+    A10["Review Three Drone Documents & Approve Drone"]
+  end
+
+  subgraph SYS1["Automated Airspace Check"]
+    A2{"Screen Initial Asset\nAirspace Zone"}
+    A4["Reject Registration (Prohibited No-Fly Zone)"]
+    A11(["End: Customer Assets & Partner Drones Ready for Inspection Requests"])
+  end
+
+  A1 --> A2
+  A2 -->|"Prohibited Zone"| A4
+  A2 -->|"Restricted Zone"| A3 --> A5
+  A2 -->|"Clear Zone"| A5 --> A6 --> A11
+  A7 --> A8 --> A9 --> A10 --> A11

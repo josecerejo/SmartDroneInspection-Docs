@@ -1,0 +1,33 @@
+%% title: FE-08 Completion Report, Re-inspection Verification and Cost Closure Class Diagram
+classDiagram
+  class MaintenanceExecutionController {
+    +getAutoDraftReport(workOrderId) AutoDraftReportResponse
+    +getAcceptanceCompliance(workOrderId) AcceptanceComplianceResponse
+    +recordAcceptanceDecision(workOrderId, req) ApiResponse
+    +reconcileCosts(workOrderId, req) CostReconciliationView
+    +closeWorkOrder(workOrderId) WorkOrderView
+  }
+  class ReinspectionVerificationService {
+    +getVerifications(actorId, reinspId) List~ReinspectionVerificationResponse~
+    +updateVerification(actorId, reinspId, verId, req) ReinspectionVerificationResponse
+  }
+  class InspectionReinspectionListener {
+    +onReinspectionRequested(event) void
+  }
+  class WorkOrderReinspectionListener {
+    +onReinspectionCreated(event) void
+    +onReinspectionReportPublished(event) void
+  }
+  class ReinspectionDefectVerification {
+    -UUID id
+    -UUID reinspectionId
+    -UUID sourceFindingId
+    -UUID newEvidenceId
+    -String repairProofUrl
+    -String repairEngineerNotes
+    -String resolutionStatus
+    -String inspectorNotes
+  }
+  MaintenanceExecutionController --> WorkOrderReinspectionListener
+  ReinspectionVerificationService --> ReinspectionDefectVerification
+  InspectionReinspectionListener --> ReinspectionDefectVerification

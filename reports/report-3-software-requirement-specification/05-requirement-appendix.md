@@ -17,12 +17,12 @@ The following normative business rules govern role and organization boundaries, 
 | BR-02 | A `CUSTOMER` accesses and manages only their own organization's assets, workforce, service requests, published inspection reports, and maintenance work orders. |
 | BR-03 | A `MAINTENANCE_ENGINEER` belongs to one customer organization. A partner `INSPECTOR` may serve different customer organizations only through an explicit `MANAGER` assignment. |
 | BR-04 | An `INSPECTOR` or `MAINTENANCE_ENGINEER` may act only on inspection or maintenance work assigned to them. |
-| BR-05 | Partner Inspectors must have current pilot credentials for flight assignment and field work. An expired credential prevents the Inspector from being assigned or starting field work. |
+| BR-05 | Inspectors must have current pilot credentials for flight assignment and field work. An expired credential prevents the Inspector from being assigned or starting field work. |
 | BR-06 | Customer onboarding screens the initial asset location against applicable Vietnam airspace information. A prohibited No-Fly Zone location is not accepted; a location requiring review remains pending for an `ADMIN` decision; a location that passes screening may proceed. Screening does not grant governmental flight clearance. |
 | BR-07 | Before starting an on-site field session, the assigned Inspector must provide the required flight permit, have current pilot credentials, and record a pre-flight safety note addressing aircraft, battery, and environmental suitability. |
 | BR-08 | Airspace checks and flight permit records support internal readiness review only; they do not grant a government aviation exemption or clearance under applicable regulations. |
-| BR-09 | Inspection assignment and reassignment must consider overlapping commitments across all customer organizations so that a partner Inspector or drone is not double-booked. |
-| BR-10 | Service quotations are stated in VND per occurrence, identify the agreed scope and timing, and are associated with an eligible partner Inspector and a drone owned by that Inspector. |
+| BR-09 | Inspection assignment and reassignment must consider overlapping commitments across all customer organizations so that a Inspector or drone is not double-booked. |
+| BR-10 | Service quotations are stated in VND per occurrence, identify the agreed scope and timing, and are associated with an eligible Inspector and a drone owned by that Inspector. |
 | BR-11 | Commercial service requests proceed through request, quotation, customer acceptance, signed agreement, and occurrence assignment. Negotiation messages do not change quotation terms. Dispatch is not ready until the parties have signed the offline agreement and `MANAGER` has recorded it. |
 | BR-12 | Service quotations, inspection reports, maintenance estimate baselines, change requests, and acceptance decisions preserve attributable versions. Published records cannot be silently modified in place. |
 | BR-13 | For a recurring service request, one signed agreement may cover the occurrences within the agreed term. Each occurrence still requires its own partner assignment, flight readiness review, report, and settlement. |
@@ -49,7 +49,7 @@ The following normative business rules govern role and organization boundaries, 
 | BR-34 | Any increase in repair scope, cost, or schedule requires prior Customer approval through a change request. The approved estimate baseline remains available for comparison, and work cannot be declared complete while a change request is pending. |
 | BR-35 | Maintenance work records include relevant task outcomes, before-and-after repair evidence, and test readings. The completion report is prepared from these records and reviewed by its author before submission. |
 | BR-36 | Inspection service fees are settled per occurrence under the agreed commercial terms. Maintenance estimates and actual expenditures are recorded as the Customer organization's maintenance costs. |
-| BR-37 | When a Customer requests re-inspection, the resulting verification is linked to the relevant work order, source inspection, report, and target findings. An additional session within the original inspection is distinguished from a separate maintenance re-inspection. |
+| BR-37 | When a Customer requests re-inspection, the resulting verification is linked to the relevant work order, source inspection, report, and target findings. |
 | BR-38 | Important onboarding, quote acceptance, agreement recording, partner assignment, field abort, findings confirmation, report publication, payment, budget, re-inspection, and work-order decisions are recorded with the responsible actor. |
 | BR-39 | A direct link, notification, or document reference does not grant access. Role, organization, assignment, and payment conditions apply to every attempt to view or act on a record. |
 | BR-40 | Password changes, role updates, account changes, and session revocations take effect for active access without removing historical attribution. |
@@ -132,7 +132,7 @@ The service provides clear user-facing messages for common results, validation n
 
 #### 5.4.1 Scope and Operational Constraints
 
-- **Role and Organization Separation**: Platform responsibilities (`ADMIN`, `MANAGER`), customer organization responsibilities (`CUSTOMER`, `MAINTENANCE_ENGINEER`), and partner Inspector responsibilities (`INSPECTOR`) are separated by role, organization ownership, and explicit assignment.
+- **Role and Organization Separation**: Platform responsibilities (`ADMIN`, `MANAGER`), customer organization responsibilities (`CUSTOMER`, `MAINTENANCE_ENGINEER`), and Inspector responsibilities (`INSPECTOR`) are separated by role, organization ownership, and explicit assignment.
 - **No Direct Drone Flight Control**: The service governs agreements, compliance documents, field-session records, evidence, analysis, inspection reports, and maintenance work orders. Licensed partner pilots perform physical aircraft operation using their own flight equipment.
 - **Human Review of AI and Guidance**: Automated defect suggestions, report summaries, repair-scope and cost recommendations, and compliance guidance are advisory. Official findings, published reports, budgets, and acceptance decisions require explicit human confirmation.
 - **Qualification and Legal Authority**: A service status or recorded document does not prove professional qualification or government flight clearance. Users and organizations remain responsible for obtaining any required external authorization.
@@ -147,7 +147,7 @@ This traceability matrix maps the eight product features (`FE-01` to `FE-08`) to
 | `FE-02` | Partner Onboarding, Workforce, Assets and Drone Registration | Inspector applications and qualifications; Customer workforce; asset screening; Inspector-owned drone documentation and review | UC-02, UC-04, UC-05, UC-06 |
 | `FE-03` | Recurring Service Requests, Occurrences and Notifications | One-time and recurring requests, agreed occurrence coordination, and notices | UC-07, UC-08, UC-20 |
 | `FE-04` | Service Requests, VND Quotations, Agreements and Dispatch | Request negotiation, VND quotations, signed agreement, partner assignment, and dispatch changes | UC-07, UC-08, UC-09, UC-13 |
-| `FE-05` | Flight Readiness, Field Sessions and Progress | Permit and qualification checks, field-session records, schedules, and Customer progress | UC-10, UC-11, UC-12, UC-13, UC-20 |
+| `FE-05` | Flight Permit and On-site Field Sessions | Permit and qualification checks and on-site field-session records | UC-10, UC-11 |
 | `FE-06` | Evidence, Findings, Reporting and Payment | Evidence intake, human-confirmed findings, explicit report preparation, independent publication, Customer acceptance, and service payment | UC-14, UC-15, UC-16, UC-17, UC-18, UC-19 |
 | `FE-07` | Maintenance Work Orders, Estimates and Repair Execution | Corrective work orders, advisory scope and estimates, Customer budget/change approval, assigned repair work and verification | UC-21, UC-22, UC-23, UC-24 |
 | `FE-08` | Completion, Re-inspection and Work-Order Closeout | Completion reporting, re-inspection, independent Customer acceptance, cost reconciliation, and closure | UC-25, UC-26, UC-27, UC-28 |

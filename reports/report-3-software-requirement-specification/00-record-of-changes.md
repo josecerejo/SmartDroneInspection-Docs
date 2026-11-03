@@ -9,11 +9,9 @@ source: "report3-software-requirement-specification.docx"
 
 | Date | A* M, D | In charge | Change Description |
 | --- | --- | --- | --- |
-| 27 Oct 2026 | A | Project Team | Version 1.0: Initial release of the Software Requirement Specification (SRS) for SmartDroneInspection. |
-| 27 Oct 2026 | M | Project Team | Clarified AI defect detection fallback: when YOLO11 returns no detections, use the configured vision-capable LLM before reporting zero candidates. |
-| 01 Nov 2026 | M | Project Team | Version 2.0: Synchronized with the 5-role Platform Inspection Service model (ADMIN, MANAGER, CUSTOMER, INSPECTOR, MAINTENANCE_ENGINEER), narrowed scope to 8 product features (FE-01 to FE-08), replaced subscription/leasing with MF1 partner/airspace onboarding and MF2 service requests, VND quotes, offline contracts, and PayOS VietQR checkout, streamlined MF3 to 6 inspection states and 5 auto-compiled report states with AI executive summaries, and added MF4 3-way re-inspection defect verification and RAG norms/compliance auditing. |
-| 01 Nov 2026 | M | Project Team | Version 2.1: Aligned functional requirements with V25 implementation: Platform-provisioned Inspectors with separate `inspector_profiles` replace persisted Inspector applications; `otp_challenges` consolidates OTP purposes; recurring requests use `service_request_occurrences` while the separate internal recurring-schedule engine is retired; service-request quotes use VND persistence. Preserved historical requirements separately from verified implementation evidence. |
-| 02 Nov 2026 | M | Project Team | Version 2.2: Added real VNPay (v2.1.0 HMAC-SHA512) online payment gateway integration alongside PayOS VietQR for FE-06 published report acceptance and settlement (`POST /vnpay/create-payment-url`, `GET /api/v1/webhooks/vnpay/ipn`, `GET /api/v1/webhooks/vnpay/return`). |
+| 03 Nov 2026 | A | Project Team | Version 1.0: Initial release of the Software Requirement Specification (SRS) for SmartDroneInspection covering the 5-role Platform Inspection Service model (ADMIN, MANAGER, CUSTOMER, INSPECTOR, MAINTENANCE_ENGINEER) and 8 product features (FE-01 to FE-08) across MF1–MF4. |
+|  |  |  |  |
+|  |  |  |  |
 |  |  |  |  |
 
 *A - Added M - Modified D - Deleted

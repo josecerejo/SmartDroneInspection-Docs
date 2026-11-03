@@ -1,0 +1,20 @@
+%% title: FE-02 Inspector-Owned Drone Registration and Review Sequence Diagram
+sequenceDiagram
+  autonumber
+  actor Insp as Inspector
+  actor Admin as Admin or Manager
+  participant DroneSvc as Drone Registration Service
+  participant Storage as Object Storage (MinIO)
+  participant DB as Database
+
+  Insp->>DroneSvc: Upload registration, ownership, and inspection documents
+  DroneSvc->>Storage: Store three supporting document files
+  Storage-->>DroneSvc: Return stored document keys
+
+  Insp->>DroneSvc: Submit drone registration application (serial number, model, documents)
+  DroneSvc->>DB: Verify unique serial number and save pending application
+  DB-->>Insp: Confirm application submitted for review
+
+  Admin->>DroneSvc: Review uploaded documents and approve application
+  DroneSvc->>DB: Create active Drone owned by Inspector and mark application approved
+  DB-->>Admin: Confirm drone registered and eligible for dispatch

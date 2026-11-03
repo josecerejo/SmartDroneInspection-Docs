@@ -1,0 +1,52 @@
+%% title: FE-04 Service Request, Quotation, Signed Contract and Dispatch Class Diagram
+classDiagram
+  class ContractWorkflowController {
+    +list() List~ServiceRequestResponse~
+    +create(req) ServiceRequestResponse
+    +postMessage(reqId, msg) ServiceRequestResponse
+    +issueQuote(reqId, quoteReq) ServiceRequestResponse
+    +acceptQuote(reqId, versionNo) ServiceRequestResponse
+    +uploadSignedContract(reqId, file) ServiceRequestResponse
+    +downloadSignedContract(reqId) InputStreamResource
+    +assignOccurrence(reqId, occId, assignReq) ServiceRequestResponse
+  }
+  class ContractWorkflowService {
+    +create(actorId, req) ServiceRequestResponse
+    +issueQuote(actorId, reqId, quoteReq) ServiceRequestResponse
+    +acceptQuote(actorId, reqId, versionNo) ServiceRequestResponse
+    +uploadSignedContract(actorId, reqId, file) ServiceRequestResponse
+    +assignOccurrence(actorId, reqId, occId, assignReq) ServiceRequestResponse
+  }
+  class Mf2InspectionAssignmentAdapter {
+    +assignPartnerInspection(command) UUID
+  }
+  class ServiceRequest {
+    -UUID id
+    -UUID organizationId
+    -UUID assetId
+    -RequestType requestType
+    -ServiceRequestStatus status
+    -Integer acceptedQuoteVersion
+    -String contractObjectKey
+  }
+  class ServiceRequestQuote {
+    -UUID id
+    -UUID requestId
+    -int versionNo
+    -UUID inspectorId
+    -UUID droneId
+    -BigDecimal pricePerOccurrenceVnd
+  }
+  class ServiceRequestOccurrence {
+    -UUID id
+    -UUID requestId
+    -UUID inspectionId
+    -OccurrenceStatus status
+    -OccurrencePaymentStatus paymentStatus
+    -Long payosOrderCode
+  }
+  ContractWorkflowController --> ContractWorkflowService
+  ContractWorkflowService --> ServiceRequest
+  ContractWorkflowService --> ServiceRequestQuote
+  ContractWorkflowService --> ServiceRequestOccurrence
+  ContractWorkflowService --> Mf2InspectionAssignmentAdapter

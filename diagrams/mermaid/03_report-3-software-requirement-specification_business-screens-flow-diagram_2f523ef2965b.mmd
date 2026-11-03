@@ -1,0 +1,19 @@
+%% title: Business Screens Flow Diagram
+flowchart TD
+  SIGNIN["FE-01: Customer Registration and User Sign-in"] --> ONBOARD["FE-02: Partner, Customer Workforce and Asset Onboarding"]
+  SIGNIN --> REQUEST["FE-03: Recurring Requests and Occurrences"]
+  SIGNIN --> QUOTE["FE-04: Requests, VND Quotations and Signed Agreements"]
+  QUOTE --> DISPATCH["FE-04: Partner Assignment and Dispatch"]
+  DISPATCH --> PERMIT["FE-05: Permit and Field Readiness"]
+  PERMIT --> FIELD["FE-05: Record On-site Field Session"]
+  FIELD --> EVIDENCE["FE-06: Evidence and Human-Reviewed Findings"]
+  EVIDENCE --> PREPARE["FE-06: Prepare and Submit Report"]
+  PREPARE --> REVIEW["FE-06: Independent Review and Publication"]
+  REVIEW --> PAYMENT["FE-06: Customer Report Acceptance and Payment"]
+  PAYMENT --> PLAN["FE-07: Corrective Work Order and Repair Plan"]
+  PLAN --> APPROVAL["FE-07: Estimate, Budget and Change Approval"]
+  APPROVAL --> REPAIR["FE-07: Repair Work and Verification"]
+  REPAIR --> COMPLETE["FE-08: Completion Report and Customer Review"]
+  COMPLETE -->|"Re-inspection required"| REINSPECT["FE-08: Re-inspection and Defect Verification"]
+  REINSPECT --> REVIEW
+  COMPLETE -->|"Accepted and costs reconciled"| CLOSE["FE-08: Work Order Closeout"]
