@@ -16,6 +16,11 @@ class Report5Tests(unittest.TestCase):
         self.assertEqual(len(row), 15)
         self.assertEqual(row[5:8], ["Passed", "2026-10-11", "Claude Code (automated)"])
         self.assertEqual(row[8:14], ["Pending", "", "", "Pending", "", ""])
+        for case_id in ("WF3-006", "WF3-016"):
+            case_row = next(row for _, row, _ in cases["Feature 6"] if row[0] == case_id)
+            self.assertEqual(case_row[5:8][0], "Passed")
+            self.assertEqual(case_row[8:11], ["Pending", "", ""])
+            self.assertEqual(case_row[11:14], ["Passed", "2026-11-03", "Claude Code (automated)"])
         self.assertEqual(summaries["Feature 6"]["B2"],
                          "Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS")
 
@@ -34,7 +39,7 @@ class Report5Tests(unittest.TestCase):
                              "Evidence Intake, YOLO11 Detection, Auto-Compiled Report & PayOS")
             for coord, expected in {"G12": "2026-10-11", "H12": "Claude Code (automated)",
                                     "J12": "", "K12": "", "M12": "", "N12": "",
-                                    "B4": "12", "B6": "10", "B7": "0", "D7": "12", "D8": "12"}.items():
+                                    "B4": "12", "B6": "10", "B7": "0", "D7": "12", "D8": "10"}.items():
                 self.assertEqual(book.value("Feature 6", coord), expected, coord)
             self.assertTrue(book.value("Feature 6", "A11").startswith("FE-06"))
             self.assertEqual(book.value("Feature 6", "A12"), "WF3-002")

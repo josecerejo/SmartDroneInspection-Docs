@@ -630,7 +630,7 @@ erDiagram
 | 19 | `field_sessions` | Records individual on-site flight survey sessions, pre-flight safety checklist notes, abort reasons, and operational outcomes (`PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `ABORTED`; historical `POSTPONED` read-only).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `inspection_id` references `inspections(id)` |
 | 20 | `evidence` | Digital photo and `video/mp4` captures collected during field sessions with MinIO object keys, EXIF capture timestamps, GPS coordinates, location descriptions, and soft-delete flag (`is_deleted`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `field_session_id` references `field_sessions(id)`, `inspection_id` references `inspections(id)` |
 | 21 | `findings` | Unified defect findings table managing `YOLO11` / Vision fallback candidates (`PENDING`) and Inspector-confirmed findings (`CONFIRMED`) with bounding boxes and maintenance forwarding timestamps.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `evidence_id` references `evidence(id)`, `inspection_id` references `inspections(id)` |
-| 22 | `inspection_reports` | Versioned inspection report deliverables with 5 persisted states (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED` — `V16`, `V17`). Automatic generation and manual draft, section editing, author verification, submission, withdrawal, reviewer decisions, and publication are API authoring/workflow actions rather than additional persisted states; published versions render to immutable `SHA-256` PDFs.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reviewer_user_id` references `users(id)`, `inspection_id` references `inspections(id)` |
+| 22 | `inspection_reports` | Versioned inspection report records with 4 persisted states (`SUBMITTED`, `RETURNED`, `PUBLISHED`, `SUPERSEDED`). Report drafting, editing, submission, withdrawal, and reviewer publication are workflow actions; publication records the official immutable version.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reviewer_user_id` references `users(id)`, `inspection_id` references `inspections(id)` |
 | 23 | `reinspection_defect_verifications` | Three-way comparative defect verification records linking a `RE_INSPECTION` mission to each original `source_finding_id`, recaptured drone `new_evidence_id`, repair proof URL, repair engineer notes, and resolution status (`RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `reinspection_id` references `inspections(id)`, `source_finding_id` references `findings(id)`, `new_evidence_id` references `evidence(id)` |
 | 24 | `maintenance_work_orders` | Remediation projects initiated from confirmed published findings, tracking corrective scope, acceptance criteria, distinct owner, budget approver, team lead, report author and accepting reviewer assignments, optional `reinspection_id`, and 12-state lifecycle status (`V6`, `V10`). V25 retains owner and linked reinspection-report version data.<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `asset_id` references `assets(id)`, `organization_id` references `organizations(id)`, `source_finding_id` references `findings(id)`, `source_report_version_id` references `inspection_reports(id)`, `reinspection_id` references `inspections(id)`, `reinspection_report_version_id` references `inspection_reports(id)`, and `owner_user_id`, `budget_approver_user_id`, `team_lead_user_id`, `report_author_user_id`, `accepting_reviewer_user_id` each reference `users(id)` |
 | 25 | `maintenance_team_members` & `maintenance_tasks` | Engineering team members (`LEAD`, `REPORT_AUTHOR`, `MEMBER`) and decomposed repair tasks (`PLANNED`, `READY`, `IN_PROGRESS`, `WORK_COMPLETED`, `REWORK_REQUIRED`, `ACCEPTED`, `CANCELLED`).<br>- Primary keys: `id` (UUID)<br>- Foreign keys: `work_order_id` references `maintenance_work_orders(id)`, `engineer_user_id` / `assigned_engineer_user_id` reference `users(id)` |
@@ -697,7 +697,7 @@ stateDiagram-v2
   FIELD_COMPLETED --> IN_PROGRESS : startAdditionalSession() [FE-05]
   FIELD_COMPLETED --> UNDER_REVIEW : autoCompileAndSubmitReport() [FE-06]
   UNDER_REVIEW --> FIELD_COMPLETED : returnReport(reason) / withdraw() [FE-06]
-  UNDER_REVIEW --> COMPLETED : publishReport() (PDF + SHA-256) [FE-06]
+  UNDER_REVIEW --> COMPLETED : approveAndPublishReport() [FE-06]
   SCHEDULED --> CANCELLED : cancel() [FE-04]
   COMPLETED --> [*]
   CANCELLED --> [*]
@@ -708,11 +708,9 @@ stateDiagram-v2
 stateDiagram-v2
   direction LR
   [*] --> SUBMITTED : auto-generated or manually authored, then author verifies/submits [FE-06]
-  SUBMITTED --> RETURNED : reviewBy(approve=false, reason) [FE-06]
-  SUBMITTED --> RETURNED : author withdraws before reviewer action [FE-06]
-  RETURNED --> SUBMITTED : submit() (after re-confirming findings) [FE-06]
-  SUBMITTED --> APPROVED : reviewBy(approve=true) [FE-06]
-  APPROVED --> PUBLISHED : publish() (renders PDF to MinIO) [FE-06]
+  SUBMITTED --> RETURNED : Manager returns with reason or author withdraws [FE-06]
+  RETURNED --> SUBMITTED : resubmit() (after re-confirming findings) [FE-06]
+  SUBMITTED --> PUBLISHED : independent Manager approves and publishes [FE-06]
   PUBLISHED --> SUPERSEDED : newer version PUBLISHED [FE-06]
   PUBLISHED --> [*]
   SUPERSEDED --> [*]
@@ -725,7 +723,7 @@ stateDiagram-v2
 | **Inspection Mission**<br>(`InspectionStatus` — 6 Canonical States `V15`) | - **States**: `SCHEDULED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `UNDER_REVIEW`, `COMPLETED`, `CANCELLED`<br>- **Key Steps**: Dispatch (`-> SCHEDULED`), Field Session (`-> IN_PROGRESS -> FIELD_COMPLETED`), Auto-Compile & Submit Report (`-> UNDER_REVIEW`), Publish (`-> COMPLETED`) | - Flight readiness verified via permit on file (`hasFlightPermit()`) and active pilot licensing.<br>- Findings confirmation and report auto-compilation occur in `FIELD_COMPLETED`; publication moves directly to `COMPLETED`. |
 | **Field Session**<br>(`FieldSessionStatus`) | - **States**: `PLANNED`, `IN_PROGRESS`, `FIELD_COMPLETED`, `ABORTED` (historical `POSTPONED` retained for read-only history)<br>- **Transitions**: Start (`/field-sessions`), Abort (`/abort`), Complete (`/completion`) | - Requires non-blank `preFlightChecklistNote` on start and `outcomeNotes` on completion.<br>- Aborting a session returns the inspection to `SCHEDULED` and emits `FieldSessionAbortedEvent` to `MANAGER` for rescheduling, reassignment, or cancellation.<br>- At most one `IN_PROGRESS` session per mission. |
 | **Defect Finding & 3-Way Verification**<br>(`FindingStatus`, `ResolutionStatus`) | - **Finding States**: `PENDING`, `CONFIRMED`, plus soft-delete (`is_deleted`)<br>- **Re-inspection 3-Way States**: `RESOLVED`, `UNRESOLVED`, `INCONCLUSIVE`<br>- **Transitions**: AI/Manual create (`-> PENDING`), Confirm (`/confirmation -> CONFIRMED`), Verify (`/reinspection-verifications/{id}`) | - Every `PENDING` AI candidate must be confirmed or soft-deleted before `POST /findings/confirm`.<br>- `RE_INSPECTION` compares the prior defect, repair proof captured as Inspector notes/evidence, and new drone evidence. |
-| **Inspection Report**<br>(`ReportStatus` — 5 Canonical States `V17`) | - **States**: `SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`<br>- **Transitions**: Auto-Compile & Submit (`/report/draft`), Review (`/review`), Publish (`/publish`), Withdraw (`/withdraw`) | - `DRAFT` and `AUTHOR_VERIFIED` states and manual `content_snapshot` notes are eliminated (`V16`, `V17`).<br>- Independent reviewer (`MANAGER` / `ADMIN`) must not equal the author `INSPECTOR`.<br>- `CUSTOMER` access is restricted to `PUBLISHED` reports (`403 REPORT_NOT_PUBLISHED`). |
+| **Inspection Report** (`ReportStatus`) | - **States**: `SUBMITTED`, `RETURNED`, `PUBLISHED`, `SUPERSEDED`<br>- **Transitions**: Submit (`/report/versions/{id}/submit`), review/publish (`/review`), withdraw (`/withdraw`) | - The independent reviewer (`MANAGER` / `ADMIN`) must not be the author `INSPECTOR`.<br>- Customers receive only published report versions. |
 
 **3. Maintenance Work Order & Sub-Entity State Machines**
 

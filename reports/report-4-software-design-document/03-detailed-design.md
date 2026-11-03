@@ -734,10 +734,10 @@ sequenceDiagram
   InspCtrl-->>Client: 200 OK
 ```
 
-#### 3.6.3 Auto-Compiled Inspection Report, Review, PDF Publication & PayOS Class Diagram
+#### 3.6.3 Inspection Report Review, Publication and PayOS Class Diagram
 
 ```mermaid
-%% title: Auto-Compiled Inspection Report, Review, PDF Publication and PayOS Class Diagram
+%% title: Inspection Report Review, Publication and PayOS Class Diagram
 classDiagram
   class InspectionController {
     +generateDraft(Jwt, UUID, HttpServletRequest) ApiResponse~InspectionReportResponse~
@@ -747,8 +747,7 @@ classDiagram
     +submitVersion(Jwt, UUID, UUID) ApiResponse~InspectionReportResponse~
     +withdrawVersion(Jwt, UUID, UUID) ApiResponse~InspectionReportResponse~
     +getAiSummary(Jwt, UUID, UUID, HttpServletRequest) ApiResponse~ReportAiSummaryResponse~
-    +reviewVersion(Jwt, UUID, UUID, boolean, String) ApiResponse~InspectionReportResponse~
-    +publishVersion(Jwt, UUID, UUID, HttpServletRequest) ApiResponse~ReportPublishedResponse~
+    +reviewVersion(Jwt, UUID, UUID, String) ApiResponse~ReportPublishedResponse~
     +acceptReport(Jwt, UUID, UUID) ApiResponse~Void~
     +createPayOSPaymentLink(Jwt, UUID) ApiResponse~PayOSCheckoutDetails~
     +getReportPaymentStatus(Jwt, UUID) ApiResponse~PaymentStatusDetails~
@@ -757,8 +756,7 @@ classDiagram
   class ReportService {
     +generateDraft(UUID, UUID, Locale) InspectionReportResponse
     +getOrGenerateAiSummary(UUID, UUID, UUID, Locale) ReportAiSummaryResponse
-    +reviewVersion(UUID, UUID, UUID, boolean, String) InspectionReportResponse
-    +publish(UUID, UUID, UUID, Locale) ReportPublishedResponse
+    +reviewVersion(UUID, UUID, UUID, String, Locale) ReportPublishedResponse
   }
   class PayOSPaymentGateway {
     +createPaymentLink(long orderCode, long amountVnd, String description) PayOSPaymentLink
@@ -773,8 +771,6 @@ classDiagram
     -int versionNo
     -ReportStatus status
     -UUID reviewerUserId
-    -String artefactObjectKey
-    -String artefactChecksumSha256
   }
   InspectionController --> ReportService
   ReportService --> InspectionReport
@@ -786,7 +782,7 @@ classDiagram
 ![Existing Mermaid render (not regenerated)](assets/mermaid/e9801eee95a0.png)
 **Class Specifications**
 
-- **ReportService & ReportDraftClient**: Generate an automatic or manual structured draft; the Inspector can edit report sections, verify against evidence/findings, submit, or withdraw an unreviewed submission. These authoring actions are distinct from persisted report states (`SUBMITTED`, `RETURNED`, `APPROVED`, `PUBLISHED`, `SUPERSEDED`). The service generates an AI Executive Summary (`ReportAiSummaryResponse`) and enforces separate reviewer decision/publication actions; publication renders an immutable `SHA-256` A4 PDF and completes the inspection. The current `ReportService` document-download method does not enforce a `402 Payment Required` gate.
+- **ReportService & ReportDraftClient**: Generate an automatic or manual structured draft; the Inspector can edit report sections, verify against evidence/findings, submit, or withdraw an unreviewed submission. Persisted report states are `SUBMITTED`, `RETURNED`, `PUBLISHED`, and `SUPERSEDED`. The service generates an AI Executive Summary (`ReportAiSummaryResponse`) and supports the independent reviewer returning a report or approving and publishing it in one decision; publication completes the inspection.
 - **ContractWorkflowService (InspectionReportAcceptancePort), PayOSPaymentGateway & PayOSWebhookController**: Transition occurrence `payment_status` to `PAYMENT_DUE` when report acceptance is recorded, generate a VND VietQR checkout link, and verify HMAC-SHA256 webhook callbacks (`POST /api/v1/webhooks/payos`) to mark `payment_status = PAID`. If an Inspector is assigned, settlement also records `payout_status = PAID` with an automatic disbursement reference; other payout-eligible cases can be `ELIGIBLE`. USD-compatible quote DTO input is not USD PayOS settlement.
 
 #### 3.6.4 Report Auto-Compilation, Manager Publication & PayOS Settlement Sequence Diagram
@@ -811,12 +807,9 @@ sequenceDiagram
   Inspector->>InspCtrl: PUT /report/versions/{vId}/sections; POST /verify then /submit
   Inspector->>InspCtrl: POST /withdraw before reviewer action (optional)
 
-  Manager->>Client: View AI Summary (/ai-summary), Review & Publish Report
-  Client->>InspCtrl: POST /api/v1/inspections/{id}/report/versions/{vId}/review?approve=true
-  InspCtrl->>DB: reviewBy(managerId != inspectorId, approve=true) -> Report: APPROVED
-  Client->>InspCtrl: POST /api/v1/inspections/{id}/report/versions/{vId}/publish
-  InspCtrl->>MinIO: putObject(renderedPdfBytes, sha256)
-  InspCtrl->>DB: publish() -> Report: PUBLISHED, Inspection: COMPLETED
+  Manager->>Client: View AI Summary (/ai-summary), then review and decide on the submitted report
+  Client->>InspCtrl: POST /api/v1/inspections/{id}/report/versions/{vId}/review
+  InspCtrl->>DB: Return report with reason or publish it; Inspection: COMPLETED after publication
   InspCtrl-->>Client: 200 OK (ReportPublishedResponse)
 
   Customer->>Client: Review Published Report & Click Accept Report
@@ -827,7 +820,6 @@ sequenceDiagram
   InspCtrl->>PayOS: createPaymentLink(payosOrderCode, amountVnd)
   PayOS-->>Client: Redirect to checkoutUrl (VietQR)
   PayOS->>DB: POST /api/v1/webhooks/payos (HMAC-SHA256 verified) -> paymentStatus=PAID, assigned inspector payoutStatus=PAID
-  Customer->>InspCtrl: GET /api/v1/inspections/{id}/report/versions/{vId}/document (PDF stream; current service has no 402 payment guard)
 ```
 
 
@@ -851,13 +843,13 @@ flowchart TD
     C4M["Reschedule / Reassign / Cancel Aborted Mission"]
     C8{"Review Submitted\nReport?"}
     C9["Return Report with Reason -> RETURNED (Inspection: FIELD_COMPLETED)"]
-    C10["Approve (APPROVED) & Publish Immutable SHA-256 PDF -> PUBLISHED (Inspection: COMPLETED)"]
+    C10["Approve & Publish Report -> PUBLISHED (Inspection: COMPLETED)"]
   end
 
   subgraph CU3["Customer (CUSTOMER) & PayOS VietQR"]
-    C11["Track 5-Stage Progress -> Review Published Report & AI Executive Summary"]
+    C11["Track Inspection Progress -> Review Published Report & AI Executive Summary"]
     C12["Accept Report, then complete VND-only PayOS VietQR checkout (PAID; assigned inspector payout PAID)"]
-    C13(["End: Download Official PDF & Forward Defects to MF4 Maintenance"])
+    C13(["End: Forward Defects to MF4 Maintenance"])
   end
 
   C1 --> C2 --> C3
